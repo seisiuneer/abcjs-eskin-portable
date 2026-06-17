@@ -254,6 +254,143 @@ Then:
 controller.load("#audio-controls", cursorControl, playerOptions);
 ```
 
+### Complete note-highlighting playback example
+
+The following standalone Cooley's example highlights the currently sounding
+notation in red instead of drawing a line cursor. The render option
+`add_classes: true` is required so the callback can apply a CSS class to the
+SVG notation elements supplied in `event.elements`.
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cooley's — Playback Note Highlighting</title>
+  <link rel="stylesheet" href="abcjs-eskin-audio.css">
+  <style>
+    :root { color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #222;
+    }
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+    }
+    p { margin: 0 0 20px; }
+    
+    body {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
+      font-family: Arial, sans-serif;
+    }
+
+    #paper {
+      margin-bottom: 12px;
+    }
+
+    /* The callback adds this class to the SVG elements that are sounding. */
+    .abcjs-playing-note {
+      fill: #d62828 !important;
+      stroke: #d62828 !important;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Cooley's — Playback Note Highlighting</h1>
+  <p>The currently sounding notes are highlighted in red.</p>
+  <div id="paper"></div>
+  <div id="audio"></div>
+</main>
+
+<script src="abcjs-eskin-chord-intervals.js"></script>
+<script src="abcjs-eskin-portable-min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const abc = String.raw`X: 1
+T: Cooley's
+C: Traditional
+R: Reel
+M: 4/4
+L: 1/8
+Q: 1/2=90
+K: Edor
+|:"Em"EBBA B2 EB|B2 AB dBAG|"D"F/E/D AD BDAD|F/E/D AD BAGF|
+"Em"EBBA B2 EB|B2 AB defg|"D"afge dBAF|1 DEFD "Em"E3D:|2 DEFD "Em"E2gf||
+|:"Em"eB (3BBB eBgf|eBB2 gedB|"D"A/A/A FA DAFA|A/A/A FA defg|
+"Em"eB (3BBB eBgf|eBBB defg|"D"afge dBAF|1 DEFD "Em"E2gf:|2 DEFD "Em"E4|]`;
+
+  const visualObj = ABCJS.renderAbc("paper", abc, {
+    responsive: "resize",
+    add_classes: true
+  })[0];
+
+  const highlighted = new Set();
+
+  function clearHighlights() {
+    highlighted.forEach(function (element) {
+      if (element && element.classList) {
+        element.classList.remove("abcjs-playing-note");
+      }
+    });
+    highlighted.clear();
+  }
+
+  const cursorControl = {
+    onStart: clearHighlights,
+
+    onEvent: function (event) {
+      clearHighlights();
+
+      if (!event || !Array.isArray(event.elements)) return;
+
+      event.elements.forEach(function (group) {
+        const elements = Array.isArray(group) ? group : [group];
+
+        elements.forEach(function (element) {
+          if (!element || !element.classList) return;
+          element.classList.add("abcjs-playing-note");
+          highlighted.add(element);
+        });
+      });
+    },
+
+    onFinished: clearHighlights
+  };
+
+  const synthControl = new ABCJS.synth.SynthController(abc);
+
+  synthControl.load("#audio", cursorControl, {
+    displayLoop: true,
+    displayRestart: true,
+    displayPlay: true,
+    displayProgress: true,
+    displayWarp: true
+  });
+
+  synthControl.setTune(visualObj, false, {}).catch(function (error) {
+    console.error("Unable to prepare playback:", error);
+    document.getElementById("audio").textContent =
+      "Audio could not be initialized in this browser.";
+  });
+})();
+</script>
+</body>
+</html>
+```
+
 ### Rebuilding after a change
 
 Use one rebuild path for ABC changes and configuration changes:
