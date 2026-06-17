@@ -425,6 +425,139 @@ instrument-note files.</p>
 <p>Then:</p>
 <pre><code class="language-js">controller.load(&quot;#audio-controls&quot;, cursorControl, playerOptions);
 </code></pre>
+<h3 id="complete-note-highlighting-playback-example">Complete note-highlighting playback example</h3>
+<p>The following standalone Cooley's example highlights the currently sounding
+notation in red instead of drawing a line cursor. The render option
+<code>add_classes: true</code> is required so the callback can apply a CSS class to the
+SVG notation elements supplied in <code>event.elements</code>.</p>
+<pre><code class="language-html">&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+  &lt;title&gt;Cooley&#x27;s — Playback Note Highlighting&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;abcjs-eskin-audio.css&quot;&gt;
+  &lt;style&gt;
+    :root { color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;
+      background: #ffffff;
+      color: #222;
+    }
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+    }
+    p { margin: 0 0 20px; }
+    
+    body {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
+      font-family: Arial, sans-serif;
+    }
+
+    #paper {
+      margin-bottom: 12px;
+    }
+
+    /* The callback adds this class to the SVG elements that are sounding. */
+    .abcjs-playing-note {
+      fill: #d62828 !important;
+      stroke: #d62828 !important;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;main&gt;
+  &lt;h1&gt;Cooley&#x27;s — Playback Note Highlighting&lt;/h1&gt;
+  &lt;p&gt;The currently sounding notes are highlighted in red.&lt;/p&gt;
+  &lt;div id=&quot;paper&quot;&gt;&lt;/div&gt;
+  &lt;div id=&quot;audio&quot;&gt;&lt;/div&gt;
+&lt;/main&gt;
+
+&lt;script src=&quot;abcjs-eskin-chord-intervals.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;abcjs-eskin-portable-min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(function () {
+  &quot;use strict&quot;;
+
+  const abc = String.raw`X: 1
+T: Cooley&#x27;s
+C: Traditional
+R: Reel
+M: 4/4
+L: 1/8
+Q: 1/2=90
+K: Edor
+|:&quot;Em&quot;EBBA B2 EB|B2 AB dBAG|&quot;D&quot;F/E/D AD BDAD|F/E/D AD BAGF|
+&quot;Em&quot;EBBA B2 EB|B2 AB defg|&quot;D&quot;afge dBAF|1 DEFD &quot;Em&quot;E3D:|2 DEFD &quot;Em&quot;E2gf||
+|:&quot;Em&quot;eB (3BBB eBgf|eBB2 gedB|&quot;D&quot;A/A/A FA DAFA|A/A/A FA defg|
+&quot;Em&quot;eB (3BBB eBgf|eBBB defg|&quot;D&quot;afge dBAF|1 DEFD &quot;Em&quot;E2gf:|2 DEFD &quot;Em&quot;E4|]`;
+
+  const visualObj = ABCJS.renderAbc(&quot;paper&quot;, abc, {
+    responsive: &quot;resize&quot;,
+    add_classes: true
+  })[0];
+
+  const highlighted = new Set();
+
+  function clearHighlights() {
+    highlighted.forEach(function (element) {
+      if (element &amp;&amp; element.classList) {
+        element.classList.remove(&quot;abcjs-playing-note&quot;);
+      }
+    });
+    highlighted.clear();
+  }
+
+  const cursorControl = {
+    onStart: clearHighlights,
+
+    onEvent: function (event) {
+      clearHighlights();
+
+      if (!event || !Array.isArray(event.elements)) return;
+
+      event.elements.forEach(function (group) {
+        const elements = Array.isArray(group) ? group : [group];
+
+        elements.forEach(function (element) {
+          if (!element || !element.classList) return;
+          element.classList.add(&quot;abcjs-playing-note&quot;);
+          highlighted.add(element);
+        });
+      });
+    },
+
+    onFinished: clearHighlights
+  };
+
+  const synthControl = new ABCJS.synth.SynthController(abc);
+
+  synthControl.load(&quot;#audio&quot;, cursorControl, {
+    displayLoop: true,
+    displayRestart: true,
+    displayPlay: true,
+    displayProgress: true,
+    displayWarp: true
+  });
+
+  synthControl.setTune(visualObj, false, {}).catch(function (error) {
+    console.error(&quot;Unable to prepare playback:&quot;, error);
+    document.getElementById(&quot;audio&quot;).textContent =
+      &quot;Audio could not be initialized in this browser.&quot;;
+  });
+})();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
 <h3 id="rebuilding-after-a-change">Rebuilding after a change</h3>
 <p>Use one rebuild path for ABC changes and configuration changes:</p>
 <pre><code class="language-js">async function rebuild(abcText) {
