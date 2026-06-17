@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>abcjs-eskin-portable Guide</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f5f4;
+      color: #242a26;
+      font: 16px/1.58 Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 28px auto;
+      padding: 40px 50px 56px;
+      background: #ffffff;
+      border: 1px solid #d7ddd9;
+      border-radius: 9px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    }
+
+    h1, h2, h3, h4 {
+      line-height: 1.25;
+      color: #19452f;
+      scroll-margin-top: 18px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2.3rem;
+    }
+
+    h2 {
+      margin-top: 2.2em;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #d7ddd9;
+      font-size: 1.55rem;
+    }
+
+    h3 {
+      margin-top: 1.7em;
+      font-size: 1.2rem;
+    }
+
+    h4 {
+      margin-top: 1.4em;
+      font-size: 1.04rem;
+    }
+
+    p, li {
+      max-width: 88ch;
+    }
+
+    a {
+      color: #12633d;
+      text-underline-offset: 2px;
+    }
+
+    .contents {
+      margin: 24px 0 36px;
+      padding: 18px 22px;
+      background: #f7faf8;
+      border: 1px solid #d7ddd9;
+      border-radius: 7px;
+    }
+
+    .contents h2 {
+      margin: 0 0 10px;
+      padding: 0;
+      border: 0;
+      font-size: 1.18rem;
+    }
+
+    .contents ul {
+      columns: 2;
+      column-gap: 36px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .contents li {
+      break-inside: avoid;
+      margin: 4px 0;
+    }
+
+    code {
+      padding: 0.12em 0.34em;
+      background: #edf3ef;
+      border-radius: 4px;
+      color: #173c29;
+      font: 0.92em "SFMono-Regular", Consolas, monospace;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 16px 0 20px;
+      padding: 16px 18px;
+      background: #f7f8f7;
+      border: 1px solid #d4dbd6;
+      border-radius: 7px;
+      color: #172119;
+      line-height: 1.45;
+      tab-size: 2;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+
+    th, td {
+      padding: 9px 11px;
+      border: 1px solid #d7ddd9;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf3ef;
+    }
+
+    blockquote {
+      margin-left: 0;
+      padding: 3px 16px;
+      border-left: 4px solid #438b63;
+      color: #566159;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        width: 100%;
+        margin: 0;
+        padding: 25px 18px 40px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .contents ul {
+        columns: 1;
+      }
+
+      h1 {
+        font-size: 1.9rem;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        width: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+
+<h1 id="abcjs-eskin-portable">abcjs-eskin-portable</h1>
+<p>Portable abcjs rendering and playback build using abcjs-eskin-portable.js.</p>
+<div class="contents">
+  <h2>Contents</h2>
+  <ul>
+  <li><a href="#files">Files</a></li>
+  <li><a href="#quick-start-add-tune-display-and-playback-to-an-existing-website">Quick start: add tune display and playback to an existing website</a></li>
+  <li><a href="#basic-rendering-and-playback">Basic rendering and playback</a></li>
+  <li><a href="#rebuilding-after-configuration-changes">Rebuilding after configuration changes</a></li>
+  <li><a href="#tablature-render-parameters">Tablature render parameters</a></li>
+  <li><a href="#complete-abcjs-eskinconfig-reference">Complete ABCJS.eskinConfig reference</a></li>
+  <li><a href="#demo-smoke-tests">Demo smoke tests</a></li>
+  </ul>
+</div>
+
+<h2 id="files">Files</h2>
+<p>Load the files in this order:</p>
+<pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;abcjs-eskin-audio.css&quot;&gt;
+
+&lt;script src=&quot;abcjs-eskin-chord-intervals.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;abcjs-eskin-portable-min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;your-application.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p><code>abcjs-eskin-chord-intervals.js</code> must load before <code>abcjs-eskin-eskin-portable-min.js</code> when chord accompaniment is used.</p>
+<h2 id="quick-start-add-tune-display-and-playback-to-an-existing-website">Quick start: add tune display and playback to an existing website</h2>
+<p>This is the shortest complete path from an existing page to working notation
+and playback.</p>
+<h3 id="required-resources">Required resources</h3>
+<p>Your page must be able to load:</p>
+<ul>
+<li><code>abcjs-eskin-audio.css</code></li>
+<li><code>abcjs-eskin-chord-intervals.js</code></li>
+<li><code>abcjs-eskin-portable-min.js</code></li>
+<li>The instrument-note files under the configured soundfont URL</li>
+<li>Reverb impulse-response files when reverb is enabled</li>
+</ul>
+<p>Resources hosted on another origin must allow cross-origin access with
+appropriate CORS response headers. Serve the page through HTTP or HTTPS rather
+than opening it directly with a <code>file:</code> URL.</p>
+<h3 id="lifecycle">Lifecycle</h3>
+<p>First render:</p>
+<pre><code class="language-text">Apply settings
+→ renderAbc()
+→ create SynthController
+→ load()
+→ await setTune()
+→ user clicks Play
+</code></pre>
+<p>After ABC or settings change:</p>
+<pre><code class="language-text">destroy old controller
+→ clear an affected cache when necessary
+→ apply settings
+→ render again
+→ create a new controller
+→ load()
+→ await setTune()
+→ user clicks Play
+</code></pre>
+<p><code>setTune()</code> prepares audio. It does not start playback automatically. The user
+starts playback with the generated Play button, which also satisfies the normal
+browser requirement that audio begin in response to a user gesture.</p>
+<h3 id="complete-copy-and-paste-example">Complete copy-and-paste example</h3>
+<pre><code class="language-html">&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+
+  &lt;title&gt;ABC tune display and playback&lt;/title&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;abcjs-eskin-audio.css&quot;&gt;
+
+  &lt;style&gt;
+    body {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
+      font-family: Arial, sans-serif;
+    }
+
+    #paper {
+      margin-bottom: 12px;
+    }
+
+    #error {
+      min-height: 1.4em;
+      color: #a00000;
+      white-space: pre-wrap;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;ABC tune&lt;/h1&gt;
+
+  &lt;div id=&quot;paper&quot;&gt;&lt;/div&gt;
+  &lt;div id=&quot;audio-controls&quot;&gt;&lt;/div&gt;
+  &lt;p id=&quot;error&quot; role=&quot;alert&quot;&gt;&lt;/p&gt;
+
+  &lt;script src=&quot;abcjs-eskin-chord-intervals.js&quot;&gt;&lt;/script&gt;
+  &lt;script src=&quot;abcjs-eskin-portable-min.js&quot;&gt;&lt;/script&gt;
+
+  &lt;script&gt;
+    &quot;use strict&quot;;
+
+    const abcText =
+      &quot;X:1\n&quot; +
+      &quot;T:Cooley's\n&quot; +
+      &quot;C:Traditional\n&quot; +
+      &quot;R:Reel\n&quot; +
+      &quot;M:4/4\n&quot; +
+      &quot;L:1/8\n&quot; +
+      &quot;Q:1/2=90\n&quot; +
+      &quot;K:Edor\n&quot; +
+      '|:&quot;Em&quot;EBBA B2 EB|B2 AB dBAG|\n' +
+      '&quot;D&quot;F/E/D AD BDAD|F/E/D AD BAGF|';
+
+    let controller = null;
+
+    const renderParams = {
+      responsive: &quot;resize&quot;,
+      expandToWidest: &quot;true&quot;,
+      selectTypes: false
+    };
+
+    const playerOptions = {
+      displayLoop: true,
+      displayRestart: true,
+      displayPlay: true,
+      displayProgress: true,
+      displayWarp: true
+    };
+
+    const synthOptions = {
+      program: 0,
+      chordsOff: false
+    };
+
+    function applySettings() {
+      ABCJS.eskinConfig.setSoundFontUrl(
+        &quot;https://example.com/soundfonts/fatboy_4/&quot;
+      );
+
+      ABCJS.eskinConfig.setReverb({
+        enabled: true,
+        style: &quot;chamber1&quot;,
+        dry: 0.9,
+        wet: 0.1
+      });
+
+      ABCJS.eskinConfig.setIrishRolls(true);
+      ABCJS.eskinConfig.setSwing(false, 0.25);
+      ABCJS.eskinConfig.setCustomGMSounds(true);
+      ABCJS.eskinConfig.setPlayerDefaults(100, false);
+    }
+
+    async function renderAndPrepare(abc) {
+      const errorElement = document.getElementById(&quot;error&quot;);
+      errorElement.textContent = &quot;&quot;;
+
+      try {
+        if (controller &amp;&amp; typeof controller.destroy === &quot;function&quot;) {
+          controller.destroy();
+        }
+
+        controller = null;
+        document.getElementById(&quot;paper&quot;).replaceChildren();
+        document.getElementById(&quot;audio-controls&quot;).replaceChildren();
+
+        applySettings();
+
+        const tunes = ABCJS.renderAbc(&quot;paper&quot;, abc, renderParams);
+
+        if (!Array.isArray(tunes) || !tunes.length) {
+          throw new Error(&quot;No tune was rendered.&quot;);
+        }
+
+        controller = new ABCJS.synth.SynthController();
+
+        // Cursor tracking is optional. Pass null for the simplest setup.
+        controller.load(&quot;#audio-controls&quot;, null, playerOptions);
+
+        await controller.setTune(tunes[0], false, synthOptions);
+      } catch (error) {
+        console.error(error);
+        errorElement.textContent =
+          error &amp;&amp; error.message ? error.message : String(error);
+      }
+    }
+
+    renderAndPrepare(abcText);
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Replace the example soundfont URL with the actual URL containing your
+instrument-note files.</p>
+<h3 id="optional-working-cursor-tracking">Optional working cursor tracking</h3>
+<p>Playback works without a cursor. To add note-following, replace <code>null</code> in
+<code>controller.load()</code> with this object:</p>
+<pre><code class="language-js">const cursorControl = {
+  cursor: null,
+
+  onStart() {
+    const svg = document.querySelector(&quot;#paper svg&quot;);
+    if (!svg) return;
+
+    this.cursor = document.createElementNS(
+      &quot;http://www.w3.org/2000/svg&quot;,
+      &quot;line&quot;
+    );
+
+    this.cursor.setAttribute(&quot;stroke&quot;, &quot;red&quot;);
+    this.cursor.setAttribute(&quot;stroke-width&quot;, &quot;2&quot;);
+    svg.appendChild(this.cursor);
+  },
+
+  onEvent(event) {
+    if (!this.cursor || !event || event.left == null) return;
+
+    this.cursor.setAttribute(&quot;x1&quot;, event.left - 2);
+    this.cursor.setAttribute(&quot;x2&quot;, event.left - 2);
+    this.cursor.setAttribute(&quot;y1&quot;, event.top);
+    this.cursor.setAttribute(&quot;y2&quot;, event.top + event.height);
+  },
+
+  onFinished() {
+    if (!this.cursor) return;
+
+    this.cursor.setAttribute(&quot;x1&quot;, 0);
+    this.cursor.setAttribute(&quot;x2&quot;, 0);
+    this.cursor.setAttribute(&quot;y1&quot;, 0);
+    this.cursor.setAttribute(&quot;y2&quot;, 0);
+  }
+};
+</code></pre>
+<p>Then:</p>
+<pre><code class="language-js">controller.load(&quot;#audio-controls&quot;, cursorControl, playerOptions);
+</code></pre>
+<h3 id="rebuilding-after-a-change">Rebuilding after a change</h3>
+<p>Use one rebuild path for ABC changes and configuration changes:</p>
+<pre><code class="language-js">async function rebuild(abcText) {
+  if (controller &amp;&amp; typeof controller.destroy === &quot;function&quot;) {
+    controller.destroy();
+  }
+
+  controller = null;
+
+  // Clear only the affected cache when required.
+  // ABCJS.eskinConfig.clearNoteCache();
+  // ABCJS.eskinConfig.clearReverbCache();
+
+  applySettings();
+
+  const tunes = ABCJS.renderAbc(&quot;paper&quot;, abcText, renderParams);
+
+  controller = new ABCJS.synth.SynthController();
+  controller.load(&quot;#audio-controls&quot;, null, playerOptions);
+
+  await controller.setTune(tunes[0], false, synthOptions);
+}
+</code></pre>
+<p>Use <code>clearNoteCache()</code> after changing the soundfont or instrument mapping. Use
+<code>clearReverbCache()</code> after changing the reverb style.</p>
+<h3 id="single-tune-playback">Single-tune playback</h3>
+<p>The normal integration prepares:</p>
+<pre><code class="language-js">tunes[0]
+</code></pre>
+<p>This is the first rendered tune. The demo's multi-tune examples are display
+tests that intentionally disable playback; they are not the normal single-player
+integration path.</p>
+<h2 id="basic-rendering-and-playback">Basic rendering and playback</h2>
+<pre><code class="language-html">&lt;div id=&quot;paper&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;audio-controls&quot;&gt;&lt;/div&gt;
+</code></pre>
+<pre><code class="language-js">const renderParams = {
+  responsive: &quot;resize&quot;,
+  expandToWidest: &quot;true&quot;,
+  selectTypes: false
+};
+
+const tunes = ABCJS.renderAbc(&quot;paper&quot;, abcText, renderParams);
+
+const controller = new ABCJS.synth.SynthController();
+
+controller.load(&quot;#audio-controls&quot;, cursorControl, {
+  displayLoop: true,
+  displayRestart: true,
+  displayPlay: true,
+  displayProgress: true,
+  displayWarp: true
+});
+
+await controller.setTune(tunes[0], false, {
+  program: 0,
+  chordsOff: false
+});
+</code></pre>
+<p>The <code>program</code> passed to <code>setTune()</code> is a fallback. Any global or voice-specific
+<code>%%MIDI program</code> directive in the ABC takes precedence.</p>
+<h2 id="rebuilding-after-configuration-changes">Rebuilding after configuration changes</h2>
+<p>Settings that affect parsing, rendering, sequencing, sample selection, timing,
+or audio routing should be applied before rendering and preparing audio.</p>
+<pre><code class="language-js">if (controller &amp;&amp; typeof controller.destroy === &quot;function&quot;) {
+  controller.destroy();
+}
+controller = null;
+
+ABCJS.eskinConfig.setIrishRolls(true);
+ABCJS.eskinConfig.setReverb({
+  enabled: true,
+  style: &quot;chamber1&quot;,
+  dry: 0.9,
+  wet: 0.1
+});
+
+const tunes = ABCJS.renderAbc(&quot;paper&quot;, abcText, renderParams);
+
+controller = new ABCJS.synth.SynthController();
+controller.load(&quot;#audio-controls&quot;, cursorControl, playerOptions);
+
+await controller.setTune(tunes[0], false, synthOptions);
+</code></pre>
+<h2 id="tablature-render-parameters">Tablature render parameters</h2>
+<h3 id="mandolin-notation-and-tablature">Mandolin notation and tablature</h3>
+<pre><code class="language-js">const renderParams = {
+  responsive: &quot;resize&quot;,
+  expandToWidest: &quot;true&quot;,
+  selectTypes: false,
+  tablature: [{
+    instrument: &quot;violin&quot;,
+    label: &quot;Mandolin&quot;,
+    tuning: [&quot;G,&quot;, &quot;D&quot;, &quot;A&quot;, &quot;e&quot;],
+    highestNote: &quot;f'&quot;,
+    capo: 0
+  }]
+};
+</code></pre>
+<h3 id="mandolin-tablature-only">Mandolin tablature only</h3>
+<pre><code class="language-js">renderParams.tablatureOnly = true;
+</code></pre>
+<h3 id="guitar-notation-and-tablature">Guitar notation and tablature</h3>
+<pre><code class="language-js">const renderParams = {
+  responsive: &quot;resize&quot;,
+  expandToWidest: &quot;true&quot;,
+  selectTypes: false,
+  tablature: [{
+    instrument: &quot;guitar&quot;,
+    label: &quot;Guitar&quot;,
+    tuning: [&quot;E,&quot;, &quot;A,&quot;, &quot;D&quot;, &quot;G&quot;, &quot;B&quot;, &quot;e&quot;],
+    highestNote: &quot;f'&quot;,
+    capo: 0
+  }]
+};
+</code></pre>
+<h2 id="complete-abcjs-eskinconfig-reference">Complete <code>ABCJS.eskinConfig</code> reference</h2>
+<p>All setters return <code>undefined</code>. Getters return the current setting. Objects and
+arrays returned by the facade are copied where required so callers cannot
+accidentally mutate internal state.</p>
+<h3 id="version">Version</h3>
+<h4 id="abcjs-eskinconfig-version"><code>ABCJS.eskinConfig.version</code></h4>
+<p>Read-only string identifying this portable facade.</p>
+<pre><code class="language-js">console.log(ABCJS.eskinConfig.version);
+</code></pre>
+<h3 id="soundfont-and-sample-loading">Soundfont and sample loading</h3>
+<h4 id="setsoundfonturl-url-getsoundfonturl"><code>setSoundFontUrl(url)</code> / <code>getSoundFontUrl()</code></h4>
+<p>Sets or returns the base URL used for instrument-note files. Empty strings are
+ignored.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setSoundFontUrl(
+  &quot;https://example.com/soundfonts/fatboy_4/&quot;
+);
+const url = ABCJS.eskinConfig.getSoundFontUrl();
+</code></pre>
+<h4 id="automatic-per-tune-soundfont-parsing">Automatic per-tune <code>%soundfont</code> parsing</h4>
+<p>The library recognizes directives such as <code>%soundfont fatboy</code> and <code>%soundfont arachno</code>, using the syntax <code>%soundfont &lt;soundfont_name&gt;</code>.</p>
+<table>
+<thead><tr><th>Name</th><th>Sample URL</th></tr></thead>
+<tbody>
+<tr><td><code>fluid</code></td><td><code>https://paulrosen.github.io/midi-js-soundfonts/FluidR3_GM/</code></td></tr>
+<tr><td><code>fatboy</code></td><td><code>https://michaeleskin.com/abctools/soundfonts/fatboy_4/</code></td></tr>
+<tr><td><code>canvas</code></td><td><code>https://michaeleskin.com/abctools/soundfonts/canvas/</code></td></tr>
+<tr><td><code>mscore</code></td><td><code>https://michaeleskin.com/abctools/soundfonts/mscore_2/</code></td></tr>
+<tr><td><code>arachno</code></td><td><code>https://michaeleskin.com/abctools/soundfonts/arachno_3/</code></td></tr>
+<tr><td><code>fluidhq</code></td><td><code>https://michaeleskin.com/abctools/soundfonts/fluidhq_1/</code></td></tr>
+</tbody>
+</table>
+<p>A valid directive overrides <code>setSoundFontUrl()</code> for that tune. Without one, the host soundfont remains the fallback. Decoded-note caches are separated by soundfont URL so independent players can safely use different soundfonts.</p>
+<p>After editing, adding, or removing <code>%soundfont</code>, rerender the tune and rebuild its controller and audio. Invalid names are ignored.</p>
+<h4 id="clearnotecache"><code>clearNoteCache()</code></h4>
+<p>Clears decoded instrument notes held by the library.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.clearNoteCache();
+</code></pre>
+<h4 id="setsampleavailability-options-getsampleavailability"><code>setSampleAvailability(options)</code> / <code>getSampleAvailability()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setSampleAvailability({
+  online: true,
+  allowOffline: false
+});
+
+const value = ABCJS.eskinConfig.getSampleAvailability();
+// { online, allowOffline }
+</code></pre>
+<h3 id="reverb">Reverb</h3>
+<h4 id="setreverb-options-getreverb"><code>setReverb(options)</code> / <code>getReverb()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setReverb({
+  enabled: true,
+  style: &quot;chamber1&quot;,
+  dry: 0.9,
+  wet: 0.1
+});
+
+const value = ABCJS.eskinConfig.getReverb();
+// { enabled, style, dry, wet }
+</code></pre>
+<p>Supported reverb styles in this build are:</p>
+<ul>
+<li><code>room1</code>, <code>room2</code>, <code>room3</code></li>
+<li><code>chamber1</code>, <code>chamber2</code>, <code>chamber3</code></li>
+<li><code>hall1</code>, <code>hall2</code>, <code>hall3</code></li>
+<li><code>church1</code></li>
+</ul>
+<h4 id="automatic-per-tune-reverb-parsing">Automatic per-tune <code>%reverb</code> parsing</h4>
+<p>The library recognizes <code>%reverb chamber 0.95 0.05</code>, using the syntax <code>%reverb &lt;reverb_style&gt; &lt;dry_fraction&gt; &lt;wet_fraction&gt;</code>.</p>
+<p>A valid directive enables reverb during audio preparation. Supported styles are <code>room</code>, <code>room1</code>–<code>room3</code>, <code>chamber</code>, <code>chamber1</code>–<code>chamber3</code>, <code>hall</code>, <code>hall1</code>–<code>hall3</code>, <code>church</code>, and <code>church1</code>. Dry and wet fractions must each be from <code>0</code> through <code>1</code>.</p>
+<p>The tune directive overrides <code>setReverb()</code>. Without one, host settings remain the fallback. Independent players can use different reverb settings. Rerender and rebuild audio after editing the directive; invalid values are ignored.</p>
+<h4 id="clearreverbcache"><code>clearReverbCache()</code></h4>
+<p>Clears decoded reverb impulse responses and the current reverb node reference.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.clearReverbCache();
+</code></pre>
+<h3 id="swing-and-voice-tuning">Swing and voice tuning</h3>
+<h4 id="setswing-enabled-factor-getswing"><code>setSwing(enabled, factor)</code> / <code>getSwing()</code></h4>
+<p>Controls the Eskin swing implementation.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setSwing(true, 0.25);
+const value = ABCJS.eskinConfig.getSwing();
+// { enabled, factor }
+</code></pre>
+<h4 id="automatic-per-tune-swing-parsing">Automatic per-tune <code>%swing</code> parsing</h4>
+<p>The portable library automatically recognizes a standalone directive inside an individual tune:</p>
+<pre><code class="language-abc">%swing 0.25
+</code></pre>
+<p>The hosting application does not need to scan the ABC or call <code>setSwing(true, 0.25)</code> for that tune. The value is stored with the rendered tune and applied when that tune's synth is prepared.</p>
+<p>Accepted values are <code>-0.9</code> through <code>0.9</code>. The directive:</p>
+<pre><code class="language-abc">%swing 0
+</code></pre>
+<p>explicitly disables custom Eskin swing for that tune.</p>
+<p>Precedence is:</p>
+<ol>
+<li>A valid <code>%swing &lt;factor&gt;</code> directive in the tune.</li>
+<li>The host setting from <code>ABCJS.eskinConfig.setSwing()</code>.</li>
+<li>No custom swing.</li>
+</ol>
+<p>A tune-level directive also overrides the separate abcjs-compatible swing mode for that tune. Because the value is stored per rendered tune and per synth instance, independent players on the same page can use different swing values without changing one another.</p>
+<p>The directive is applied during audio preparation. After editing, adding, or removing <code>%swing</code>, rerender the tune and rebuild its controller and audio. Invalid or out-of-range values are ignored and the host setting remains the fallback.</p>
+<h4 id="automatic-per-tune-swing-offset-parsing">Automatic per-tune <code>%swing_offset</code> parsing</h4>
+<p>The library recognizes <code>%swing_offset 2</code>, using the syntax <code>%swing_offset &lt;offset_value&gt;</code>.</p>
+<p>Integer and decimal offsets are accepted. The tune directive overrides <code>setSwingOffset()</code>; otherwise the host offset remains the fallback. The value affects custom Eskin swing only and is isolated per rendered tune and synth instance.</p>
+<p>Rerender and rebuild audio after editing the directive. Invalid values are ignored.</p>
+<h4 id="setswingoffset-offset-getswingoffset"><code>setSwingOffset(offset)</code> / <code>getSwingOffset()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setSwingOffset(0);
+const offset = ABCJS.eskinConfig.getSwingOffset();
+</code></pre>
+<h4 id="setabcjsswing-enabled-factor-getabcjsswing"><code>setABCJSSwing(enabled, factor)</code> / <code>getABCJSSwing()</code></h4>
+<p>Controls the separate abcjs-compatible swing path.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setABCJSSwing(true, 50);
+const value = ABCJS.eskinConfig.getABCJSSwing();
+// { enabled, factor }
+</code></pre>
+<h4 id="setvoicetuning-centsarray-getvoicetuning"><code>setVoiceTuning(centsArray)</code> / <code>getVoiceTuning()</code></h4>
+<p>Sets one cents offset per voice. Passing a non-array clears voice tuning.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setVoiceTuning([0, -5, 7]);
+const tuning = ABCJS.eskinConfig.getVoiceTuning();
+</code></pre>
+<h3 id="instrument-mappings">Instrument mappings</h3>
+<h4 id="setcustomgmsounds-enabled-getcustomgmsounds"><code>setCustomGMSounds(enabled)</code> / <code>getCustomGMSounds()</code></h4>
+<p>Enables or disables the Eskin replacement mappings for supported GM programs.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setCustomGMSounds(true);
+</code></pre>
+<h4 id="setcustomgmsoundsoverride-options-getcustomgmsoundsoverride"><code>setCustomGMSoundsOverride(options)</code> / <code>getCustomGMSoundsOverride()</code></h4>
+<p>Controls the explicit override flag and override value.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setCustomGMSoundsOverride({
+  enabled: true,
+  value: false
+});
+
+const value = ABCJS.eskinConfig.getCustomGMSoundsOverride();
+// { enabled, value }
+</code></pre>
+<h4 id="automatic-per-tune-use-custom-gm-sounds-parsing">Automatic per-tune <code>%use_custom_gm_sounds</code> parsing</h4>
+<p>The portable library recognizes <code>%use_custom_gm_sounds false</code>, using the syntax <code>%use_custom_gm_sounds &lt;true|false&gt;</code>.</p>
+<p>Custom General MIDI replacement instruments are allowed by default. A value of <code>false</code> disables the Eskin custom replacements for that tune, so its MIDI programs use the corresponding standard instruments from the selected soundfont. A value of <code>true</code> explicitly allows the custom replacements.</p>
+<p>A valid tune directive takes precedence over the host custom-GM setting for that tune. The value is stored with the rendered tune and snapshotted by its synth, so independent players can use different settings. Rerender and rebuild audio after editing the directive. Values other than <code>true</code> or <code>false</code> are ignored.</p>
+<h4 id="setbodhranpitch-pitch-getbodhranpitch"><code>setBodhranPitch(pitch)</code> / <code>getBodhranPitch()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setBodhranPitch(&quot;a&quot;);
+</code></pre>
+<h4 id="setbanjostyle-style-getbanjostyle"><code>setBanjoStyle(style)</code> / <code>getBanjoStyle()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setBanjoStyle(&quot;2&quot;);
+</code></pre>
+<h4 id="automatic-per-tune-banjo-style-parsing">Automatic per-tune <code>%banjo_style</code> parsing</h4>
+<p>The portable library recognizes <code>%banjo_style 3</code>, using the syntax <code>%banjo_style &lt;banjo_style_number&gt;</code>.</p>
+<p>The numeric value selects the banjo replacement used for that tune when custom General MIDI replacement instruments are allowed. A valid tune directive takes precedence over <code>setBanjoStyle()</code> and is isolated per rendered tune and synth instance. If custom GM sounds are disabled for the tune, the banjo-style selection is not applied.</p>
+<p>Rerender and rebuild audio after editing the directive. Invalid values are ignored and the host banjo style remains the fallback.</p>
+<h3 id="player-defaults-and-callbacks">Player defaults and callbacks</h3>
+<h4 id="setplayerdefaults-warp-repeat-getplayerdefaults"><code>setPlayerDefaults(warp, repeat)</code> / <code>getPlayerDefaults()</code></h4>
+<p>Sets defaults used by subsequently created playback controls.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setPlayerDefaults(100, false);
+const value = ABCJS.eskinConfig.getPlayerDefaults();
+// { warp, repeat }
+</code></pre>
+<h4 id="setplaybackcallbacks-callbacks-getplaybackcallbacks"><code>setPlaybackCallbacks(callbacks)</code> / <code>getPlaybackCallbacks()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setPlaybackCallbacks({
+  preStart(continuePlayback) {
+    continuePlayback();
+  },
+  start() {},
+  loop() {},
+  sequence(noteMapTracks, callbackContext) {}
+});
+</code></pre>
+<p>Callback behavior:</p>
+<ul>
+<li><code>preStart(continuePlayback)</code> runs before playback and must call the supplied
+continuation function.</li>
+<li><code>start()</code> runs when playback starts.</li>
+<li><code>loop()</code> runs at a playback loop boundary.</li>
+<li><code>sequence(noteMapTracks, callbackContext)</code> runs when sequence data is built.</li>
+</ul>
+<p>Passing an empty object clears all four callbacks.</p>
+<h4 id="setrenderprogresslogging-enabled-getrenderprogresslogging"><code>setRenderProgressLogging(enabled)</code> / <code>getRenderProgressLogging()</code></h4>
+<p>Controls Eskin render-progress messages in the browser console.</p>
+<h3 id="rhythm-pattern-overrides">Rhythm-pattern overrides</h3>
+<h4 id="setrhythmpatternoverrides-overrides"><code>setRhythmPatternOverrides(overrides)</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setRhythmPatternOverrides({
+  &quot;10/8&quot;: {
+    pattern: [
+      &quot;boom&quot;, &quot;boom2&quot;, &quot;boom2&quot;, &quot;boom2&quot;, &quot;boom&quot;,
+      &quot;boom2&quot;, &quot;boom2&quot;, &quot;boom&quot;, &quot;boom2&quot;, &quot;boom2&quot;
+    ],
+    threshold: 5
+  }
+});
+</code></pre>
+<h4 id="getrhythmpatternoverrides"><code>getRhythmPatternOverrides()</code></h4>
+<p>Returns a copy of the current override object.</p>
+<h4 id="clearrhythmpatternoverrides"><code>clearRhythmPatternOverrides()</code></h4>
+<p>Restores an empty override object.</p>
+<h3 id="grace-notes">Grace notes</h3>
+<h4 id="setgracenoteoptions-options-getgracenoteoptions"><code>setGraceNoteOptions(options)</code> / <code>getGraceNoteOptions()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setGraceNoteOptions({
+  duration: 0.045,
+  tuneType: &quot;&quot;,
+  missingTempo: false
+});
+
+const value = ABCJS.eskinConfig.getGraceNoteOptions();
+// { duration, tuneType, missingTempo }
+</code></pre>
+<h3 id="irish-rolls">Irish rolls</h3>
+<h4 id="setirishrolls-enabled-getirishrolls"><code>setIrishRolls(enabled)</code> / <code>getIrishRolls()</code></h4>
+<p>When enabled, the ABC tilde decoration uses the Eskin Irish-roll
+implementation.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setIrishRolls(true);
+</code></pre>
+<p>The demo enables this before every render, including ABC loaded from a file.</p>
+<h4 id="setirishrolloverrides-options-getirishrolloverrides"><code>setIrishRollOverrides(options)</code> / <code>getIrishRollOverrides()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setIrishRollOverrides({
+  forceEnable: false,
+  forceDisable: false
+});
+</code></pre>
+<p><code>forceDisable</code> prevents custom Irish-roll handling even when the ordinary or
+force-enable setting is active.</p>
+<h4 id="setirishrolloptions-options-getirishrolloptions"><code>setIrishRollOptions(options)</code> / <code>getIrishRollOptions()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setIrishRollOptions({
+  useOriginalSolution: false,
+  quarter: {
+    duration1: 0.95,
+    duration2: 0.8,
+    fraction1: 1.0,
+    fraction2: 0.75,
+    fraction3: 0.9,
+    volume1: 1.0,
+    volume2: 0.75,
+    volume3: 1.0
+  },
+  dottedQuarter: {
+    duration1: 1.45,
+    duration2: 0.6,
+    fraction1: 1.0,
+    fraction2: 0.75,
+    fraction3: 0.9,
+    volume1: 1.0,
+    volume2: 0.75,
+    volume3: 1.0
+  }
+});
+</code></pre>
+<p>Partial option objects are allowed; unspecified values remain unchanged.</p>
+<h3 id="ornament-and-tremolo-timing">Ornament and tremolo timing</h3>
+<h4 id="setornamenttiming-options-getornamenttiming"><code>setOrnamentTiming(options)</code> / <code>getOrnamentTiming()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setOrnamentTiming({
+  divider: 32,
+  offset: 2
+});
+</code></pre>
+<h4 id="settremolodivider-divider-gettremolodivider"><code>setTremoloDivider(divider)</code> / <code>getTremoloDivider()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setTremoloDivider(8);
+</code></pre>
+<h3 id="titles-and-solfege-source">Titles and Solfege source</h3>
+<h4 id="setleftjustifytitles-enabled-getleftjustifytitles"><code>setLeftJustifyTitles(enabled)</code> / <code>getLeftJustifyTitles()</code></h4>
+<p>Controls the global one-tune title-justification setting.</p>
+<h4 id="settitlereverser-enabled-gettitlereverser"><code>setTitleReverser(enabled)</code> / <code>getTitleReverser()</code></h4>
+<p>Controls title reversal.</p>
+<h4 id="setsolfegeabc-abc-getsolfegeabc"><code>setSolfegeABC(abc)</code> / <code>getSolfegeABC()</code></h4>
+<p>Sets or returns the ABC source used by the Solfege instrument path. Passing
+<code>null</code> clears it.</p>
+<h3 id="tablature-behavior">Tablature behavior</h3>
+<h4 id="settabstaffselection-selection-gettabstaffselection"><code>setTabStaffSelection(selection)</code> / <code>getTabStaffSelection()</code></h4>
+<p>Accepted values:</p>
+<ul>
+<li><code>&quot;all&quot;</code></li>
+<li><code>&quot;first&quot;</code></li>
+<li><code>&quot;second&quot;</code></li>
+</ul>
+<pre><code class="language-js">ABCJS.eskinConfig.setTabStaffSelection(&quot;first&quot;);
+</code></pre>
+<h4 id="settablatureonly-enabled-gettablatureonly"><code>setTablatureOnly(enabled)</code> / <code>getTablatureOnly()</code></h4>
+<p>Controls the global tablature-only flag. For ordinary host rendering, the
+per-render <code>tablatureOnly</code> option remains the clearest choice.</p>
+<h3 id="accompaniment-timing-and-voicing">Accompaniment timing and voicing</h3>
+<h4 id="setbackupnotefractions-options-getbackupnotefractions"><code>setBackupNoteFractions(options)</code> / <code>getBackupNoteFractions()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setBackupNoteFractions({
+  boom: 0.5,
+  chick: 0.5
+});
+</code></pre>
+<h4 id="setstrummedchords-enabled-options-getstrummedchords"><code>setStrummedChords(enabled, options)</code> / <code>getStrummedChords()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setStrummedChords(true, {
+  divider: 8
+});
+</code></pre>
+<h4 id="setaccompanimentoctaveshifts-options-getaccompanimentoctaveshifts"><code>setAccompanimentOctaveShifts(options)</code> / <code>getAccompanimentOctaveShifts()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setAccompanimentOctaveShifts({
+  bass: -1,
+  chords: 1
+});
+</code></pre>
+<h4 id="setusegchord-enabled-getusegchord"><code>setUseGChord(enabled)</code> / <code>getUseGChord()</code></h4>
+<p>Selects the alternate gchord playback path.</p>
+<h4 id="setdurationextension-value-getdurationextension"><code>setDurationExtension(value)</code> / <code>getDurationExtension()</code></h4>
+<p>Sets the duration-extension value used by the extended-duration playback path.</p>
+<h3 id="chord-interpretation">Chord interpretation</h3>
+<h4 id="setallowlowercasechords-enabled-getallowlowercasechords"><code>setAllowLowercaseChords(enabled)</code> / <code>getAllowLowercaseChords()</code></h4>
+<p>Controls whether lowercase chord names are accepted by the Eskin chord path.</p>
+<h4 id="setplayalternatechords-enabled-override-getplayalternatechords"><code>setPlayAlternateChords(enabled, override)</code> / <code>getPlayAlternateChords()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setPlayAlternateChords(true, false);
+</code></pre>
+<p>Returns:</p>
+<pre><code class="language-js">{ enabled, override }
+</code></pre>
+<h4 id="setforcepowerchords-enabled-getforcepowerchords"><code>setForcePowerChords(enabled)</code> / <code>getForcePowerChords()</code></h4>
+<p>Forces power-chord handling.</p>
+<h3 id="rendering-parameters-and-visibility">Rendering parameters and visibility</h3>
+<h4 id="setrenderingparams-params-getrenderingparams"><code>setRenderingParams(params)</code> / <code>getRenderingParams()</code></h4>
+<p>Stores or returns the Eskin global rendering-parameter object. Passing a
+non-object clears it.</p>
+<pre><code class="language-js">ABCJS.eskinConfig.setRenderingParams({
+  scale: 0.9,
+  staffwidth: 700
+});
+</code></pre>
+<h4 id="setinformationvisibility-options-getinformationvisibility"><code>setInformationVisibility(options)</code> / <code>getInformationVisibility()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setInformationVisibility({
+  hideLabels: false,
+  hideRhythm: false,
+  hideComposer: false,
+  hideParts: false,
+  hideDynamics: false
+});
+</code></pre>
+<p>Returns the same five properties.</p>
+<h4 id="sethidecautionarykeysignatures-enabled"><code>setHideCautionaryKeySignatures(enabled)</code> /</h4>
+<p><code>getHideCautionaryKeySignatures()</code></p>
+<p>Controls cautionary key-signature suppression.</p>
+<h3 id="whistle-and-recorder-tablature-transposition">Whistle and recorder tablature transposition</h3>
+<h4 id="setwhistletabtranspose-options-getwhistletabtranspose"><code>setWhistleTabTranspose(options)</code> / <code>getWhistleTabTranspose()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setWhistleTabTranspose({
+  enabled: true,
+  octave: 0,
+  semitone: -2
+});
+</code></pre>
+<h4 id="setrecordertabtranspose-options-getrecordertabtranspose"><code>setRecorderTabTranspose(options)</code> / <code>getRecorderTabTranspose()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setRecorderTabTranspose({
+  enabled: true,
+  octave: 0,
+  semitone: 2
+});
+</code></pre>
+<p>Both getters return:</p>
+<pre><code class="language-js">{ enabled, octave, semitone }
+</code></pre>
+<h3 id="svg-hyperlinks">SVG hyperlinks</h3>
+<h4 id="setsvghyperlinks-options-getsvghyperlinks"><code>setSvgHyperlinks(options)</code> / <code>getSvgHyperlinks()</code></h4>
+<pre><code class="language-js">ABCJS.eskinConfig.setSvgHyperlinks({
+  enabled: true,
+  forceDisable: false
+});
+</code></pre>
+<p>Returns:</p>
+<pre><code class="language-js">{ enabled, forceDisable }
+</code></pre>
+<h3 id="loop-state-caching">Loop-state caching</h3>
+<h4 id="setloopstatecaching-enabled-getloopstatecaching"><code>setLoopStateCaching(enabled)</code> / <code>getLoopStateCaching()</code></h4>
+<p>Controls whether playback loop state may be retained.</p>
+<h3 id="feature-state-snapshot">Feature-state snapshot</h3>
+<h4 id="getfeaturestate"><code>getFeatureState()</code></h4>
+<p>Returns a snapshot of all feature-oriented settings exposed by the facade.</p>
+<pre><code class="language-js">const state = ABCJS.eskinConfig.getFeatureState();
+console.log(state.irishRolls);
+console.log(state.strummedChords);
+console.log(state.informationVisibility);
+</code></pre>
+<p>This snapshot does not include note caches, reverb nodes, or playback objects.</p>
+<h2 id="demo-smoke-tests">Demo smoke tests</h2>
+<p>The demo smoke-test suite:</p>
+<ul>
+<li>Checks that every facade method exists.</li>
+<li>Checks that <code>version</code> is present.</li>
+<li>Calls every clear/reset method.</li>
+<li>Round-trips every setter/getter pair.</li>
+<li>Restores the original setting after each round-trip.</li>
+<li>Exercises notation, tablature, multi-tune display, and invalid-ABC handling.</li>
+</ul>
+<p>The tests are integration checks. Audible sound quality and browser audio output
+still require listening tests.</p>
+
+  </main>
+</body>
+</html>
