@@ -1,6 +1,6 @@
 # abcjs-eskin-portable
 
-Fork of abcjs with additional notation rendering and playback features based on those available with the ABC Transcription Tools.
+Fork of abcjs with additional notation rendering and playback features based on those available with my ABC Transcription Tools.
 
 ## Files
 
