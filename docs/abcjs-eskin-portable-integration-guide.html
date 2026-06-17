@@ -254,7 +254,7 @@ browser requirement that audio begin in response to a user gesture.</p>
   &lt;meta charset=&quot;utf-8&quot;&gt;
   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
 
-  &lt;title&gt;ABC tune display and playback&lt;/title&gt;
+  &lt;title&gt;Basic Tune Display and Playback&lt;/title&gt;
   &lt;link rel=&quot;stylesheet&quot; href=&quot;abcjs-eskin-audio.css&quot;&gt;
 
   &lt;style&gt;
@@ -263,6 +263,11 @@ browser requirement that audio begin in response to a user gesture.</p>
       margin: 30px auto;
       padding: 0 18px;
       font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      text-align:center;
     }
 
     #paper {
@@ -277,7 +282,7 @@ browser requirement that audio begin in response to a user gesture.</p>
   &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  &lt;h1&gt;ABC tune&lt;/h1&gt;
+  &lt;h1&gt;Basic Tune Display and Playback&lt;/h1&gt;
 
   &lt;div id=&quot;paper&quot;&gt;&lt;/div&gt;
   &lt;div id=&quot;audio-controls&quot;&gt;&lt;/div&gt;
@@ -452,6 +457,7 @@ SVG notation elements supplied in <code>event.elements</code>.</p>
     h1 {
       margin: 0 0 8px;
       font-size: clamp(1.5rem, 4vw, 2.25rem);
+      text-align:center;
     }
     p { margin: 0 0 20px; }
     
@@ -552,6 +558,155 @@ K: Edor
     console.error(&quot;Unable to prepare playback:&quot;, error);
     document.getElementById(&quot;audio&quot;).textContent =
       &quot;Audio could not be initialized in this browser.&quot;;
+  });
+})();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h3 id="complete-notation-and-mandolin-tablature-example">Complete notation and mandolin tablature example</h3>
+<p>The following standalone Cooley's example renders standard notation together
+with four-string mandolin tablature and provides playback with a red line
+cursor. The <code>tablature</code> render option uses violin-style string handling with
+mandolin tuning, while <code>tablatureOnly: false</code> keeps the standard notation
+visible above the tablature.</p>
+<pre><code class="language-html">&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;Cooley's — Notation + Mandolin Tablature&lt;/title&gt;
+  &lt;link rel="stylesheet" href="abcjs-eskin-audio.css"&gt;
+  &lt;style&gt;
+    :root { color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #222;
+    }
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      text-align:center;
+    }
+    p { margin: 0 0 20px; }
+    
+    body {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
+      font-family: Arial, sans-serif;
+    }
+
+    #paper {
+      margin-bottom: 12px;
+    }
+
+    /* The callback adds this class to the SVG elements that are sounding. */
+    .abcjs-playing-note {
+      fill: #d62828 !important;
+      stroke: #d62828 !important;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;main&gt;
+  &lt;h1&gt;Cooley's — Notation + Mandolin Tablature&lt;/h1&gt;
+  &lt;div id="paper"&gt;&lt;/div&gt;
+  &lt;div id="audio"&gt;&lt;/div&gt;
+&lt;/main&gt;
+
+&lt;script src="abcjs-eskin-chord-intervals.js"&gt;&lt;/script&gt;
+&lt;script src="abcjs-eskin-portable-min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+(function () {
+  "use strict";
+
+  const abc = String.raw`X: 1
+T: Cooley's
+C: Traditional
+R: Reel
+M: 4/4
+L: 1/8
+Q: 1/2=90
+K: Edor
+%%staffsep 80
+|:"Em"EBBA B2 EB|B2 AB dBAG|"D"F/E/D AD BDAD|F/E/D AD BAGF|
+"Em"EBBA B2 EB|B2 AB defg|"D"afge dBAF|1 DEFD "Em"E3D:|2 DEFD "Em"E2gf||
+|:"Em"eB (3BBB eBgf|eBB2 gedB|"D"A/A/A FA DAFA|A/A/A FA defg|
+"Em"eB (3BBB eBgf|eBBB defg|"D"afge dBAF|1 DEFD "Em"E2gf:|2 DEFD "Em"E4|]`;
+
+  const mandolinRenderParams = {
+    responsive: "resize",
+    expandToWidest: "true",
+    selectTypes: false,
+    tablatureOnly: false,
+    tablature: [{
+      instrument: "violin",
+      label: "Mandolin",
+      tuning: ["G,", "D", "A", "e"],
+      highestNote: "f'",
+      capo: 0
+    }]
+  };
+
+  const visualObj = ABCJS.renderAbc("paper", abc, mandolinRenderParams)[0];
+
+  const cursorControl = {
+    cursor: null,
+
+    onStart() {
+      const svg = document.querySelector("#paper svg");
+      if (!svg) return;
+
+      this.cursor = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+
+      this.cursor.setAttribute("stroke", "red");
+      this.cursor.setAttribute("stroke-width", "2");
+      svg.appendChild(this.cursor);
+    },
+
+    onEvent(event) {
+      if (!this.cursor || !event || event.left == null) return;
+
+      this.cursor.setAttribute("x1", event.left - 2);
+      this.cursor.setAttribute("x2", event.left - 2);
+      this.cursor.setAttribute("y1", event.top);
+      this.cursor.setAttribute("y2", event.top + event.height);
+    },
+
+    onFinished() {
+      if (!this.cursor) return;
+
+      this.cursor.setAttribute("x1", 0);
+      this.cursor.setAttribute("x2", 0);
+      this.cursor.setAttribute("y1", 0);
+      this.cursor.setAttribute("y2", 0);
+    }
+  };
+
+  const synthControl = new ABCJS.synth.SynthController(abc);
+
+  synthControl.load("#audio", cursorControl, {
+    displayLoop: true,
+    displayRestart: true,
+    displayPlay: true,
+    displayProgress: true,
+    displayWarp: true
+  });
+
+  synthControl.setTune(visualObj, false, {}).catch(function (error) {
+    console.error("Unable to prepare playback:", error);
+    document.getElementById("audio").textContent =
+      "Audio could not be initialized in this browser.";
   });
 })();
 &lt;/script&gt;
