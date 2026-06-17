@@ -84,8 +84,10 @@
       "L:1/8\n" +
       "Q:1/2=90\n" +
       "K:Edor\n" +
-      '|:"Em"EBBA B2 EB|B2 AB dBAG|\n' +
-      '"D"F/E/D AD BDAD|F/E/D AD BAGF|';
+      '|:"Em"EBBA B2 EB|B2 AB dBAG|"D"F/E/D AD BDAD|F/E/D AD BAGF|\n' +
+      '"Em"EBBA B2 EB|B2 AB defg|"D"afge dBAF|1 DEFD "Em"E3D:|2 DEFD "Em"E2gf||\n' +
+      '|:"Em"eB (3BBB eBgf|eBB2 gedB|"D"A/A/A FA DAFA|A/A/A FA defg|\n' +
+      '"Em"eB (3BBB eBgf|eBBB defg|"D"afge dBAF|1 DEFD "Em"E2gf:|2 DEFD "Em"E4|]';
 
     let controller = null;
 
@@ -110,7 +112,7 @@
 
     function applySettings() {
       ABCJS.eskinConfig.setSoundFontUrl(
-        "https://example.com/soundfonts/fatboy_4/"
+        "https://michaeleskin.com/abctools/soundfonts/fatboy_4/"
       );
 
       ABCJS.eskinConfig.setReverb({
