@@ -144,7 +144,7 @@ browser requirement that audio begin in response to a user gesture.
 
     function applySettings() {
       ABCJS.eskinConfig.setSoundFontUrl(
-        "https://example.com/soundfonts/fatboy_4/"
+        "https://michaeleskin.com/abctools/soundfonts/fatboy_4/"
       );
 
       ABCJS.eskinConfig.setReverb({
@@ -423,7 +423,7 @@ ignored.
 
 ```js
 ABCJS.eskinConfig.setSoundFontUrl(
-  "https://example.com/soundfonts/fatboy_4/"
+  "https://michaeleskin.com/abctools/soundfonts/fatboy_4/"
 );
 const url = ABCJS.eskinConfig.getSoundFontUrl();
 ```
