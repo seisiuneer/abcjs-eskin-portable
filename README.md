@@ -1,6 +1,6 @@
 # abcjs-eskin-portable
 
-Fork of abcjs with additional notation rendering and playback features based on those available with the ABC Transcription Tools 
+Fork of abcjs with additional notation rendering and playback features based on those available with the ABC Transcription Tools.
 
 ## Files
 
@@ -132,7 +132,7 @@ browser requirement that audio begin in response to a user gesture.
 
     const renderParams = {
       responsive: "resize",
-      expandToWidest: "true",
+      expandToWidest: true,
       selectTypes: false
     };
 
@@ -277,28 +277,22 @@ SVG notation elements supplied in `event.elements`.
   <style>
     :root { color-scheme: light; }
     body {
-      margin: 0;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #ffffff;
       color: #222;
     }
     main {
-      width: min(960px, calc(100% - 32px));
-      margin: 32px auto;
+      width: 100%;
     }
     h1 {
-      margin: 0 0 8px;
+      margin: 0 0 18px;
       font-size: clamp(1.5rem, 4vw, 2.25rem);
       text-align:center;
     }
     p { margin: 0 0 20px; }
-    
-    body {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 0 18px;
-      font-family: Arial, sans-serif;
-    }
 
     #paper {
       margin-bottom: 12px;
@@ -376,7 +370,7 @@ K: Edor
     onFinished: clearHighlights
   };
 
-  const synthControl = new ABCJS.synth.SynthController(abc);
+  const synthControl = new ABCJS.synth.SynthController();
 
   synthControl.load("#audio", cursorControl, {
     displayLoop: true,
@@ -416,14 +410,15 @@ visible above the tablature.
   <style>
     :root { color-scheme: light; }
     body {
-      margin: 0;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 18px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #ffffff;
       color: #222;
     }
     main {
-      width: min(960px, calc(100% - 32px));
-      margin: 32px auto;
+      width: 100%;
     }
     h1 {
       margin: 0 0 8px;
@@ -431,22 +426,13 @@ visible above the tablature.
       text-align:center;
     }
     p { margin: 0 0 20px; }
-    
-    body {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 0 18px;
-      font-family: Arial, sans-serif;
-    }
 
     #paper {
       margin-bottom: 12px;
     }
 
-    /* The callback adds this class to the SVG elements that are sounding. */
-    .abcjs-playing-note {
-      fill: #d62828 !important;
-      stroke: #d62828 !important;
+    #paper svg {
+      display: block;
     }
   </style>
 </head>
@@ -479,9 +465,10 @@ K: Edor
 
   const mandolinRenderParams = {
     responsive: "resize",
-    expandToWidest: "true",
+    expandToWidest: true,
     selectTypes: false,
     tablatureOnly: false,
+    paddingbottom: 16,
     tablature: [{
       instrument: "violin",
       label: "Mandolin",
@@ -529,7 +516,7 @@ K: Edor
     }
   };
 
-  const synthControl = new ABCJS.synth.SynthController(abc);
+  const synthControl = new ABCJS.synth.SynthController();
 
   synthControl.load("#audio", cursorControl, {
     displayLoop: true,
@@ -602,7 +589,7 @@ integration path.
 ```js
 const renderParams = {
   responsive: "resize",
-  expandToWidest: "true",
+  expandToWidest: true,
   selectTypes: false
 };
 
@@ -661,7 +648,7 @@ await controller.setTune(tunes[0], false, synthOptions);
 ```js
 const renderParams = {
   responsive: "resize",
-  expandToWidest: "true",
+  expandToWidest: true,
   selectTypes: false,
   tablature: [{
     instrument: "violin",
@@ -684,7 +671,7 @@ renderParams.tablatureOnly = true;
 ```js
 const renderParams = {
   responsive: "resize",
-  expandToWidest: "true",
+  expandToWidest: true,
   selectTypes: false,
   tablature: [{
     instrument: "guitar",
@@ -726,25 +713,27 @@ ABCJS.eskinConfig.setSoundFontUrl(
 const url = ABCJS.eskinConfig.getSoundFontUrl();
 ```
 
-#### Automatic per-tune `%soundfont` parsing
+#### Automatic per-tune `%soundfont` and `%abcjs_soundfont` parsing
 
-The portable library automatically recognizes a standalone directive inside an
-individual tune:
+The portable library automatically recognizes either of these standalone
+per-tune directives:
 
 ```abc
 %soundfont fatboy
 ```
 
-or:
-
 ```abc
-%soundfont arachno
+%abcjs_soundfont fatboy
 ```
+
+The older `%abcjs_soundfont` form is retained for compatibility and works
+exactly the same as `%soundfont`.
 
 Syntax:
 
 ```text
 %soundfont <soundfont_name>
+%abcjs_soundfont <soundfont_name>
 ```
 
 Supported names and sample URLs are:
@@ -767,8 +756,8 @@ its synth. The decoded-note cache is separated by soundfont URL, so independent
 players on the same page can safely use different soundfonts without reusing
 note buffers from another soundfont.
 
-After editing, adding, or removing `%soundfont`, rerender the tune and rebuild
-its controller and audio. Invalid names are ignored.
+After editing, adding, or removing `%soundfont` or `%abcjs_soundfont`, rerender
+the tune and rebuild its controller and audio. Invalid names are ignored.
 
 #### `clearNoteCache()`
 
@@ -921,6 +910,31 @@ await controller.setTune(tunes[0], false, synthOptions);
 
 Invalid or out-of-range `%swing` values are ignored and the host configuration
 remains the fallback.
+
+#### Automatic hornpipe swing
+
+When a tune has an `R:` field whose trimmed value is exactly `Hornpipe` or
+`hornpipe`, the portable library applies custom Eskin swing with a factor of
+`0.25` by default:
+
+```abc
+R:Hornpipe
+```
+
+This automatic hornpipe setting is per tune and is applied during audio
+preparation. An explicit valid `%swing` directive in the same tune overrides
+the automatic value, including `%swing 0`, which disables custom swing for that
+tune.
+
+The resulting precedence is:
+
+1. A valid `%swing <factor>` directive in the tune.
+2. Automatic `0.25` swing for a trimmed `R:Hornpipe` or `R:hornpipe` field.
+3. The host setting from `ABCJS.eskinConfig.setSwing()`.
+4. No custom swing.
+
+After editing the `R:` field or adding, changing, or removing `%swing`, rerender
+the tune and rebuild its controller and audio.
 
 #### Automatic per-tune `%swing_offset` parsing
 
@@ -1405,16 +1419,3 @@ console.log(state.informationVisibility);
 
 This snapshot does not include note caches, reverb nodes, or playback objects.
 
-## Demo smoke tests
-
-The demo smoke-test suite:
-
-- Checks that every facade method exists.
-- Checks that `version` is present.
-- Calls every clear/reset method.
-- Round-trips every setter/getter pair.
-- Restores the original setting after each round-trip.
-- Exercises notation, tablature, multi-tune display, and invalid-ABC handling.
-
-The tests are integration checks. Audible sound quality and browser audio output
-still require listening tests.
