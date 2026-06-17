@@ -1,0 +1,2609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>abc-eskin-portable Standalone Website Builder</title>
+
+  <script src="daypilot-modal.min-3.10.1.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ee;
+      --panel: #ffffff;
+      --ink: #17241c;
+      --muted: #607066;
+      --green: #176b43;
+      --green-dark: #0d4c2f;
+      --line: #c9d5cc;
+      --accent: #e2ad3b;
+      --shadow: 0 12px 30px rgba(18, 43, 28, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(23, 107, 67, .10), transparent 32rem),
+        linear-gradient(180deg, #f5f7f5, var(--bg));
+      font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    select {
+      min-height: 40px;
+      padding-top: 7px;
+      padding-bottom: 7px;
+    }
+
+    /*
+      Compact DayPilot settings form. The selectors include the common
+      DayPilot modal themes plus structural fallbacks so the form remains
+      usable if a different DayPilot theme is applied.
+    */
+    .modal_default_form_item,
+    .modal_flat_form_item,
+    .modal_default_form_field,
+    .modal_flat_form_field {
+      margin-top: 0 !important;
+      margin-bottom: 7px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    .modal_default_form_item_label,
+    .modal_flat_form_item_label,
+    .modal_default_form_label,
+    .modal_flat_form_label {
+      margin-bottom: 3px !important;
+      line-height: 1.2 !important;
+    }
+
+    .modal_default_form_item input,
+    .modal_default_form_item select,
+    .modal_default_form_item textarea,
+    .modal_flat_form_item input,
+    .modal_flat_form_item select,
+    .modal_flat_form_item textarea {
+      margin: 0 !important;
+    }
+
+    .modal_default_form_item input[type="checkbox"],
+    .modal_flat_form_item input[type="checkbox"] {
+      margin-right: 8px !important;
+    }
+
+    .modal_default_content,
+    .modal_flat_content {
+      overflow: hidden !important;
+    }
+
+    .website-settings-tabs {
+      margin: 0 0 8px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .website-settings-tab-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 8px 8px 0;
+      background: #eaf1ec;
+      border: 1px solid #c9d5cc;
+      border-bottom: 0;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .website-settings-tab-button {
+      appearance: none;
+      min-height: 43px;
+      padding: 9px 12px;
+      border: 1px solid #afc2b4;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+      color: #244d35;
+      background: #dce9df;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .website-settings-tab-button:hover,
+    .website-settings-tab-button:focus-visible {
+      background: #edf5ef;
+      outline: none;
+    }
+
+    .website-settings-tab-button.active {
+      color: #fff;
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .website-settings-tab-button.reset-tab {
+      color: #7a2222;
+      background: #f3dddd;
+      border-color: #d5aaaa;
+    }
+
+    .website-settings-tab-button.reset-tab:hover,
+    .website-settings-tab-button.reset-tab:focus-visible {
+      color: #651919;
+      background: #f9e9e9;
+    }
+
+    .website-settings-tab-button.reset-tab.active {
+      color: #fff;
+      background: #9b2f2f;
+      border-color: #7e2424;
+    }
+
+    .website-settings-reset-panel {
+      min-height: 500px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .website-settings-reset-card {
+      width: min(620px, 100%);
+      padding: 34px 28px;
+      background: #fff;
+      border: 1px solid #dfc4c4;
+      border-radius: 10px;
+      box-shadow: 0 4px 18px rgba(90, 25, 25, .08);
+    }
+
+    .website-settings-reset-card h3 {
+      margin: 0 0 12px;
+      color: #762424;
+      font-size: 1.45rem;
+    }
+
+    .website-settings-reset-card p {
+      max-width: 52ch;
+      margin: 0 auto 22px;
+      color: #675454;
+    }
+
+    .website-settings-reset-action {
+      appearance: none;
+      min-width: 190px;
+      padding: 11px 20px;
+      color: #fff;
+      background: #9b2f2f;
+      border: 1px solid #7e2424;
+      border-radius: 6px;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .website-settings-reset-action:hover,
+    .website-settings-reset-action:focus-visible {
+      background: #7e2424;
+      outline: none;
+    }
+
+    .website-settings-tab-panels {
+      height: min(660px, calc(100vh - 220px));
+      min-height: 330px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      padding: 12px;
+      background: #f6f8f6;
+      border: 1px solid #c9d5cc;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .website-settings-tab-panel {
+      display: none;
+    }
+
+    .website-settings-tab-panel.active {
+      display: block;
+    }
+
+    .website-settings-fields-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 16px;
+      align-items: start;
+    }
+
+    .website-settings-tab-panel .modal_default_form_item,
+    .website-settings-tab-panel .modal_flat_form_item,
+    .website-settings-tab-panel .modal_default_form_field,
+    .website-settings-tab-panel .modal_flat_form_field {
+      min-width: 0;
+      margin: 0 !important;
+      padding: 10px 11px !important;
+      background: #fff;
+      border: 1px solid #d8e2da;
+      border-radius: 8px;
+    }
+
+    .website-settings-tab-panel input[type="text"],
+    .website-settings-tab-panel input[type="number"],
+    .website-settings-tab-panel textarea,
+    .website-settings-tab-panel select {
+      width: 100% !important;
+      min-height: 39px;
+      margin: 0 !important;
+      padding: 7px 9px !important;
+      border: 1px solid #b6c5ba;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .website-settings-tab-panel textarea {
+      min-height: 54px;
+      resize: vertical;
+    }
+
+    .website-settings-tab-panel input[type="checkbox"] {
+      margin-right: 9px !important;
+    }
+
+    .website-settings-tab-panel .modal_default_form_item_label,
+    .website-settings-tab-panel .modal_flat_form_item_label,
+    .website-settings-tab-panel .modal_default_form_label,
+    .website-settings-tab-panel .modal_flat_form_label {
+      margin-bottom: 4px !important;
+      color: #294534;
+      line-height: 1.2 !important;
+      font-weight: 700;
+    }
+
+
+    .website-settings-playback-layout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 16px;
+      align-items: start;
+    }
+
+    .website-settings-playback-full {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 760px) {
+      .website-settings-tab-bar {
+        grid-template-columns: 1fr;
+        padding-bottom: 8px;
+      }
+
+      .website-settings-tab-button {
+        border-bottom: 1px solid #afc2b4;
+        border-radius: 7px;
+      }
+
+      .website-settings-fields-grid,
+      .website-settings-playback-layout {
+        display: block;
+      }
+
+      .website-settings-tab-panel .modal_default_form_item,
+      .website-settings-tab-panel .modal_flat_form_item,
+      .website-settings-tab-panel .modal_default_form_field,
+      .website-settings-tab-panel .modal_flat_form_field {
+        margin-bottom: 9px !important;
+      }
+
+      .website-settings-tab-panels {
+        height: calc(100vh - 270px);
+      }
+    }
+
+
+    /* Center the Website Settings modal buttons with a wider gap. */
+    .modal_default_buttons,
+    .modal_flat_buttons,
+    .modal_default_form_buttons,
+    .modal_flat_form_buttons {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 18px !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      text-align: center !important;
+    }
+
+    .modal_default_buttons input,
+    .modal_default_buttons button,
+    .modal_flat_buttons input,
+    .modal_flat_buttons button,
+    .modal_default_form_buttons input,
+    .modal_default_form_buttons button,
+    .modal_flat_form_buttons input,
+    .modal_flat_form_buttons button {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    .website-settings-reset-button {
+      color: #fff !important;
+      background: #8f2f2f !important;
+      border: 1px solid #742424 !important;
+      border-radius: 4px !important;
+      padding: 7px 14px !important;
+      cursor: pointer !important;
+    }
+
+    .website-settings-reset-button:hover,
+    .website-settings-reset-button:focus-visible {
+      background: #742424 !important;
+      outline: none !important;
+    }
+
+    .app-header {
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(11, 55, 34, .97), rgba(23, 107, 67, .96)),
+        repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.025) 12px 24px);
+      border-bottom: 5px solid var(--accent);
+      padding: 34px 20px 30px;
+      text-align: center;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .app-header p {
+      max-width: 760px;
+      margin: 12px auto 0;
+      color: #dcebe2;
+    }
+
+    .app {
+      width: min(1120px, calc(100% - 28px));
+      margin: 28px auto 50px;
+    }
+
+    .toolbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .toolbar .instructions-button {
+      margin-left: auto;
+    }
+
+    .instructions-modal-content {
+      color: #17241c;
+      font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: left;
+    }
+
+    .instructions-modal-content > h2 {
+      margin: 0 0 14px;
+      color: #0d4c2f;
+      font-size: 1.7rem;
+      text-align: center;
+    }
+
+    .instructions-scroll-area {
+      max-height: min(650px, calc(100vh - 230px));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      padding: 4px 18px 12px 4px;
+    }
+
+    .instructions-scroll-area h3 {
+      margin: 22px 0 7px;
+      color: #176b43;
+      font-size: 1.15rem;
+    }
+
+    .instructions-scroll-area h3:first-child {
+      margin-top: 0;
+    }
+
+    .instructions-scroll-area p {
+      margin: 7px 0 12px;
+    }
+
+    .instructions-scroll-area ul,
+    .instructions-scroll-area ol {
+      margin: 7px 0 14px;
+      padding-left: 1.45rem;
+    }
+
+    .instructions-scroll-area li {
+      margin: 5px 0;
+    }
+
+    .instructions-scroll-area code {
+      white-space: nowrap;
+    }
+
+    .instructions-note {
+      margin: 12px 0;
+      padding: 10px 12px;
+      background: #edf5ef;
+      border-left: 4px solid #176b43;
+      border-radius: 4px;
+    }
+
+    .instructions-warning {
+      margin: 12px 0;
+      padding: 10px 12px;
+      background: #fff5df;
+      border-left: 4px solid #d39421;
+      border-radius: 4px;
+    }
+
+    .button {
+      appearance: none;
+      border: 0;
+      border-radius: 6px;
+      padding: 11px 16px;
+      color: #fff;
+      background: var(--green);
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 2px 0 rgba(0,0,0,.14);
+    }
+
+    .button:hover, .button:focus-visible { background: var(--green-dark); }
+    .button.secondary { color: var(--green-dark); background: #e4efe8; border: 1px solid #a9c2b1; }
+    .button.danger { background: #8f2f2f; }
+    .button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+    input[type=file] { display: none; }
+
+    .panel {
+      margin-top: 18px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .panel h2 { margin: 0 0 8px; font-size: 1.35rem; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .summary-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8faf8;
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 1.35rem;
+      color: var(--green-dark);
+    }
+
+    #loaded-details h3 {
+      margin: 14px 0 6px;
+    }
+
+    #loaded-details h3:first-child {
+      margin-top: 0;
+    }
+
+    .file-list, .tune-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border: 1px solid #e3e9e4;
+      border-radius: 8px;
+      scrollbar-gutter: stable;
+    }
+
+    .file-list {
+      max-height: 170px;
+    }
+
+    .tune-list {
+      max-height: 430px;
+    }
+
+    .file-list li, .tune-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 12px;
+      border-top: 1px solid #e3e9e4;
+    }
+
+    .file-list li:first-child, .tune-list li:first-child { border-top: 0; }
+
+    .tag {
+      display: inline-block;
+      min-width: 2.2em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--green);
+      font-size: .78rem;
+      text-align: center;
+    }
+
+    .empty {
+      padding: 28px;
+      color: var(--muted);
+      border: 2px dashed #cdd8d0;
+      border-radius: 8px;
+      text-align: center;
+      background: #fafcfb;
+    }
+
+    .settings-preview {
+      margin-top: 16px;
+      padding: 14px;
+      color: #263a2d;
+      background: #edf5ef;
+      border-left: 5px solid var(--green);
+    }
+
+    .status {
+      min-height: 1.4em;
+      margin: 15px 0 0;
+      color: var(--muted);
+    }
+
+    .status.error { color: #9d1c1c; font-weight: 700; }
+
+    .help {
+      color: var(--muted);
+      font-size: .93rem;
+    }
+
+    code {
+      padding: .12em .32em;
+      border-radius: 4px;
+      background: #eef2ef;
+    }
+
+    @media (max-width: 760px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .toolbar { display: grid; }
+      .toolbar .instructions-button { margin-left: 0; }
+      .button { width: 100%; }
+      .instructions-scroll-area {
+        max-height: calc(100vh - 210px);
+        padding-right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <h1>abc-eskin-portable Website Builder</h1>
+    <p>
+      Open one or more ABC files, choose a visual style and notation format,
+      then export a complete multi-tune website with embedded ABC, playback,
+      configurable cursor tracking, autoscroll, and table-of-contents navigation using abc-eskin-portable.
+    </p>
+  </header>
+
+  <main class="app">
+    <div class="toolbar">
+      <label class="button" for="abc-files">Open ABC Files</label>
+      <input id="abc-files" type="file" accept=".abc,.txt,text/plain" multiple>
+      <button id="settings-button" class="button secondary" type="button">Website Settings</button>
+      <button id="save-button" class="button" type="button" disabled>Build and Save Website</button>
+      <button id="clear-button" class="button danger" type="button" disabled>Clear</button>
+      <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
+    </div>
+
+    <section class="panel">
+      <h2>Loaded Tunes</h2>
+      <p class="help">
+        Each <code>X:</code> record becomes an independent tune with its own
+        player. The original ABC text is stored directly in the exported HTML.
+      </p>
+
+      <div class="summary">
+        <div class="summary-card"><strong id="file-count">0</strong>files</div>
+        <div class="summary-card"><strong id="tune-count">0</strong>tunes</div>
+        <div class="summary-card"><strong id="theme-summary">Traditional Irish Music</strong>style</div>
+        <div class="summary-card"><strong id="display-summary">Notation</strong>display</div>
+      </div>
+
+      <div id="empty-message" class="empty">No ABC files have been opened.</div>
+
+      <div id="loaded-details" hidden>
+        <h3>Files</h3>
+        <ul id="file-list" class="file-list"></ul>
+
+        <h3>Tunes</h3>
+        <ol id="tune-list" class="tune-list"></ol>
+      </div>
+
+      <div id="settings-preview" class="settings-preview"></div>
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+<script>
+(() => {
+  "use strict";
+
+  const THEME_OPTIONS = [
+    { id: "irish", name: "Traditional Irish Music" },
+    { id: "scottish", name: "Traditional Scottish Music" },
+    { id: "retro60", name: "Modern 60s Retro" },
+    { id: "classical", name: "Classical Music Cabinet" },
+    { id: "jazz", name: "Jazz Club" },
+    { id: "contemporary", name: "Contemporary Minimal" },
+    { id: "world", name: "World Music" },
+    { id: "country", name: "Country" },
+    { id: "bluegrass", name: "Bluegrass" },
+    { id: "oldtime", name: "Old-Time" },
+    { id: "folk", name: "Folk / Acoustic" },
+    { id: "blues", name: "Blues" },
+    { id: "rock", name: "Rock" },
+    { id: "pop", name: "Pop" },
+    { id: "filmnoir", name: "Film Noir / Spy" },
+    { id: "electronic", name: "Electronic / Synthwave" }
+  ];
+
+  const DISPLAY_OPTIONS = [
+    { id: "notation", name: "Standard notation" },
+    { id: "mandolinNotation", name: "Mandolin tablature with notation" },
+    { id: "guitarNotation", name: "Guitar tablature with notation" },
+    { id: "mandolinOnly", name: "Standalone mandolin tablature" },
+    { id: "guitarOnly", name: "Standalone guitar tablature" }
+  ];
+
+  const CURSOR_COLOR_OPTIONS = [
+    { id: "red", name: "Red" },
+    { id: "blue", name: "Blue" },
+    { id: "green", name: "Green" }
+  ];
+
+
+  const SOUNDFONT_OPTIONS = [
+  {
+    "id": "fluid",
+    "name": "Fluid"
+  },
+  {
+    "id": "musyng",
+    "name": "Musyng Kite"
+  },
+  {
+    "id": "fatboy",
+    "name": "FatBoy"
+  },
+  {
+    "id": "canvas",
+    "name": "Canvas"
+  },
+  {
+    "id": "mscore",
+    "name": "MScore"
+  },
+  {
+    "id": "arachno",
+    "name": "Arachno"
+  },
+  {
+    "id": "fluidhq",
+    "name": "FluidHQ"
+  }
+];
+
+  const GM_INSTRUMENT_OPTIONS = [
+  {
+    "id": "mute",
+    "name": "Mute"
+  },
+  {
+    "id": "0",
+    "name": "Acoustic Grand Piano"
+  },
+  {
+    "id": "1",
+    "name": "Bright Acoustic Piano"
+  },
+  {
+    "id": "2",
+    "name": "Electric Grand Piano"
+  },
+  {
+    "id": "3",
+    "name": "Honky-tonk Piano"
+  },
+  {
+    "id": "4",
+    "name": "Electric Piano 1"
+  },
+  {
+    "id": "5",
+    "name": "Electric Piano 2"
+  },
+  {
+    "id": "6",
+    "name": "Harpsichord"
+  },
+  {
+    "id": "7",
+    "name": "Clavi"
+  },
+  {
+    "id": "8",
+    "name": "Celesta"
+  },
+  {
+    "id": "9",
+    "name": "Glockenspiel"
+  },
+  {
+    "id": "10",
+    "name": "Music Box"
+  },
+  {
+    "id": "11",
+    "name": "Vibraphone"
+  },
+  {
+    "id": "12",
+    "name": "Marimba"
+  },
+  {
+    "id": "13",
+    "name": "Xylophone"
+  },
+  {
+    "id": "14",
+    "name": "Tubular Bells"
+  },
+  {
+    "id": "15",
+    "name": "Dulcimer"
+  },
+  {
+    "id": "16",
+    "name": "Drawbar Organ"
+  },
+  {
+    "id": "17",
+    "name": "Percussive Organ"
+  },
+  {
+    "id": "18",
+    "name": "Rock Organ"
+  },
+  {
+    "id": "19",
+    "name": "Church Organ"
+  },
+  {
+    "id": "20",
+    "name": "Reed Organ"
+  },
+  {
+    "id": "21",
+    "name": "Accordion"
+  },
+  {
+    "id": "22",
+    "name": "Harmonica"
+  },
+  {
+    "id": "23",
+    "name": "Tango Accordion"
+  },
+  {
+    "id": "24",
+    "name": "Acoustic Guitar (nylon)"
+  },
+  {
+    "id": "25",
+    "name": "Acoustic Guitar (steel)"
+  },
+  {
+    "id": "26",
+    "name": "Electric Guitar (jazz)"
+  },
+  {
+    "id": "27",
+    "name": "Electric Guitar (clean)"
+  },
+  {
+    "id": "28",
+    "name": "Electric Guitar (muted)"
+  },
+  {
+    "id": "29",
+    "name": "Overdriven Guitar"
+  },
+  {
+    "id": "30",
+    "name": "Distortion Guitar"
+  },
+  {
+    "id": "31",
+    "name": "Guitar Harmonics"
+  },
+  {
+    "id": "32",
+    "name": "Acoustic Bass"
+  },
+  {
+    "id": "33",
+    "name": "Electric Bass (finger)"
+  },
+  {
+    "id": "34",
+    "name": "Electric Bass (pick)"
+  },
+  {
+    "id": "35",
+    "name": "Fretless Bass"
+  },
+  {
+    "id": "36",
+    "name": "Slap Bass 1"
+  },
+  {
+    "id": "37",
+    "name": "Slap Bass 2"
+  },
+  {
+    "id": "38",
+    "name": "Synth Bass 1"
+  },
+  {
+    "id": "39",
+    "name": "Synth Bass 2"
+  },
+  {
+    "id": "40",
+    "name": "Violin"
+  },
+  {
+    "id": "41",
+    "name": "Viola"
+  },
+  {
+    "id": "42",
+    "name": "Cello"
+  },
+  {
+    "id": "43",
+    "name": "Contrabass"
+  },
+  {
+    "id": "44",
+    "name": "Tremolo Strings"
+  },
+  {
+    "id": "45",
+    "name": "Pizzicato Strings"
+  },
+  {
+    "id": "46",
+    "name": "Orchestral Harp"
+  },
+  {
+    "id": "47",
+    "name": "Timpani"
+  },
+  {
+    "id": "48",
+    "name": "String Ensemble 1"
+  },
+  {
+    "id": "49",
+    "name": "String Ensemble 2"
+  },
+  {
+    "id": "50",
+    "name": "SynthStrings 1"
+  },
+  {
+    "id": "51",
+    "name": "SynthStrings 2"
+  },
+  {
+    "id": "52",
+    "name": "Choir Aahs"
+  },
+  {
+    "id": "53",
+    "name": "Voice Oohs"
+  },
+  {
+    "id": "54",
+    "name": "Synth Voice"
+  },
+  {
+    "id": "55",
+    "name": "Orchestra Hit"
+  },
+  {
+    "id": "56",
+    "name": "Trumpet"
+  },
+  {
+    "id": "57",
+    "name": "Trombone"
+  },
+  {
+    "id": "58",
+    "name": "Tuba"
+  },
+  {
+    "id": "59",
+    "name": "Muted Trumpet"
+  },
+  {
+    "id": "60",
+    "name": "French Horn"
+  },
+  {
+    "id": "61",
+    "name": "Brass Section"
+  },
+  {
+    "id": "62",
+    "name": "SynthBrass 1"
+  },
+  {
+    "id": "63",
+    "name": "SynthBrass 2"
+  },
+  {
+    "id": "64",
+    "name": "Soprano Sax"
+  },
+  {
+    "id": "65",
+    "name": "Alto Sax"
+  },
+  {
+    "id": "66",
+    "name": "Tenor Sax"
+  },
+  {
+    "id": "67",
+    "name": "Baritone Sax"
+  },
+  {
+    "id": "68",
+    "name": "Oboe"
+  },
+  {
+    "id": "69",
+    "name": "English Horn"
+  },
+  {
+    "id": "70",
+    "name": "Bassoon"
+  },
+  {
+    "id": "71",
+    "name": "Clarinet"
+  },
+  {
+    "id": "72",
+    "name": "Piccolo"
+  },
+  {
+    "id": "73",
+    "name": "Flute"
+  },
+  {
+    "id": "74",
+    "name": "Recorder"
+  },
+  {
+    "id": "75",
+    "name": "Pan Flute"
+  },
+  {
+    "id": "76",
+    "name": "Blown Bottle"
+  },
+  {
+    "id": "77",
+    "name": "Shakuhachi"
+  },
+  {
+    "id": "78",
+    "name": "Tin Whistle"
+  },
+  {
+    "id": "79",
+    "name": "Ocarina"
+  },
+  {
+    "id": "80",
+    "name": "Lead 1 (square)"
+  },
+  {
+    "id": "81",
+    "name": "Lead 2 (sawtooth)"
+  },
+  {
+    "id": "82",
+    "name": "Lead 3 (calliope)"
+  },
+  {
+    "id": "83",
+    "name": "Lead 4 (chiff)"
+  },
+  {
+    "id": "84",
+    "name": "Lead 5 (charang)"
+  },
+  {
+    "id": "85",
+    "name": "Lead 6 (voice)"
+  },
+  {
+    "id": "86",
+    "name": "Lead 7 (fifths)"
+  },
+  {
+    "id": "87",
+    "name": "Lead 8 (bass + lead)"
+  },
+  {
+    "id": "88",
+    "name": "Pad 1 (new age)"
+  },
+  {
+    "id": "89",
+    "name": "Pad 2 (warm)"
+  },
+  {
+    "id": "90",
+    "name": "Pad 3 (polysynth)"
+  },
+  {
+    "id": "91",
+    "name": "Pad 4 (choir)"
+  },
+  {
+    "id": "92",
+    "name": "Pad 5 (bowed)"
+  },
+  {
+    "id": "93",
+    "name": "Pad 6 (metallic)"
+  },
+  {
+    "id": "94",
+    "name": "Pad 7 (halo)"
+  },
+  {
+    "id": "95",
+    "name": "Pad 8 (sweep)"
+  },
+  {
+    "id": "96",
+    "name": "FX 1 (rain)"
+  },
+  {
+    "id": "97",
+    "name": "FX 2 (soundtrack)"
+  },
+  {
+    "id": "98",
+    "name": "FX 3 (crystal)"
+  },
+  {
+    "id": "99",
+    "name": "FX 4 (atmosphere)"
+  },
+  {
+    "id": "100",
+    "name": "FX 5 (brightness)"
+  },
+  {
+    "id": "101",
+    "name": "FX 6 (goblins)"
+  },
+  {
+    "id": "102",
+    "name": "FX 7 (echoes)"
+  },
+  {
+    "id": "103",
+    "name": "FX 8 (sci-fi)"
+  },
+  {
+    "id": "104",
+    "name": "Sitar"
+  },
+  {
+    "id": "105",
+    "name": "Banjo"
+  },
+  {
+    "id": "106",
+    "name": "Shamisen"
+  },
+  {
+    "id": "107",
+    "name": "Koto"
+  },
+  {
+    "id": "108",
+    "name": "Kalimba"
+  },
+  {
+    "id": "109",
+    "name": "Bagpipe"
+  },
+  {
+    "id": "110",
+    "name": "Fiddle"
+  },
+  {
+    "id": "111",
+    "name": "Shanai"
+  },
+  {
+    "id": "112",
+    "name": "Tinkle Bell"
+  },
+  {
+    "id": "113",
+    "name": "Agogo"
+  },
+  {
+    "id": "114",
+    "name": "Steel Drums"
+  },
+  {
+    "id": "115",
+    "name": "Woodblock"
+  },
+  {
+    "id": "116",
+    "name": "Taiko Drum"
+  },
+  {
+    "id": "117",
+    "name": "Bodhran"
+  },
+  {
+    "id": "118",
+    "name": "Synth Drum"
+  },
+  {
+    "id": "119",
+    "name": "Reverse Cymbal"
+  },
+  {
+    "id": "120",
+    "name": "Guitar Fret Noise"
+  },
+  {
+    "id": "121",
+    "name": "Breath Noise"
+  },
+  {
+    "id": "122",
+    "name": "Seashore"
+  },
+  {
+    "id": "123",
+    "name": "Bird Tweet"
+  },
+  {
+    "id": "124",
+    "name": "Telephone Ring"
+  },
+  {
+    "id": "125",
+    "name": "Helicopter"
+  },
+  {
+    "id": "126",
+    "name": "Applause"
+  },
+  {
+    "id": "127",
+    "name": "Gunshot"
+  },
+  {
+    "id": "128",
+    "name": "abcjs Percussion"
+  },
+  {
+    "id": "129",
+    "name": "Uilleann Pipes"
+  },
+  {
+    "id": "130",
+    "name": "Smallpipes (D)"
+  },
+  {
+    "id": "131",
+    "name": "Smallpipes (A)"
+  },
+  {
+    "id": "132",
+    "name": "Säckpipa"
+  },
+  {
+    "id": "133",
+    "name": "Concertina"
+  },
+  {
+    "id": "134",
+    "name": "Melodica"
+  },
+  {
+    "id": "135",
+    "name": "Cajun Accordion"
+  },
+  {
+    "id": "136",
+    "name": "Solfège"
+  },
+  {
+    "id": "137",
+    "name": "Chorused Guitar (nylon)"
+  },
+  {
+    "id": "138",
+    "name": "Chorused Guitar (steel)"
+  },
+  {
+    "id": "139",
+    "name": "Irish Bouzouki"
+  },
+  {
+    "id": "140",
+    "name": "Irish Bouzouki 2"
+  },
+  {
+    "id": "141",
+    "name": "Mandolin"
+  },
+  {
+    "id": "142",
+    "name": "Marching Drums"
+  },
+  {
+    "id": "143",
+    "name": "Border Pipes"
+  },
+  {
+    "id": "144",
+    "name": "Soprano Recorder"
+  },
+  {
+    "id": "145",
+    "name": "Alto Recorder"
+  },
+  {
+    "id": "146",
+    "name": "Tenor Recorder"
+  },
+  {
+    "id": "147",
+    "name": "Bass Recorder"
+  },
+  {
+    "id": "148",
+    "name": "Mountain Dulcimer (Solo)"
+  },
+  {
+    "id": "149",
+    "name": "Mountain Dulcimer (DAD)"
+  }
+];
+
+  const VOLUME_OPTIONS = Array.from({ length: 128 }, (_, value) => ({
+    id: String(value),
+    name: String(value)
+  }));
+
+  const SETTINGS_STORAGE_KEY = "abcStandaloneWebsiteBuilderSettings";
+
+  const DEFAULT_SETTINGS = {
+    title: "Title",
+    subtitle: "Subtitle",
+    footer: "Footer",
+    includeTuneHeading: false,
+    includeCollectionIntro: false,
+    collectionIntro: "This is text before the tunes",
+    includeTuneTextBefore: false,
+    tuneTextBefore: "This is text before the tune.",
+    includeTuneTextAfter: false,
+    tuneTextAfter: "This is text after the tune",
+    theme: "irish",
+    displayMode: "notation",
+    cursorColor: "red",
+    injectSoundSettings: true,
+    soundfont: "fatboy",
+    melodyProgram: "0",
+    bassProgram: "0",
+    bassVolume: "64",
+    chordProgram: "0",
+    chordVolume: "64",
+    playerPosition: "below",
+    notationWidth: "100",
+    bodyWidth: "1180"
+  };
+
+  function loadSavedSettings() {
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!saved) return { ...DEFAULT_SETTINGS };
+
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return { ...DEFAULT_SETTINGS };
+      }
+
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    } catch (error) {
+      console.warn("Unable to restore website settings from localStorage.", error);
+      return { ...DEFAULT_SETTINGS };
+    }
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify(state.settings)
+      );
+    } catch (error) {
+      console.warn("Unable to save website settings to localStorage.", error);
+    }
+  }
+
+  const state = {
+    files: [],
+    tunes: [],
+    settings: loadSavedSettings()
+  };
+
+  const fileInput = document.getElementById("abc-files");
+  const settingsButton = document.getElementById("settings-button");
+  const saveButton = document.getElementById("save-button");
+  const clearButton = document.getElementById("clear-button");
+  const instructionsButton = document.getElementById("instructions-button");
+  const status = document.getElementById("status");
+
+  function setStatus(message, error = false) {
+    status.textContent = message;
+    status.classList.toggle("error", error);
+  }
+
+  function optionName(options, id) {
+    return (options.find(item => item.id === id) || {}).name || id;
+  }
+
+  function slugify(text, fallback = "tune") {
+    const value = String(text || "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
+    return value || fallback;
+  }
+
+  function extractField(abc, field) {
+    const match = abc.match(new RegExp("^" + field + "\\s*:\\s*(.+)$", "mi"));
+    return match ? match[1].trim() : "";
+  }
+
+  function splitAbcRecords(text, filename) {
+    const normalized = String(text || "").replace(/\r\n?/g, "\n");
+    const starts = [];
+    const regex = /^X\s*:/gm;
+    let match;
+    while ((match = regex.exec(normalized))) starts.push(match.index);
+
+    if (!starts.length) {
+      throw new Error(`${filename} does not contain an X: tune record.`);
+    }
+
+    const prefix = normalized.slice(0, starts[0]).trim();
+    const records = starts.map((start, index) => {
+      const end = index + 1 < starts.length ? starts[index + 1] : normalized.length;
+      let abc = normalized.slice(start, end).trim();
+      if (index === 0 && prefix) abc = prefix + "\n" + abc;
+      return abc;
+    });
+
+    return records;
+  }
+
+  async function readFiles(fileList) {
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+
+    setStatus("Reading ABC files…");
+
+    const newFiles = [];
+    const newTunes = [];
+
+    for (const file of incoming) {
+      const text = await file.text();
+      const records = splitAbcRecords(text, file.name);
+      newFiles.push({ name: file.name, size: file.size, count: records.length });
+
+      records.forEach((abc, recordIndex) => {
+        const title = extractField(abc, "T") || `${file.name} — Tune ${recordIndex + 1}`;
+        const composer = extractField(abc, "C");
+        const rhythm = extractField(abc, "R");
+        newTunes.push({
+          title,
+          composer,
+          rhythm,
+          sourceName: file.name,
+          abc
+        });
+      });
+    }
+
+    state.files.push(...newFiles);
+    state.tunes.push(...newTunes);
+    renderState();
+    setStatus(`Loaded ${newTunes.length} tune${newTunes.length === 1 ? "" : "s"}.`);
+  }
+
+  function renderState() {
+    const fileList = document.getElementById("file-list");
+    const tuneList = document.getElementById("tune-list");
+    fileList.replaceChildren();
+    tuneList.replaceChildren();
+
+    state.files.forEach(file => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${escapeHtml(file.name)}</span><span class="tag">${file.count}</span>`;
+      fileList.appendChild(li);
+    });
+
+    state.tunes.forEach((tune, index) => {
+      const li = document.createElement("li");
+      const detail = [tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
+      li.innerHTML =
+        `<span><strong>${index + 1}. ${escapeHtml(tune.title)}</strong>` +
+        (detail ? `<br><small>${escapeHtml(detail)}</small>` : "") +
+        `</span><span class="tag">X</span>`;
+      tuneList.appendChild(li);
+    });
+
+    document.getElementById("file-count").textContent = state.files.length;
+    document.getElementById("tune-count").textContent = state.tunes.length;
+    document.getElementById("theme-summary").textContent = optionName(THEME_OPTIONS, state.settings.theme);
+    document.getElementById("display-summary").textContent = optionName(DISPLAY_OPTIONS, state.settings.displayMode);
+
+    const hasTunes = state.tunes.length > 0;
+    document.getElementById("empty-message").hidden = hasTunes;
+    document.getElementById("loaded-details").hidden = !hasTunes;
+    saveButton.disabled = !hasTunes;
+    clearButton.disabled = !hasTunes;
+
+    document.getElementById("settings-preview").innerHTML =
+      `<strong>${escapeHtml(state.settings.title)}</strong><br>` +
+      `${escapeHtml(optionName(THEME_OPTIONS, state.settings.theme))} · ` +
+      `${escapeHtml(optionName(DISPLAY_OPTIONS, state.settings.displayMode))} · ` +
+      `${escapeHtml(optionName(CURSOR_COLOR_OPTIONS, state.settings.cursorColor))} play cursor · ` +
+      `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
+      `Player ${state.settings.playerPosition} notation · ` +
+      `Notation ${state.settings.notationWidth}% of page body · ` +
+      `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
+      `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"} · ` +
+      `${state.settings.includeTuneTextBefore ? "Text before each tune" : "No text before each tune"} · ` +
+      `${state.settings.includeTuneTextAfter ? "Text after tunes" : "No text after tunes"}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function activateWebsiteSettingsTab(tabId) {
+    const root = document.getElementById("website-settings-tabs-root");
+    if (!root) return;
+
+    root.querySelectorAll(".website-settings-tab-button").forEach(button => {
+      const active = button.dataset.tab === tabId;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+
+    root.querySelectorAll(".website-settings-tab-panel").forEach(panel => {
+      panel.classList.toggle("active", panel.id === tabId);
+    });
+
+    const panels = root.querySelector(".website-settings-tab-panels");
+    if (panels) panels.scrollTop = 0;
+  }
+
+  function initializeWebsiteSettingsTabs() {
+    const root = document.getElementById("website-settings-tabs-root");
+    if (!root || root.dataset.initialized === "true") return;
+
+    root.querySelectorAll(".website-settings-tab-button").forEach(button => {
+      button.addEventListener("click", () => {
+        activateWebsiteSettingsTab(button.dataset.tab);
+      });
+    });
+
+    root.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      const buttons = Array.from(root.querySelectorAll(".website-settings-tab-button"));
+      const current = buttons.indexOf(document.activeElement);
+      if (current < 0) return;
+      event.preventDefault();
+      const offset = event.key === "ArrowRight" ? 1 : -1;
+      const next = buttons[(current + offset + buttons.length) % buttons.length];
+      next.focus();
+      activateWebsiteSettingsTab(next.dataset.tab);
+    });
+
+    root.dataset.initialized = "true";
+    activateWebsiteSettingsTab("website_settings_text");
+  }
+
+  function moveWebsiteSettingsField(modalRoot, fieldId, destinationId) {
+    const destination = document.getElementById(destinationId);
+    if (!destination) return false;
+
+    const selector =
+      'input[name="' + fieldId + '"], select[name="' + fieldId + '"], textarea[name="' + fieldId + '"], ' +
+      'input[id="' + fieldId + '"], select[id="' + fieldId + '"], textarea[id="' + fieldId + '"]';
+
+    const field = modalRoot.querySelector(selector);
+    if (!field) return false;
+
+    const row =
+      field.closest(".modal_flat_form_item") ||
+      field.closest(".modal_default_form_item") ||
+      field.closest(".modal_flat_form_field") ||
+      field.closest(".modal_default_form_field");
+
+    if (!row) return false;
+    destination.appendChild(row);
+    return true;
+  }
+
+  function buildWebsiteSettingsTabs() {
+    const tabsRoot = document.getElementById("website-settings-tabs-root");
+    if (!tabsRoot || tabsRoot.dataset.built === "true") return !!tabsRoot;
+
+    const modalRoot =
+      tabsRoot.closest(".modal_flat") ||
+      tabsRoot.closest(".modal_default") ||
+      tabsRoot.closest(".dpmodal") ||
+      document;
+
+    const groups = {
+      website_settings_text_fields: [
+        "title", "subtitle", "footer",
+        "includeTuneHeading",
+        "includeCollectionIntro", "collectionIntro",
+        "includeTuneTextBefore", "tuneTextBefore",
+        "includeTuneTextAfter", "tuneTextAfter"
+      ],
+      website_settings_display_fields: [
+        "theme", "displayMode", "cursorColor",
+        "playerPosition", "notationWidth", "bodyWidth"
+      ],
+      website_settings_playback_inject: [
+        "injectSoundSettings"
+      ],
+      website_settings_playback_melody: [
+        "melodyProgram"
+      ],
+      website_settings_playback_soundfont: [
+        "soundfont"
+      ],
+      website_settings_playback_bass: [
+        "bassProgram"
+      ],
+      website_settings_playback_bass_volume: [
+        "bassVolume"
+      ],
+      website_settings_playback_chord: [
+        "chordProgram"
+      ],
+      website_settings_playback_chord_volume: [
+        "chordVolume"
+      ]
+    };
+
+    let moved = 0;
+    Object.entries(groups).forEach(([destinationId, fieldIds]) => {
+      fieldIds.forEach(fieldId => {
+        if (moveWebsiteSettingsField(modalRoot, fieldId, destinationId)) moved += 1;
+      });
+    });
+
+    if (moved < 23) return false;
+
+    tabsRoot.dataset.built = "true";
+    initializeWebsiteSettingsTabs();
+    initializeWebsiteSettingsResetAction();
+    return true;
+  }
+
+  function findWebsiteSettingsField(modalRoot, fieldId) {
+    if (!modalRoot) return null;
+
+    return modalRoot.querySelector(
+      'input[name="' + fieldId + '"], ' +
+      'select[name="' + fieldId + '"], ' +
+      'textarea[name="' + fieldId + '"], ' +
+      'input[id="' + fieldId + '"], ' +
+      'select[id="' + fieldId + '"], ' +
+      'textarea[id="' + fieldId + '"]'
+    );
+  }
+
+  function restoreDefaultValuesInOpenSettingsDialog() {
+    const tabsRoot = document.getElementById("website-settings-tabs-root");
+    if (!tabsRoot) return false;
+
+    const modalRoot =
+      tabsRoot.closest(".modal_flat") ||
+      tabsRoot.closest(".modal_default") ||
+      tabsRoot.closest(".dpmodal") ||
+      tabsRoot.parentElement;
+
+    if (!modalRoot) return false;
+
+    Object.entries(DEFAULT_SETTINGS).forEach(([fieldId, defaultValue]) => {
+      const field = findWebsiteSettingsField(modalRoot, fieldId);
+      if (!field) return;
+
+      if (field.type === "checkbox") {
+        field.checked = !!defaultValue;
+      } else {
+        field.value = String(defaultValue);
+      }
+
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    activateWebsiteSettingsTab("website_settings_text");
+
+    const panels = tabsRoot.querySelector(".website-settings-tab-panels");
+    if (panels) panels.scrollTop = 0;
+
+    return true;
+  }
+
+  function lowerResetConfirmationDialog() {
+    let attempts = 0;
+    const confirmationText =
+      "Reset all website settings to their default values? This cannot be undone.";
+
+    const positionDialog = () => {
+      attempts += 1;
+
+      const candidates = Array.from(document.querySelectorAll(
+        ".modal_default_main, .modal_flat_main, .dpmodal, [class*='modal_'][class*='_main']"
+      ));
+
+      const dialog = candidates.reverse().find(element =>
+        element.textContent && element.textContent.includes(confirmationText)
+      );
+
+      if (dialog) {
+        dialog.style.transform = "translateY(150px)";
+        return;
+      }
+
+      if (attempts < 40) {
+        setTimeout(positionDialog, 20);
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(positionDialog));
+  }
+
+  async function resetWebsiteSettingsFromTab() {
+    const confirmationPromise = DayPilot.Modal.confirm(
+      "Reset all website settings to their default values? This cannot be undone.",
+      {
+        title: "Reset All Settings",
+        okText: "Reset",
+        cancelText: "Cancel"
+      }
+    );
+
+    lowerResetConfirmationDialog();
+    const confirmation = await confirmationPromise;
+
+    if (confirmation.canceled) return;
+
+    state.settings = { ...DEFAULT_SETTINGS };
+
+    try {
+      localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    } catch (error) {
+      console.warn("Unable to clear saved website settings from localStorage.", error);
+    }
+
+    restoreDefaultValuesInOpenSettingsDialog();
+    renderState();
+    setStatus("All website settings were reset to their defaults.");
+  }
+
+  function initializeWebsiteSettingsResetAction() {
+    const resetButton = document.getElementById("website-settings-reset-action");
+    if (!resetButton || resetButton.dataset.initialized === "true") return;
+
+    resetButton.addEventListener("click", resetWebsiteSettingsFromTab);
+    resetButton.dataset.initialized = "true";
+  }
+
+  function centerWebsiteSettingsButtons() {
+    const tabsRoot = document.getElementById("website-settings-tabs-root");
+    if (!tabsRoot) return false;
+
+    const modalRoot =
+      tabsRoot.closest(".modal_flat") ||
+      tabsRoot.closest(".modal_default") ||
+      tabsRoot.closest(".dpmodal") ||
+      tabsRoot.parentElement;
+
+    if (!modalRoot) return false;
+
+    const candidates = Array.from(modalRoot.querySelectorAll("div, td"));
+    const buttonRow = candidates.find(element => {
+      const buttons = Array.from(element.querySelectorAll("button, input[type='button'], input[type='submit']"));
+      const labels = buttons.map(button => (button.value || button.textContent || "").trim());
+      return labels.includes("Apply") && labels.includes("Cancel") &&
+             !Array.from(element.children).some(child =>
+               child !== buttons[0] &&
+               child.querySelector &&
+               child.querySelector("button, input[type='button'], input[type='submit']")
+             );
+    });
+
+    if (!buttonRow) return false;
+
+    buttonRow.style.display = "flex";
+    buttonRow.style.justifyContent = "center";
+    buttonRow.style.alignItems = "center";
+    buttonRow.style.gap = "18px";
+    buttonRow.style.textAlign = "center";
+    buttonRow.style.paddingLeft = "0";
+    buttonRow.style.paddingRight = "0";
+
+    buttonRow.querySelectorAll("button, input[type='button'], input[type='submit']").forEach(button => {
+      button.style.marginLeft = "0";
+      button.style.marginRight = "0";
+    });
+
+    return true;
+  }
+
+  function scheduleWebsiteSettingsTabs() {
+    let attempts = 0;
+
+    const apply = () => {
+      attempts += 1;
+      const tabsReady = buildWebsiteSettingsTabs();
+      const buttonsReady = centerWebsiteSettingsButtons();
+
+      if ((!tabsReady || !buttonsReady) && attempts < 30) {
+        setTimeout(apply, 25);
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(apply));
+  }
+
+  async function openSettings() {
+    if (!window.DayPilot || !DayPilot.Modal) {
+      setStatus("DayPilot.Modal could not be loaded.", true);
+      return;
+    }
+
+    const form = [
+      {
+        html:
+          '<div id="website-settings-tabs-root" class="website-settings-tabs">' +
+            '<div class="website-settings-tab-bar" role="tablist" aria-label="Website settings sections">' +
+              '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
+              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Display</button>' +
+              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_playback" role="tab" aria-selected="false">Playback &amp; Sounds</button>' +
+              '<button type="button" class="website-settings-tab-button reset-tab" data-tab="website_settings_reset" role="tab" aria-selected="false">Reset Settings</button>' +
+            '</div>' +
+            '<div class="website-settings-tab-panels">' +
+              '<section id="website_settings_text" class="website-settings-tab-panel active" role="tabpanel">' +
+                '<div id="website_settings_text_fields"></div>' +
+              '</section>' +
+              '<section id="website_settings_display" class="website-settings-tab-panel" role="tabpanel">' +
+                '<div id="website_settings_display_fields" class="website-settings-fields-grid"></div>' +
+              '</section>' +
+              '<section id="website_settings_playback" class="website-settings-tab-panel" role="tabpanel">' +
+                '<div class="website-settings-playback-layout">' +
+                  '<div id="website_settings_playback_inject" class="website-settings-playback-full"></div>' +
+                  '<div id="website_settings_playback_melody"></div>' +
+                  '<div id="website_settings_playback_soundfont"></div>' +
+                  '<div id="website_settings_playback_bass"></div>' +
+                  '<div id="website_settings_playback_bass_volume"></div>' +
+                  '<div id="website_settings_playback_chord"></div>' +
+                  '<div id="website_settings_playback_chord_volume"></div>' +
+                '</div>' +
+              '</section>' +
+              '<section id="website_settings_reset" class="website-settings-tab-panel" role="tabpanel">' +
+                '<div class="website-settings-reset-panel">' +
+                  '<div class="website-settings-reset-card">' +
+                    '<h3>Reset all website settings</h3>' +
+                    '<p>This restores every website setting to its original default value and removes the saved settings from this browser.</p>' +
+                    '<button id="website-settings-reset-action" class="website-settings-reset-action" type="button">Reset all settings</button>' +
+                  '</div>' +
+                '</div>' +
+              '</section>' +
+            '</div>' +
+          '</div>'
+      },
+      { name: "Website title", id: "title", type: "text" },
+      { name: "Subtitle", id: "subtitle", type: "text" },
+      { name: "Footer text", id: "footer", type: "textarea", height: 38 },
+      {
+        name: "Include tune title and meta text above each tune",
+        id: "includeTuneHeading",
+        type: "checkbox"
+      },
+      {
+        name: "Include text before the tunes",
+        id: "includeCollectionIntro",
+        type: "checkbox"
+      },
+      {
+        name: "Text before the tunes",
+        id: "collectionIntro",
+        type: "textarea",
+        height: 46
+      },
+      {
+        name: "Include text before each tune",
+        id: "includeTuneTextBefore",
+        type: "checkbox"
+      },
+      {
+        name: "Text before each tune",
+        id: "tuneTextBefore",
+        type: "textarea",
+        height: 44
+      },
+      {
+        name: "Include text after each tune",
+        id: "includeTuneTextAfter",
+        type: "checkbox"
+      },
+      {
+        name: "Text after each tune",
+        id: "tuneTextAfter",
+        type: "textarea",
+        height: 44
+      },
+      { name: "Music genre style", id: "theme", type: "select", options: THEME_OPTIONS },
+      { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
+      { name: "Playback cursor color", id: "cursorColor", type: "select", options: CURSOR_COLOR_OPTIONS },
+      {
+        name: "Inject soundfont and MIDI settings",
+        id: "injectSoundSettings",
+        type: "checkbox"
+      },
+      { name: "Soundfont", id: "soundfont", type: "select", options: SOUNDFONT_OPTIONS },
+      { name: "Melody instrument", id: "melodyProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
+      { name: "Bass instrument", id: "bassProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
+      { name: "Bass volume (0–127)", id: "bassVolume", type: "select", options: VOLUME_OPTIONS },
+      { name: "Chord instrument", id: "chordProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
+      { name: "Chord volume (0–127)", id: "chordVolume", type: "select", options: VOLUME_OPTIONS },
+      {
+        name: "Player controller position",
+        id: "playerPosition",
+        type: "select",
+        options: [
+          { id: "above", name: "Above notation" },
+          { id: "below", name: "Below notation" }
+        ]
+      },
+      {
+        name: "Notation width relative to page body",
+        id: "notationWidth",
+        type: "select",
+        options: ["50","55","60","65","70","75","80","85","90","95","100"].map(v => ({ id: v, name: v + "%" }))
+      },
+      {
+        name: "Maximum website body width",
+        id: "bodyWidth",
+        type: "select",
+        options: [
+          { id: "700", name: "700 px" },
+          { id: "800", name: "800 px" },
+          { id: "900", name: "900 px" },
+          { id: "1000", name: "1000 px" },
+          { id: "1100", name: "1100 px" },
+          { id: "1180", name: "1180 px " },
+          { id: "1280", name: "1280 px" },
+          { id: "1400", name: "1400 px" }
+        ]
+      }
+    ];
+
+    const modalPromise = DayPilot.Modal.form(form, { ...state.settings }, {
+      title: "Website Settings",
+      width: Math.min(1040, Math.max(720, window.innerWidth - 28)),
+      height: Math.min(900, Math.max(620, window.innerHeight - 20)),
+      autoFocus: false,
+      okText: "Apply",
+      cancelText: "Cancel"
+    });
+
+    scheduleWebsiteSettingsTabs();
+    const result = await modalPromise;
+
+    if (result.canceled) return;
+    state.settings = { ...state.settings, ...result.result };
+    saveSettings();
+    renderState();
+    setStatus("Website settings updated and saved.");
+  }
+
+  async function openInstructions() {
+    if (!window.DayPilot || !DayPilot.Modal) {
+      setStatus("DayPilot.Modal could not be loaded.", true);
+      return;
+    }
+
+    await DayPilot.Modal.alert("<div class=\"instructions-modal-content\">\n  <h2>Instructions</h2>\n  <div class=\"instructions-scroll-area\">\n    <h3>Overview</h3>\n    <p>\n      This tool builds a complete standalone music website from one or more ABC files.\n      Each tune is embedded directly in the exported HTML and is rendered and played by\n      the abc-eskin-portable library. The generated site includes a table of contents,\n      individual tune sections, playback controls, cursor tracking, autoscroll, and links\n      back to the table of contents.\n    </p>\n\n    <h3>1. Open ABC files</h3>\n    <ol>\n      <li>Click <b>Open ABC Files</b>.</li>\n      <li>Select one or more <code>.abc</code> or text files.</li>\n      <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>\n      <li>The loaded file and tune lists show what will be included in the exported site.</li>\n    </ol>\n    <div class=\"instructions-note\">\n      Files can contain one tune or many tunes. Opening additional files adds their tunes\n      to the current collection.\n    </div>\n\n    <h3>2. Configure the website</h3>\n    <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>\n\n    <p><b>Text &amp; Content</b></p>\n    <ul>\n      <li><b>Website title</b> appears in the main header of the exported site.</li>\n      <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>\n      <li><b>Footer text</b> appears at the bottom of the exported page.</li>\n      <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>\n      <li><b>Text before the tunes</b> adds centered introductory text before the collection.</li>\n      <li><b>Text before each tune</b> adds the same centered text before every tune.</li>\n      <li><b>Text after each tune</b> adds the same centered text after every tune.</li>\n      <li>The matching checkbox must be enabled for optional text to appear.</li>\n    </ul>\n\n    <p><b>Style &amp; Display</b></p>\n    <ul>\n      <li><b>Music genre style</b> selects the complete visual theme for the exported site.</li>\n      <li><b>Notation / tablature display</b> selects standard notation, notation with mandolin\n          or guitar tablature, or standalone mandolin or guitar tablature.</li>\n      <li><b>Playback cursor color</b> selects a red, blue, or green line cursor.</li>\n      <li><b>Player controller position</b> places the controls above or below the notation.</li>\n      <li><b>Notation width relative to page body</b> controls how much of the page width is used\n          by both the notation and its player.</li>\n      <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>\n    </ul>\n\n    <p><b>Playback &amp; Sounds</b></p>\n    <ul>\n      <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound\n          directives in every tune with the selected values.</li>\n      <li>Select the soundfont and the melody, bass, and chord instruments.</li>\n      <li>Select bass and chord volumes from 0 through 127.</li>\n      <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>\n    </ul>\n    <p>When injection is enabled, the tool inserts these directives directly below each <code>X:</code> field:</p>\n    <ul>\n      <li><code>%soundfont &lt;soundfont&gt;</code></li>\n      <li><code>%%MIDI program &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassvol &lt;0\u2013127&gt;</code></li>\n      <li><code>%%MIDI chordprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI chordvol &lt;0\u2013127&gt;</code></li>\n    </ul>\n    <div class=\"instructions-warning\">\n      When injection is enabled, existing soundfont and matching MIDI program or volume\n      directives in the source tunes are removed before the selected settings are inserted.\n      Disable injection to preserve each tune's original sound settings.\n    </div>\n\n    <p><b>Reset Settings</b></p>\n    <ul>\n      <li>Use <b>Reset all settings</b> to restore every option to its original default.</li>\n      <li>A confirmation dialog is shown before anything is reset.</li>\n    </ul>\n\n    <h3>3. Saved settings</h3>\n    <p>\n      Website settings are stored in this browser using <code>localStorage</code> whenever\n      <b>Apply</b> is clicked. They are restored automatically the next time the tool is opened.\n      Loaded ABC files and tunes are not stored and must be opened again in a new session.\n    </p>\n\n    <h3>4. Build and save the website</h3>\n    <ol>\n      <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>\n      <li>Enter the desired HTML filename in the DayPilot dialog.</li>\n      <li>The tool creates and downloads a complete HTML file.</li>\n    </ol>\n    <p>The exported file contains:</p>\n    <ul>\n      <li>All tune ABC source directly in the HTML.</li>\n      <li>A table of contents linking to every tune.</li>\n      <li>A Table of Contents button for every tune.</li>\n      <li>Optional tune titles and composer/rhythm meta text above each tune.</li>\n      <li>Independent playback controls for every tune.</li>\n      <li>Click-the-notation pause and resume behavior.</li>\n      <li>A colored playback cursor with smooth autoscroll.</li>\n      <li>Links to the required portable JavaScript and audio CSS libraries.</li>\n    </ul>\n    <div class=\"instructions-note\">\n      The ABC is not fetched from a separate file. It remains embedded in the generated\n      website so the page can be moved or uploaded as a single HTML document.\n    </div>\n\n    <h3>5. Using the generated website</h3>\n    <ul>\n      <li>Choose a tune from the table of contents to jump directly to it.</li>\n      <li>Use the player controls to start, pause, restart, and change playback speed.</li>\n      <li>Click the notation itself to pause or resume playback.</li>\n      <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>\n      <li>Use the button in a tune header to stop playback and return to the top of the page.</li>\n    </ul>\n\n    <h3>6. Clearing the current collection</h3>\n    <p>\n      Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.\n      This does not erase saved website settings.\n    </p>\n\n    <h3>Notes</h3>\n    <ul>\n      <li>The exported website requires internet access to load the linked abc-eskin-portable\n          JavaScript and CSS files unless those files are later hosted locally and the links are changed.</li>\n      <li>Very large tune collections can produce large HTML files and may take longer to render.</li>\n      <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>\n      <li>The visual styles affect the page presentation; they do not alter the tune data.</li>\n    </ul>\n\n    <hr style=\"margin-top:20px;\">\n      <h4 style=\"text-align: center;\">Tip Jars</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        <p class=\"instructions-title\"> This tool was created by</p>\n        <p class=\"instructions-title\"> <a href=\"https://michaeleskin.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">Michael Eskin</a></p>\n        <div style=\"margin-top:10px;\">\n          If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>PayPal</b><br/>\n          <a href=\"https://paypal.me/MichaelEskin\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">https://paypal.me/MichaelEskin</a>\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>Venmo</b><br/>\n          @MichaelEskin\n        </div>\n      </div>\n      <hr>\n      <h4 style=\"text-align: center;\">Source Code on GitHub</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        The source code for this tool is available on GitHub<br/>\n         <div style=\"margin-top:10px;\">\n          <a href=\"https://github.com/seisiuneer/abctools/blob/main/tools/abc_backup_chord_solver.html\" target=\"_blank\" rel=\"noopener noreferrer\">ABC Tune Backup Chord Solver on GitHub</a>\n        </div>\n      </div>\n      <hr>\n  </div>\n</div>", {
+      width: Math.min(900, Math.max(560, window.innerWidth - 36)),
+      height: Math.min(820, Math.max(500, window.innerHeight - 36)),
+      okText: "Close"
+    });
+  }
+
+  async function promptFilename() {
+    const defaultName = slugify(state.settings.title, "abc-music-site") + ".html";
+    const result = await DayPilot.Modal.form(
+      [{ name: "HTML filename", id: "filename", type: "text" }],
+      { filename: defaultName },
+      { title: "Save Standalone Website", width: 470, okText: "Save", cancelText: "Cancel" }
+    );
+
+    if (result.canceled) return null;
+    let filename = String(result.result.filename || "").trim();
+    if (!filename) filename = defaultName;
+    if (!/\.html?$/i.test(filename)) filename += ".html";
+    return filename.replace(/[\\/:*?"<>|]+/g, "-");
+  }
+
+  function safeScriptText(value) {
+    return String(value).replace(/<\/script/gi, "<\\/script");
+  }
+
+  function themeCss(theme) {
+    const themes = {
+      retro60: {
+        font: '"Trebuchet MS", Arial, sans-serif', bg: '#f3d96b', panel: '#fff8d4',
+        ink: '#2d2442', muted: '#66597a', primary: '#ef5b3f', secondary: '#24a6a1',
+        accent: '#8b4f9f', line: '#2d2442', hero: 'linear-gradient(135deg,#ef5b3f,#f2a23a 48%,#24a6a1)',
+        radius: '18px', shadow: '8px 8px 0 rgba(45,36,66,.22)', ornament: '✦'
+      },
+      classical: {
+        font: 'Georgia, "Times New Roman", serif', bg: '#e8dcc0', panel: '#f9f1de',
+        ink: '#2d2118', muted: '#6b5948', primary: '#641f2b', secondary: '#b28a3e',
+        accent: '#d5bd82', line: '#bcae87', hero: 'linear-gradient(135deg,#42131c,#7b2938)',
+        radius: '0px', shadow: '0 14px 34px rgba(53,35,20,.16)', ornament: '❦'
+      },
+      irish: {
+        font: 'Georgia, serif', bg: '#e5efe3', panel: '#fffdf3', ink: '#173c26',
+        muted: '#526b59', primary: '#167047', secondary: '#c99224', accent: '#80b58b',
+        line: '#98b49d', hero: 'linear-gradient(135deg,#0b4b2c,#16834e)', radius: '10px',
+        shadow: '0 12px 28px rgba(18,70,38,.16)', ornament: '☘'
+      },
+      scottish: {
+        font: 'Georgia, serif', bg: '#e8e7df', panel: '#fffdf7', ink: '#1d2d45',
+        muted: '#5c6875', primary: '#234b73', secondary: '#8e2f38', accent: '#c8a95b',
+        line: '#9ca9b4', hero: 'linear-gradient(135deg,#16324f,#315e87)', radius: '4px',
+        shadow: '0 12px 28px rgba(20,40,60,.16)', ornament: '✣'
+      },
+      jazz: {
+        font: '"Avenir Next", "Segoe UI", sans-serif', bg: '#17151a', panel: '#27232b',
+        ink: '#f4e7ca', muted: '#c8bca7', primary: '#d59a32', secondary: '#7e2e3f',
+        accent: '#f0c66a', line: '#5a4e45', hero: 'linear-gradient(135deg,#111,#4d1e2b)',
+        radius: '6px', shadow: '0 16px 34px rgba(0,0,0,.38)', ornament: '♪'
+      },
+      contemporary: {
+        font: 'Inter, system-ui, sans-serif', bg: '#f4f5f7', panel: '#ffffff',
+        ink: '#17191d', muted: '#69707a', primary: '#111827', secondary: '#3b82f6',
+        accent: '#93c5fd', line: '#d5d9df', hero: 'linear-gradient(135deg,#111827,#334155)',
+        radius: '14px', shadow: '0 14px 34px rgba(17,24,39,.10)', ornament: '—'
+      },
+      world: {
+        font: '"Trebuchet MS", sans-serif', bg: '#f0e1c2', panel: '#fff8e8',
+        ink: '#3c281b', muted: '#765f4e', primary: '#b2472e', secondary: '#177c75',
+        accent: '#e0a72f', line: '#c9a973', hero: 'linear-gradient(135deg,#b2472e,#d98b2b,#177c75)',
+        radius: '12px', shadow: '0 13px 30px rgba(74,43,20,.18)', ornament: '✺'
+      },
+      country: {
+        font: 'Georgia, serif', bg: '#e8d4ae', panel: '#fff8e7', ink: '#3b2719',
+        muted: '#745f49', primary: '#8c3f24', secondary: '#315c3e', accent: '#d7a647',
+        line: '#b99260', hero: 'linear-gradient(135deg,#713119,#a4582d)', radius: '4px',
+        shadow: '5px 7px 0 rgba(73,45,25,.18)', ornament: '★'
+      },
+      bluegrass: {
+        font: 'Georgia, serif', bg: '#dfe9cf', panel: '#fffef5', ink: '#23331e',
+        muted: '#5c6c53', primary: '#325b2d', secondary: '#b87822', accent: '#85a66e',
+        line: '#98ad87', hero: 'linear-gradient(135deg,#24471f,#4f7b3d)', radius: '8px',
+        shadow: '0 12px 28px rgba(36,71,31,.17)', ornament: '✻'
+      },
+      oldtime: {
+        font: '"Courier New", monospace', bg: '#d9c59d', panel: '#f7ebd0', ink: '#34291f',
+        muted: '#6f5d4a', primary: '#6f3528', secondary: '#7a6736', accent: '#b78950',
+        line: '#a88a62', hero: 'linear-gradient(135deg,#4c2f23,#77503a)', radius: '0px',
+        shadow: '6px 7px 0 rgba(52,41,31,.17)', ornament: '◆'
+      },
+      folk: {
+        font: 'Georgia, serif', bg: '#e8e1cf', panel: '#fffdf6', ink: '#2c352d',
+        muted: '#657067', primary: '#536f4f', secondary: '#b06c3f', accent: '#d3aa72',
+        line: '#b7b4a2', hero: 'linear-gradient(135deg,#40583e,#71856d)', radius: '10px',
+        shadow: '0 12px 28px rgba(44,53,45,.14)', ornament: '❉'
+      },
+      blues: {
+        font: 'Georgia, serif', bg: '#cad8e1', panel: '#f8fbfd', ink: '#122b3d',
+        muted: '#526b7b', primary: '#174c70', secondary: '#a56a2a', accent: '#6b9fc1',
+        line: '#8da9ba', hero: 'linear-gradient(135deg,#0d3048,#24668d)', radius: '6px',
+        shadow: '0 14px 30px rgba(13,48,72,.18)', ornament: '♭'
+      },
+      rock: {
+        font: '"Arial Black", Impact, sans-serif', bg: '#1e1e1e', panel: '#2a2a2a',
+        ink: '#f4f4f4', muted: '#c2c2c2', primary: '#c92929', secondary: '#e7b52c',
+        accent: '#ffffff', line: '#555', hero: 'linear-gradient(135deg,#090909,#6f1111)',
+        radius: '2px', shadow: '0 14px 34px rgba(0,0,0,.44)', ornament: '⚡'
+      },
+      pop: {
+        font: '"Trebuchet MS", sans-serif', bg: '#f8e8f2', panel: '#ffffff',
+        ink: '#39233d', muted: '#7a647e', primary: '#d43f8d', secondary: '#5b70e8',
+        accent: '#f5a9cf', line: '#dfb8d0', hero: 'linear-gradient(135deg,#d43f8d,#7c55db)',
+        radius: '20px', shadow: '0 16px 34px rgba(122,55,120,.17)', ornament: '●'
+      },
+      filmnoir: {
+        font: '"Avenir Next", sans-serif', bg: '#151515', panel: '#f0eee8',
+        ink: '#171717', muted: '#5c5c5c', primary: '#111', secondary: '#8c1d1d',
+        accent: '#b4a476', line: '#777', hero: 'linear-gradient(135deg,#000,#353535)',
+        radius: '0px', shadow: '10px 12px 0 rgba(0,0,0,.36)', ornament: '◆'
+      },
+      electronic: {
+        font: '"Trebuchet MS", sans-serif', bg: '#0c1024', panel: '#171d3b',
+        ink: '#edf7ff', muted: '#aeb9d4', primary: '#00c6c7', secondary: '#e24cff',
+        accent: '#64f5ff', line: '#3d4a7a', hero: 'linear-gradient(135deg,#12163b,#7526a8,#008e9b)',
+        radius: '12px', shadow: '0 0 28px rgba(0,198,199,.22)', ornament: '◇'
+      }
+    };
+    return themes[theme] || themes.irish;
+  }
+
+  function isChecked(value) {
+    return value === true || value === "true" || value === 1 || value === "1";
+  }
+
+  function normalizeMidiValue(value) {
+    return String(value) === "mute" ? "mute" : String(Math.max(0, Number(value) || 0));
+  }
+
+  function injectTuneSoundSettings(abc, settings) {
+    if (!isChecked(settings.injectSoundSettings)) return abc;
+
+    const directives = [
+      `%soundfont ${settings.soundfont}`,
+      `%%MIDI program ${normalizeMidiValue(settings.melodyProgram)}`,
+      `%%MIDI bassprog ${normalizeMidiValue(settings.bassProgram)}`,
+      `%%MIDI bassvol ${Math.max(0, Math.min(127, Number(settings.bassVolume) || 0))}`,
+      `%%MIDI chordprog ${normalizeMidiValue(settings.chordProgram)}`,
+      `%%MIDI chordvol ${Math.max(0, Math.min(127, Number(settings.chordVolume) || 0))}`
+    ];
+
+    const cleaned = String(abc)
+      .replace(/^\s*%(?:abcjs_)?soundfont\s+.*(?:\n|$)/gim, "")
+      .replace(/^\s*%%MIDI\s+(?:program|bassprog|bassvol|chordprog|chordvol)\s+.*(?:\n|$)/gim, "");
+
+    return cleaned.replace(
+      /^(X\s*:\s*.*)$/mi,
+      `$1\n${directives.join("\n")}`
+    );
+  }
+
+  function generateSite() {
+    const s = state.settings;
+    const t = themeCss(s.theme);
+    const title = escapeHtml(s.title);
+    const subtitle = escapeHtml(s.subtitle).replace(/\n/g, "<br>");
+    const subtitleMarkup = subtitle.trim()
+      ? `<p class="hero-copy">${subtitle}</p>`
+      : "";
+    const footer = escapeHtml(s.footer).replace(/\n/g, "<br>");
+    const collectionIntro = escapeHtml(s.collectionIntro).replace(/\n/g, "<br>");
+    const includeTuneHeading =
+      s.includeTuneHeading === true || s.includeTuneHeading === "true" || s.includeTuneHeading === 1;
+    const includeCollectionIntro =
+      s.includeCollectionIntro === true || s.includeCollectionIntro === "true" || s.includeCollectionIntro === 1;
+    const collectionIntroMarkup = includeCollectionIntro && collectionIntro.trim()
+      ? `<section class="collection-intro page-width"><p>${collectionIntro}</p></section>`
+      : "";
+    const tuneTextBefore = escapeHtml(s.tuneTextBefore).replace(/\n/g, "<br>");
+    const tuneTextAfter = escapeHtml(s.tuneTextAfter).replace(/\n/g, "<br>");
+    const includeTuneTextBefore =
+      s.includeTuneTextBefore === true || s.includeTuneTextBefore === "true" || s.includeTuneTextBefore === 1;
+    const includeTuneTextAfter =
+      s.includeTuneTextAfter === true || s.includeTuneTextAfter === "true" || s.includeTuneTextAfter === 1;
+    const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
+    const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
+
+    const usedIds = new Set();
+    const tunes = state.tunes.map((tune, index) => {
+      let key = slugify(tune.title, "tune-" + (index + 1));
+      const base = key;
+      let suffix = 2;
+      while (usedIds.has(key)) key = `${base}-${suffix++}`;
+      usedIds.add(key);
+      return { ...tune, key, number: index + 1 };
+    });
+
+    const toc = tunes.map(tune =>
+      `<a href="#tune-${tune.key}"><span>${tune.number}</span>${escapeHtml(tune.title)}</a>`
+    ).join("\n        ");
+
+    const playerAbove = s.playerPosition === "above";
+
+    const articles = tunes.map(tune => {
+      const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
+      const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
+          <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
+      return `
+      <article class="score-panel" id="tune-${tune.key}" data-key="${tune.key}">
+        <div class="chapter-label">${tune.number}</div>
+        <div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
+          ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
+          <a class="back-to-toc" href="#table-of-contents">↑ Table of Contents</a>
+        </div>
+        ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
+        ${includeTuneTextBefore && tuneTextBefore.trim()
+          ? `<div class="prose tune-text-before"><p>${tuneTextBefore}</p></div>`
+          : ""}
+        ${playerAbove ? audio : ""}
+        <div class="notation-wrap">
+          <div id="${tune.key}-paper" class="paper" aria-label="${escapeHtml(tune.title)} notation"></div>
+        </div>
+        ${playerAbove ? "" : audio}
+        ${includeTuneTextAfter && tuneTextAfter.trim()
+          ? `<div class="afterword tune-text-after"><p>${tuneTextAfter}</p></div>`
+          : ""}
+      </article>`;
+    }).join('\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n');
+
+    const abcBlocks = tunes.map(tune => {
+      const exportedAbc = injectTuneSoundSettings(tune.abc, s);
+      return `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(exportedAbc)}\n<\/script>`;
+    }).join("\n\n  ");
+
+    const displayMode = JSON.stringify(s.displayMode);
+    const cursorColors = {
+      red: "#d71920",
+      blue: "#1565c0",
+      green: "#17833f"
+    };
+    const cursorColor = JSON.stringify(cursorColors[s.cursorColor] || cursorColors.red);
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+
+  <link rel="stylesheet" href="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-audio.css">
+
+  <style>
+    :root {
+      --bg: ${t.bg};
+      --panel: ${t.panel};
+      --ink: ${t.ink};
+      --muted: ${t.muted};
+      --primary: ${t.primary};
+      --secondary: ${t.secondary};
+      --accent: ${t.accent};
+      --line: ${t.line};
+      --radius: ${t.radius};
+      --shadow: ${t.shadow};
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: auto; }
+    body { margin:0; color:var(--ink); background:var(--bg); font:17px/1.65 ${t.font}; }
+    .page-width { width:min(${bodyWidth}px, calc(100% - 34px)); margin:0 auto; }
+    .hero { padding:44px 0 38px; color:#fff; background:${t.hero}; text-align:center; border-bottom:6px solid var(--accent); }
+    h1 { margin:0; font-size:clamp(1.8rem,4.2vw,3.5rem); line-height:1.08; }
+    .hero-copy { max-width:780px; margin:10px auto 0; font-size:1.25rem; }
+    .ornament { margin-top:16px; color:var(--accent); font-size:2rem; }
+    .collection-intro { margin:34px auto 0; padding:22px 28px; color:var(--muted); background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .collection-intro p { max-width:82ch; margin:0 auto; text-align:center; }
+    .table-of-contents { margin:38px auto; padding:28px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
+    .table-of-contents h2 { margin:0 0 20px; font-size:clamp(1.7rem,4vw,2.6rem); }
+    .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .toc-links a { display:flex; align-items:center; gap:10px; min-height:54px; padding:10px 13px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); text-decoration:none; text-align:left; }
+    .toc-links a:hover,.toc-links a:focus-visible { color:#fff; background:var(--primary); outline:none; }
+    .toc-links span,.chapter-label { display:grid; place-items:center; color:#fff; background:var(--primary); border:2px solid var(--accent); border-radius:50%; font-weight:800; }
+    .toc-links span { flex:0 0 34px; height:34px; }
+    main { padding-bottom:64px; }
+    .score-panel { position:relative; padding:38px 34px 30px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .chapter-label { width:50px; height:50px; margin:0 auto 12px; }
+    .tune-header { position:relative; }
+    .tune-header h2 { margin:0; padding:0 155px; font-size:clamp(1.5rem,3.7vw,2.5rem); text-align:center; line-height:1.15; }
+    .back-to-toc { position:absolute; top:50%; right:0; transform:translateY(-50%); padding:7px 10px; color:#fff; background:var(--primary); border:1px solid var(--accent); text-decoration:none; font-size:.8rem; font-weight:800; }
+    .tune-header.no-tune-heading { min-height:34px; }
+    .tune-header.no-tune-heading .back-to-toc { top:0; transform:none; }
+    .tune-meta { margin:10px 0 0; color:var(--secondary); font-weight:750; text-align:center; }
+    .prose,.afterword { max-width:82ch; margin:18px auto; color:var(--muted); }
+    .tune-text-before,.tune-text-after { text-align:center; }
+    .notation-wrap {
+      width:${width}%;
+      margin:16px auto 0;
+    }
+    .paper {
+      width:100% !important;
+      min-height:220px;
+      margin:0;
+      padding:18px 12px;
+      overflow-x:auto;
+      overflow-y:visible;
+      color:#111;
+      background:#fff;
+      border:1px solid var(--line);
+    }
+    .paper svg {
+      display:block;
+      max-width:100%;
+      height:auto;
+      overflow:visible;
+    }
+    .paper:focus-visible { outline:3px solid var(--secondary); outline-offset:3px; }
+    .audio-controls { width:${width}%; margin:22px auto 0; }
+    .status { width:${width}%; min-height:1.35em; margin:8px auto 0; color:var(--muted); text-align:center; font-size:.9rem; }
+    .status.error { color:#a00000; font-weight:700; }
+    .section-divider { padding:28px 0; color:var(--secondary); text-align:center; font-size:1.8rem; }
+    .site-footer { padding:34px 0; color:#fff; background:var(--primary); border-top:5px solid var(--accent); text-align:center; }
+    .abcjs-inline-audio { color:#fff; }
+    .abcjs-inline-audio .abcjs-tempo-wrapper { color:#fff !important; }
+    .abcjs-inline-audio .abcjs-midi-tempo { color:#000 !important; }
+    @media (max-width:760px) {
+      .score-panel { padding:30px 14px 24px; }
+      .tune-header h2 { padding:0; margin-bottom:48px; }
+      .back-to-toc { top:auto; right:50%; bottom:-40px; transform:translateX(50%); white-space:nowrap; }
+      .tune-header.no-tune-heading { min-height:44px; }
+      .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
+      .notation-wrap,.audio-controls,.status { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="page-width">
+      <h1>${title}</h1>
+      ${subtitleMarkup}
+    </div>
+  </header>
+
+  ${collectionIntroMarkup}
+
+  <nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
+    <h2 id="toc-title">Table of Contents</h2>
+    <div class="toc-links">
+        ${toc}
+    </div>
+  </nav>
+
+  <main class="page-width">
+    ${articles}
+  </main>
+
+  <footer class="site-footer">
+    <div class="page-width">
+      <div class="ornament" aria-hidden="true">${t.ornament}</div>
+      <p>${footer}</p>
+    </div>
+  </footer>
+
+  ${abcBlocks}
+
+  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js"><\/script>
+  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js"><\/script>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
+      key: panel.dataset.key,
+      abcElementId: panel.dataset.key + "-abc"
+    }));
+
+    const controllers = new Map();
+    const displayMode = ${displayMode};
+    const cursorColor = ${cursorColor};
+
+    function getRenderParams() {
+      const params = {
+        responsive: "resize",
+        expandToWidest: true,
+        selectTypes: false
+      };
+
+      if (displayMode === "mandolinNotation" || displayMode === "mandolinOnly") {
+        params.tablatureOnly = displayMode === "mandolinOnly";
+        params.paddingbottom = 16;
+        params.tablature = [{
+          instrument: "violin",
+          label: "Mandolin",
+          tuning: ["G,", "D", "A", "e"],
+          highestNote: "f'",
+          capo: 0
+        }];
+      } else if (displayMode === "guitarNotation" || displayMode === "guitarOnly") {
+        params.tablatureOnly = displayMode === "guitarOnly";
+        params.paddingbottom = 16;
+        params.tablature = [{
+          instrument: "guitar",
+          label: "Guitar",
+          tuning: ["E,", "A,", "D", "G", "B", "e"],
+          highestNote: "f'",
+          capo: 0
+        }];
+      }
+
+      return params;
+    }
+
+    const playerOptions = {
+      displayLoop: true,
+      displayRestart: true,
+      displayPlay: true,
+      displayProgress: true,
+      displayWarp: true
+    };
+
+    const synthOptions = { program: 0, chordsOff: false };
+
+    function stopAllPlayback() {
+      controllers.forEach(controller => {
+        if (controller && typeof controller.pause === "function") controller.pause();
+      });
+    }
+
+    function togglePlayback(controller) {
+      if (!controller) return Promise.resolve();
+      return Promise.resolve(controller.play()).catch(console.error);
+    }
+
+    function installNavigation() {
+      document.querySelectorAll(".back-to-toc").forEach(link => {
+        link.addEventListener("click", event => {
+          event.preventDefault();
+          stopAllPlayback();
+          window.scrollTo(0, 0);
+          history.replaceState(null, "", "#table-of-contents");
+        });
+      });
+
+      document.querySelectorAll(".toc-links a").forEach(link => {
+        link.addEventListener("click", event => {
+          event.preventDefault();
+          stopAllPlayback();
+          const target = document.querySelector(link.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({ behavior: "auto", block: "start" });
+            history.replaceState(null, "", link.getAttribute("href"));
+          }
+        });
+      });
+    }
+
+    function keepCursorVisible(cursor, paper) {
+      const cursorRect = cursor.getBoundingClientRect();
+      const viewportTop = 72;
+      const viewportBottom = window.innerHeight - 82;
+
+      if (cursorRect.top < viewportTop) {
+        window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
+      } else if (cursorRect.bottom > viewportBottom) {
+        window.scrollBy({ top: cursorRect.bottom - viewportBottom + 18, behavior: "smooth" });
+      }
+
+      const paperRect = paper.getBoundingClientRect();
+      const margin = 44;
+      const visibleLeft = Math.max(paperRect.left, 0) + margin;
+      const visibleRight = Math.min(paperRect.right, window.innerWidth) - margin;
+
+      if (cursorRect.left < visibleLeft) {
+        paper.scrollBy({ left: cursorRect.left - visibleLeft - 24, behavior: "smooth" });
+      } else if (cursorRect.right > visibleRight) {
+        paper.scrollBy({ left: cursorRect.right - visibleRight + 24, behavior: "smooth" });
+      }
+    }
+
+    function createCursorControl(paperId) {
+      let cursor = null;
+      const paper = document.getElementById(paperId);
+
+      return {
+        onStart() {
+          const svg = document.querySelector("#" + paperId + " svg");
+          if (!svg) return;
+          svg.querySelectorAll(".abcjs-cursor").forEach(item => item.remove());
+          cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          cursor.setAttribute("class", "abcjs-cursor");
+          cursor.setAttribute("stroke", cursorColor);
+          cursor.setAttribute("stroke-width", "3");
+          cursor.setAttribute("pointer-events", "none");
+          svg.appendChild(cursor);
+        },
+        onEvent(event) {
+          if (!cursor || !event || event.left == null) return;
+          cursor.setAttribute("x1", String(event.left - 2));
+          cursor.setAttribute("x2", String(event.left - 2));
+          cursor.setAttribute("y1", String(event.top));
+          cursor.setAttribute("y2", String(event.top + event.height));
+          if (paper) keepCursorVisible(cursor, paper);
+        },
+        onFinished() {
+          if (cursor) cursor.remove();
+          cursor = null;
+        }
+      };
+    }
+
+    function getEmbeddedAbc(id) {
+      const element = document.getElementById(id);
+      if (!element) throw new Error("Embedded ABC not found: " + id);
+      return element.textContent.trim();
+    }
+
+    async function prepareWork(work) {
+      const paperId = work.key + "-paper";
+      const audioId = work.key + "-audio";
+      const status = document.getElementById(work.key + "-status");
+
+      try {
+        status.textContent = "Rendering notation and preparing audio…";
+        const rendered = ABCJS.renderAbc(paperId, getEmbeddedAbc(work.abcElementId), getRenderParams());
+        if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
+
+        const controller = new ABCJS.synth.SynthController();
+        controller.load("#" + audioId, createCursorControl(paperId), playerOptions);
+        await controller.setTune(rendered[0], false, synthOptions);
+        controllers.set(work.key, controller);
+
+        const paper = document.getElementById(paperId);
+        paper.tabIndex = 0;
+        paper.title = "Click the notation to pause or resume playback";
+        paper.addEventListener("click", () => void togglePlayback(controller));
+        paper.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            void togglePlayback(controller);
+          }
+        });
+
+        status.textContent = "Click the notation to pause or resume.";
+      } catch (error) {
+        console.error(error);
+        status.classList.add("error");
+        status.textContent = error && error.message ? error.message : String(error);
+      }
+    }
+
+    async function initialize() {
+      if (!window.ABCJS || !ABCJS.eskinConfig) throw new Error("abcjs-eskin-portable did not load.");
+      ABCJS.eskinConfig.setIrishRolls(true);
+      ABCJS.eskinConfig.setCustomGMSounds(true);
+      ABCJS.eskinConfig.setPlayerDefaults(100, false);
+      installNavigation();
+      for (const work of works) await prepareWork(work);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initialize().catch(error => {
+        console.error(error);
+        document.querySelectorAll(".status").forEach(element => {
+          element.classList.add("error");
+          element.textContent = error && error.message ? error.message : String(error);
+        });
+      });
+    });
+  })();
+  <\/script>
+</body>
+</html>`;
+  }
+
+  function downloadText(filename, text) {
+    const blob = new Blob([text], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function saveSite() {
+    if (!state.tunes.length) return;
+    try {
+      const filename = await promptFilename();
+      if (!filename) return;
+      const site = generateSite();
+      downloadText(filename, site);
+      setStatus(`Saved ${filename}.`);
+    } catch (error) {
+      console.error(error);
+      setStatus(error && error.message ? error.message : String(error), true);
+    }
+  }
+
+  function clearAll() {
+    state.files = [];
+    state.tunes = [];
+    fileInput.value = "";
+    renderState();
+    setStatus("Loaded files cleared.");
+  }
+
+  fileInput.addEventListener("change", event => {
+    readFiles(event.target.files).catch(error => {
+      console.error(error);
+      setStatus(error && error.message ? error.message : String(error), true);
+    });
+  });
+
+  settingsButton.addEventListener("click", () => void openSettings());
+  instructionsButton.addEventListener("click", () => void openInstructions());
+  saveButton.addEventListener("click", () => void saveSite());
+  clearButton.addEventListener("click", clearAll);
+
+  renderState();
+})();
+</script>
+</body>
+</html>
