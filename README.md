@@ -941,7 +941,7 @@ the tune and rebuild its controller and audio.
 The portable library automatically recognizes:
 
 ```abc
-%swing_offset 2
+%swing_offset 1
 ```
 
 Syntax:
