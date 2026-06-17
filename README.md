@@ -1,6 +1,6 @@
 # abcjs-eskin-portable
 
-Portable abcjs rendering and playback build with the Eskin configuration facade.
+Portable abcjs rendering and playback build with additional APIs for ABC Transcription Tools notation and playback features.
 
 ## Files
 
