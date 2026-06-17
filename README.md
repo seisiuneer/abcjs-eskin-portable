@@ -16,6 +16,16 @@ Load the files in this order:
 
 `abcjs-eskin-chord-intervals.js` must load before `abcjs-eskin-portable-min.js` when chord accompaniment is used.
 
+## Standalone demonstrations
+
+These standalone website demonstrations show features of the portable library that distinguish it from the standard official abcjs release channel:
+
+- [Traditional Irish tunes with standalone mandolin tablature](https://michaeleskin.com/abcjs-eskin-portable/mandolin-demo/mandolin.html) — Three traditional Irish tunes rendered as standalone mandolin tablature and played with a mandolin sound.
+- [Classical music demonstrations](https://michaeleskin.com/abcjs-eskin-portable/classical-demo/classical.html) — A collection of classical music pieces demonstrating soundfonts, multiple instruments, and reverb.
+- [TV and movie theme demonstrations](https://michaeleskin.com/abcjs-eskin-portable/tv-movie-themes-demo/tv-movie-themes.html) — A collection of TV and movie theme songs demonstrating soundfonts, multiple instruments, and reverb.
+- [abcjs-eskin-portable Test Application - Rendering, playback, reverb, swing, callbacks, tablature, caching, and failure diagnostics.](https://michaeleskin.com/abcjs-eskin-portable/integration-test/index.html) — Test application for various common ABC use cases.
+
+
 ## Quick start: add tune display and playback to an existing website
 
 This is the shortest complete path from an existing page to working notation
