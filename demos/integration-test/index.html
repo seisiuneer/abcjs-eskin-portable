@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Standalone test and example application for abcjs-basic-eskin-portable.js">
+  <title>abcjs-eskin-portable Test Application</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="abcjs-eskin-portable Test Application" />
+  <meta property="og:description" content="abcjs-eskin-portable Test Application" />
+  <meta property="og:url" content="https://michaeleskin.com/abcjs-eskin-portable/integration-test/index.html" />
+  <meta property="og:site_name" content="abcjs-eskin-portable Test Application" />
+  <meta property="og:image" content="https://michaeleskin.com/abctools/img/abc-icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://michaeleskin.com/abctools/img/abc-apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://michaeleskin.com/abctools/img/abc-favicon-32x32.png">  <link rel="stylesheet" href="test-styles.css">
+  <link rel="stylesheet" href="abcjs-eskin-audio.css">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM0N9HL3MK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VM0N9HL3MK');
+  </script>
+
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>abcjs-eskin-portable Test Application</h1>
+      <p>Rendering, playback, reverb, swing, callbacks, tablature, caching, and failure diagnostics.</p>
+    </div>
+    <div id="library-status" class="status-badge pending">Loading library…</div>
+  </header>
+
+  <main>
+    <section class="panel controls-panel" aria-labelledby="example-heading">
+      <h2 id="example-heading">Test Selection</h2>
+      <div class="control-grid">
+        <label>Examples
+          <select id="example-select">
+            <option value="basic">Basic single tune</option>
+            <option value="reverb">Reverb enabled</option>
+            <option value="swing">Hornpipe swing of 0.25</option>
+            <option value="mandolinStandard">Mandolin notation and tablature</option>
+            <option value="mandolinTablature">Mandolin tablature only</option>
+            <option value="tablature">Guitar notation and tablature</option>
+            <option value="tablatureOnly">Guitar tablature only</option>
+            <option value="multiTune">Multi-tune notation only</option>
+            <option value="multiTuneMandolinStandard">Multi-tune mandolin notation and tablature</option>
+            <option value="multiTuneMandolinOnly">Multi-tune mandolin tablature only</option>
+          </select>
+        </label>
+        <label>Default Instrument Program
+          <select id="program-select">
+            <option value="0" selected>0 — Acoustic Grand Piano</option>
+            <option value="21">21 — Accordion</option>
+            <option value="40">40 — Violin</option>
+            <option value="73">73 — Flute</option>
+            <option value="105">105 — Banjo</option>
+            <option value="141">141 — Mandolin</option>
+          </select>
+        </label>
+        <label>Soundfont Base URL
+          <input id="soundfont-url" type="url" spellcheck="false" value="https://michaeleskin.com/abctools/soundfonts/fatboy_4/">
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="load-abc-file" type="button">Load ABC File</button>
+        <input
+          id="abc-file-input"
+          type="file"
+          accept=".abc,.txt,text/plain,text/vnd.abc"
+          hidden
+        >
+        <button id="render-button" class="primary">Render / Prepare Audio</button>
+        <button id="run-tests">Run Automated Smoke Tests</button>       
+        <button id="clear-log">Clear Log</button>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel editor-panel">
+        <h2>ABC Source</h2>
+        <textarea id="abc-source" spellcheck="false" aria-label="ABC source"></textarea>
+
+        <div class="embedded-notation" aria-labelledby="notation-heading">
+          <h2 id="notation-heading">Rendered Notation</h2>
+          <section class="embedded-player" aria-labelledby="playback-heading">
+            <div id="audio-controls"></div>
+          </section>
+          <div id="paper" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <aside class="panel settings-panel">
+        <h2>abcjs Extensions</h2>
+        <fieldset>
+          <legend>Reverb</legend>
+          <label class="check"><input id="reverb-enabled" type="checkbox"> Enable reverb</label>
+          <label>Style
+            <select id="reverb-style">
+              <option value="room1">Room 1</option>
+              <option value="room2">Room 2</option>
+              <option value="room3">Room 3</option>
+              <option value="chamber1">Chamber 1</option>
+              <option value="chamber2">Chamber 2</option>
+              <option value="chamber3"selected>Chamber 3</option>
+              <option value="hall1">Hall 1</option>
+              <option value="hall2">Hall 2</option>
+              <option value="hall3">Hall 3</option>
+              <option value="church1">Church</option>
+            </select>
+          </label>
+          <label>Dry <output id="dry-output">0.85</output>
+            <input id="reverb-dry" type="range" min="0" max="1" step="0.05" value="0.80">
+          </label>
+          <label>Wet <output id="wet-output">0.15</output>
+            <input id="reverb-wet" type="range" min="0" max="1" step="0.05" value="0.15">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Timing</legend>
+          <label class="check"><input id="swing-enabled" type="checkbox"> Custom swing</label>
+          <label>Swing factor <output id="swing-output">0.25</output>
+            <input id="swing-factor" type="range" min="0" max="0.5" step="0.01" value="0.25">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pitch and Samples</legend>
+          <label class="check"><input id="custom-gm" type="checkbox" checked> Use hosted replacement GM sounds</label>
+          <div class="button-column">
+            <button id="clear-note-cache">Clear Note Cache</button>
+            <button id="clear-reverb-cache">Clear Reverb Cache</button>
+          </div>
+        </fieldset>
+      </aside>
+    </section>
+
+    <section class="panel diagnostics-panel">
+      <div class="diagnostic-heading">
+        <h2>Diagnostics</h2>
+        <div class="diagnostic-actions">
+          <div id="test-summary">No tests run.</div>
+          <button id="copy-log" type="button">Copy Diagnostics</button>
+        </div>
+      </div>
+      <pre id="log" tabindex="0"></pre>
+    </section>
+
+    <div id="instructions-mount"></div>
+
+  </main>
+
+  <footer>
+    <span id="version-text">Library version unavailable</span>
+  </footer>
+
+  <script src="abcjs-eskin-chord-intervals.js"></script>
+  <script src="abcjs-eskin-portable-min.js"></script>
+  <script src="test-instructions.js"></script>
+  <script src="test.js"></script>
+</body>
+</html>
