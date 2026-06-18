@@ -797,6 +797,13 @@
     { id: "red", name: "Red" }
   ];
 
+  const ABC_TOOLS_LINK_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "player", name: "Add Open in Player buttons" },
+    { id: "editor", name: "Add Open in Editor buttons" },
+    { id: "fullscreen", name: "Add Open in Full Screen buttons" }
+  ];
+
   const SOUNDFONT_OPTIONS = [
   {
     "id": "fluid",
@@ -1466,7 +1473,8 @@
     playerPosition: "below",
     notationWidth: "100",
     bodyWidth: "1180",
-    tuneNumbers: "show"
+    tuneNumbers: "show",
+    abcToolsLinks: "disabled"
   };
 
   function loadSavedSettings() {
@@ -1649,6 +1657,93 @@
     return bytes;
   }
 
+  function bytesToBase64URL(bytes) {
+    const chunkSize = 0x8000;
+    let binary = "";
+
+    for (let index = 0; index < bytes.length; index += chunkSize) {
+      const chunk = bytes.subarray(index, index + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk);
+    }
+
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+  }
+
+  function compressABCDeflateForShareLink(abcText) {
+    if (typeof pako === "undefined") {
+      throw new Error("pako is not loaded. Include pako before using deflate share links.");
+    }
+
+    if (typeof TextEncoder === "undefined") {
+      throw new Error("TextEncoder is not available in this browser.");
+    }
+
+    const utf8Bytes = new TextEncoder().encode(abcText || "");
+    const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
+    return bytesToBase64URL(deflatedBytes);
+  }
+
+  function abcToolsFormatForDisplayMode(displayMode) {
+    switch (String(displayMode || "notation")) {
+      case "mandolinNotation":
+      case "mandolinOnly":
+        return "mandolin";
+
+      case "bouzoukiNotation":
+      case "bouzoukiOnly":
+        return "gdad";
+
+      case "guitarNotation":
+      case "guitarOnly":
+        return "guitare";
+
+      case "dadgadGuitarNotation":
+      case "dadgadGuitarOnly":
+        return "guitard";
+
+      case "notation":
+      default:
+        return "noten";
+    }
+  }
+
+  function buildABCTranscriptionToolsTuneURL(abcText, format, linkMode) {
+    if (!abcText || !abcText.length) return "";
+    if (!["player", "editor", "fullscreen"].includes(linkMode)) return "";
+
+    const params = new URLSearchParams();
+    params.set("def", compressABCDeflateForShareLink(abcText));
+    params.set("format", format || "noten");
+
+    if (linkMode === "player") {
+      params.set("play", "1");
+    } else if (linkMode === "editor") {
+      params.set("editor", "1");
+    }
+
+    const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
+    return url.length <= 8100 ? url : "";
+  }
+
+  function abcToolsLinkButtonText(linkMode) {
+    switch (linkMode) {
+      case "player":
+        return "Play in ABC Transcription Tools";
+
+      case "editor":
+        return "Edit in ABC Transcription Tools";
+
+      case "fullscreen":
+        return "Open in ABC Transcription Tools";
+
+      default:
+        return "Open in ABC Transcription Tools";
+    }
+  }
+
   function decompressABCDeflateFromShareLink(defText) {
     if (typeof pako === "undefined") {
       throw new Error("pako is not loaded. Include pako before using deflate share links.");
@@ -1794,6 +1889,7 @@
       `Notation ${state.settings.notationWidth}% of page body · ` +
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
+      `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
       `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"} · ` +
       `${state.settings.includeTuneTextBefore ? "Text before each tune" : "No text before each tune"} · ` +
       `${state.settings.includeTuneTextAfter ? "Text after tunes" : "No text after tunes"}`;
@@ -1963,7 +2059,7 @@
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
-        "tuneNumbers"
+        "tuneNumbers", "abcToolsLinks"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -1995,7 +2091,7 @@
       });
     });
 
-    if (moved < 24) return false;
+    if (moved < 25) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -2321,9 +2417,15 @@
         id: "tuneNumbers",
         type: "select",
         options: [
-          { id: "show", name: "Show" },
-          { id: "hide", name: "Hide" }
+          { id: "hide", name: "Hide" },
+          { id: "show", name: "Show" }
         ]
+      },
+      {
+        name: "Add ABC Transcription Tools link buttons to each tune",
+        id: "abcToolsLinks",
+        type: "select",
+        options: ABC_TOOLS_LINK_OPTIONS
       }
     ];
 
@@ -2352,7 +2454,7 @@
       return;
     }
 
-    await DayPilot.Modal.alert("<div class=\"instructions-modal-content\">\n  <h2>Instructions</h2>\n  <div class=\"instructions-scroll-area\">\n    <h3>Overview</h3>\n    <p>\n      This tool builds a complete standalone music website from one or more ABC files.\n      Each tune is embedded directly in the exported HTML and is rendered and played by\n      the abcjs-eskin-portable library. The generated site includes a table of contents,\n      individual tune sections, playback controls, cursor tracking, autoscroll, and links\n      back to the table of contents.\n    </p>\n\n    <h3>1. Open ABC files</h3>\n    <ol>\n      <li>Click <b>Open ABC Files</b>.</li>\n      <li>Select one or more <code>.abc</code> or text files.</li>\n      <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>\n      <li>The loaded file and tune lists show what will be included in the exported site.</li>\n    </ol>\n    <div class=\"instructions-note\">\n      Files can contain one tune or many tunes. Opening additional files adds their tunes\n      to the current collection. If the tool is opened from a share link containing a\n      <code>def=</code> parameter, the decoded tunes are loaded first and are shown as coming\n      from <b>Share link</b>; you can still open ABC files afterward to add more tunes.\n      Any ABC file header before the first <code>X:</code> is applied to every tune from that\n      file or share link. Blank lines are removed from the shared header, and it is placed\n      immediately after each tune's <code>X:</code> field.\n    </div>\n\n    <h3>2. Configure the website</h3>\n    <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>\n\n    <p><b>Text &amp; Content</b></p>\n    <ul>\n      <li><b>Website title</b> appears in the main header of the exported site.</li>\n      <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>\n      <li><b>Footer text</b> appears at the bottom of the exported page.</li>\n      <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>\n      <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>\n      <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>\n      <li><b>Text before each tune</b> adds the same centered text before every tune.</li>\n      <li><b>Text after each tune</b> adds the same centered text after every tune.</li>\n      <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>\n    </ul>\n\n    <p><b>Style &amp; Display</b></p>\n    <ul>\n      <li><b>Music genre style</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>\n           <li><b>Notation / tablature display</b> selects standard notation; notation with mandolin, GDAD bouzouki,\n          standard guitar, or DADGAD guitar tablature; or standalone versions of each tablature type.</li>\n      <li>GDAD bouzouki tablature uses the four-course tuning G-D-A-D.</li>\n      <li>DADGAD guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>\n      <li>Standalone mandolin and GDAD bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard guitar and DADGAD guitar tablature automatically add <code>%%staffsep 100</code>.</li>\n      <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>\n      <li><b>Player controller position</b> places the controls above or below the notation.</li>\n      <li><b>Notation width relative to page body</b> controls how much of the page width is used\n          by both the notation and its player.</li>\n      <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>\n      <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>\n    </ul>\n\n    <p><b>Playback &amp; Sounds</b></p>\n    <ul>\n      <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound\n          directives in every tune with the selected values.</li>\n      <li>Select the soundfont and the melody, bass, and chord instruments.</li>\n      <li>Select bass and chord volumes from 0 through 127.</li>\n      <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>\n    </ul>\n    <p>When injection is enabled, the tool inserts these directives after any shared ABC file header. For standalone tablature, the automatically selected <code>%%staffsep</code> directive is placed after the shared header and before these sound and MIDI directives:</p>\n    <ul>\n      <li><code>%soundfont &lt;soundfont&gt;</code></li>\n      <li><code>%%MIDI program &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassvol &lt;0\u2013127&gt;</code></li>\n      <li><code>%%MIDI chordprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI chordvol &lt;0\u2013127&gt;</code></li>\n    </ul>\n    <p>If neither a tune nor its shared ABC file header already contains a <code>%reverb</code> directive, the exported tune automatically receives:</p>\n    <ul>\n      <li><code>%reverb chamber 0.95 0.05</code></li>\n    </ul>\n    <p>The automatic reverb directive is placed after the shared ABC file header, any injected <code>%%staffsep</code>, and any injected soundfont and MIDI program or volume directives. An existing <code>%reverb</code> directive is preserved and prevents the default from being added.</p>\n    <div class=\"instructions-warning\">\n      When injection is enabled, existing soundfont and matching MIDI program or volume\n      directives in the source tunes are removed before the selected settings are inserted.\n      Disable injection to preserve each tune's original sound settings.\n    </div>\n\n    <p><b>Reset Settings</b></p>\n    <ul>\n      <li>Use <b>Reset all settings</b> to restore every option to its original default.</li>\n      <li>A confirmation dialog is shown before anything is reset.</li>\n    </ul>\n\n    <h3>3. Saved settings</h3>\n    <p>\n      Website settings are stored in this browser using <code>localStorage</code> whenever\n      <b>Apply</b> is clicked. They are restored automatically the next time the tool is opened.\n      Loaded ABC files and tunes are not stored and must be opened again in a new session.\n    </p>\n\n    <h3>4. Build and save the website</h3>\n    <ol>\n      <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>\n      <li>Enter the desired website HTML filename in the dialog.</li>\n      <li>The tool creates and downloads a complete HTML file.</li>\n    </ol>\n    <p>The exported file contains:</p>\n    <ul>\n      <li>All tune ABC source directly in the HTML.</li>\n      <li>A table of contents linking to every tune.</li>\n      <li>A Table of Contents button for every tune.</li>\n      <li>Optional tune titles and composer/rhythm meta text above each tune.</li>\n      <li>Independent playback controls for every tune.</li>\n      <li>Click-the-notation pause and resume behavior.</li>\n      <li>A wide translucent playback cursor with smooth autoscroll.</li>\n      <li>Links to the required portable JavaScript and audio CSS libraries.</li>\n    </ul>\n    <div class=\"instructions-note\">\n      The ABC is not fetched from a separate file. It remains embedded in the generated\n     website so the page can be moved or uploaded as a single HTML document.\n    </div>\n\n    <h3>5. Using the generated website</h3>\n    <ul>\n      <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>\n      <li>Use the player controls to start, pause, restart, and change playback speed.</li>\n      <li>Click the notation itself to pause or resume playback.</li>\n      <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>\n      <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the page.</li>\n    </ul>\n\n    <h3>6. Clearing the current collection</h3>\n    <p>\n      Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.\n      This does not erase saved website settings.\n    </p>\n\n    <h3>7. ABC Transcription Tools compatibility</h3>\n    <p>\n      The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,\n      but neither the portable library nor this Website Builder includes every feature of the full\n      ABC Transcription Tools application.\n    </p>\n    <p>\n      Some of the more complex ABC Transcription Tools features are implemented by application code\n      outside the abcjs library. Those features are not automatically available in exported websites.\n      This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools\n      application interprets the part structure and controls the playback sequence.\n    </p>\n\n    <h3>Notes</h3>\n    <ul>  <li>The exported website requires internet access to load the linked abcjs-eskin-portable\n          JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>\n <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>\n      <li>Very large tune collections can produce large HTML files and may take longer to render.</li>\n      <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>\n     <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>\n      <li>On other platforms, saving continues to use the browser's normal file-download behavior.</li>\n      <li>The visual styles affect the page presentation; they do not alter the tune data.</li>\n      <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>\n      <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>\n    </ul>\n\n    <hr style=\"margin-top:20px;\">\n      <h4 style=\"text-align: center;\">Tip Jars</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        <p class=\"instructions-title\"> This tool was created by</p>\n        <p class=\"instructions-title\"> <a href=\"https://michaeleskin.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">Michael Eskin</a></p>\n        <div style=\"margin-top:10px;\">\n          If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>PayPal</b><br/>\n          <a href=\"https://paypal.me/MichaelEskin\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">https://paypal.me/MichaelEskin</a>\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>Venmo</b><br/>\n          @MichaelEskin\n        </div>\n      </div>\n      <hr>\n      <h4 style=\"text-align: center;\">Source Code on GitHub</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        The source code for this tool is available on GitHub<br/>\n         <div style=\"margin-top:10px;\">\n          <a href=\"https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder\" target=\"_blank\" rel=\"noopener noreferrer\">abcjs-eskin Website Builder on GitHub</a>\n        </div>\n      </div>\n      <hr>\n  </div>\n</div>", {
+    await DayPilot.Modal.alert("<div class=\"instructions-modal-content\">\n  <h2>Instructions</h2>\n  <div class=\"instructions-scroll-area\">\n    <h3>Overview</h3>\n    <p>\n      This tool builds a complete standalone music website from one or more ABC files.\n      Each tune is embedded directly in the exported HTML and is rendered and played by\n      the abcjs-eskin-portable library. The generated site includes a table of contents,\n      individual tune sections, playback controls, cursor tracking, autoscroll, and links\n      back to the table of contents.\n    </p>\n\n    <h3>1. Open ABC files</h3>\n    <ol>\n      <li>Click <b>Open ABC Files</b>.</li>\n      <li>Select one or more <code>.abc</code> or text files.</li>\n      <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>\n      <li>The loaded file and tune lists show what will be included in the exported site.</li>\n    </ol>\n    <div class=\"instructions-note\">\n      Files can contain one tune or many tunes. Opening additional files adds their tunes\n      to the current collection. If the tool is opened from a share link containing a\n      <code>def=</code> parameter, the decoded tunes are loaded first and are shown as coming\n      from <b>Share link</b>; you can still open ABC files afterward to add more tunes.\n      Any ABC file header before the first <code>X:</code> is applied to every tune from that\n      file or share link. Blank lines are removed from the shared header, and it is placed\n      immediately after each tune's <code>X:</code> field.\n    </div>\n\n    <h3>2. Configure the website</h3>\n    <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>\n\n    <p><b>Text &amp; Content</b></p>\n    <ul>\n      <li><b>Website title</b> appears in the main header of the exported site.</li>\n      <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>\n      <li><b>Footer text</b> appears at the bottom of the exported page.</li>\n      <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>\n      <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>\n      <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>\n      <li><b>Text before each tune</b> adds the same centered text before every tune.</li>\n      <li><b>Text after each tune</b> adds the same centered text after every tune.</li>\n      <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>\n    </ul>\n\n    <p><b>Style &amp; Display</b></p>\n    <ul>\n      <li><b>Music genre style</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>\n           <li><b>Notation / tablature display</b> selects standard notation; notation with mandolin, GDAD bouzouki,\n          standard guitar, or DADGAD guitar tablature; or standalone versions of each tablature type.</li>\n      <li>GDAD bouzouki tablature uses the four-course tuning G-D-A-D.</li>\n      <li>DADGAD guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>\n      <li>Standalone mandolin and GDAD bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard guitar and DADGAD guitar tablature automatically add <code>%%staffsep 100</code>.</li>\n      <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>\n      <li><b>Player controller position</b> places the controls above or below the notation.</li>\n      <li><b>Notation width relative to page body</b> controls how much of the page width is used\n          by both the notation and its player.</li>\n      <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>\n      <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>\n      <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>\n    </ul>\n\n    <p><b>Playback &amp; Sounds</b></p>\n    <ul>\n      <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound\n          directives in every tune with the selected values.</li>\n      <li>Select the soundfont and the melody, bass, and chord instruments.</li>\n      <li>Select bass and chord volumes from 0 through 127.</li>\n      <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>\n    </ul>\n    <p>When injection is enabled, the tool inserts these directives after any shared ABC file header. For standalone tablature, the automatically selected <code>%%staffsep</code> directive is placed after the shared header and before these sound and MIDI directives:</p>\n    <ul>\n      <li><code>%soundfont &lt;soundfont&gt;</code></li>\n      <li><code>%%MIDI program &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassvol &lt;0\u2013127&gt;</code></li>\n      <li><code>%%MIDI chordprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI chordvol &lt;0\u2013127&gt;</code></li>\n    </ul>\n    <p>If neither a tune nor its shared ABC file header already contains a <code>%reverb</code> directive, the exported tune automatically receives:</p>\n    <ul>\n      <li><code>%reverb chamber 0.95 0.05</code></li>\n    </ul>\n    <p>The automatic reverb directive is placed after the shared ABC file header, any injected <code>%%staffsep</code>, and any injected soundfont and MIDI program or volume directives. An existing <code>%reverb</code> directive is preserved and prevents the default from being added.</p>\n    <div class=\"instructions-warning\">\n      When injection is enabled, existing soundfont and matching MIDI program or volume\n      directives in the source tunes are removed before the selected settings are inserted.\n      Disable injection to preserve each tune's original sound settings.\n    </div>\n\n    <p><b>Reset Settings</b></p>\n    <ul>\n      <li>Use <b>Reset all settings</b> to restore every option to its original default.</li>\n      <li>A confirmation dialog is shown before anything is reset.</li>\n    </ul>\n\n    <h3>3. Saved settings</h3>\n    <p>\n      Website settings are stored in this browser using <code>localStorage</code> whenever\n      <b>Apply</b> is clicked. They are restored automatically the next time the tool is opened.\n      Loaded ABC files and tunes are not stored and must be opened again in a new session.\n    </p>\n\n    <h3>4. Build and save the website</h3>\n    <ol>\n      <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>\n      <li>Enter the desired website HTML filename in the dialog.</li>\n      <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>\n    </ol>\n    <p>The exported file contains:</p>\n    <ul>\n      <li>All tune ABC source directly in the HTML.</li>\n      <li>A table of contents linking to every tune.</li>\n      <li>A Table of Contents button for every tune.</li>\n      <li>Optional ABC Transcription Tools link buttons for each tune.</li>\n      <li>Optional tune titles and composer/rhythm meta text above each tune.</li>\n      <li>Independent playback controls for every tune.</li>\n      <li>Click-the-notation pause and resume behavior.</li>\n      <li>A wide translucent playback cursor with smooth autoscroll.</li>\n      <li>Links to the required portable JavaScript and audio CSS libraries.</li>\n    </ul>\n    <div class=\"instructions-note\">\n      The ABC is not fetched from a separate file. It remains embedded in the generated\n     website so the page can be moved or uploaded as a single HTML document.\n    </div>\n\n    <h3>5. Using the generated website</h3>\n    <ul>\n      <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>\n      <li>Use the player controls to start, pause, restart, and change playback speed.</li>\n      <li>Click the notation itself to pause or resume playback.</li>\n      <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>\n      <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the page.</li>\n    </ul>\n\n    <h3>6. Clearing the current collection</h3>\n    <p>\n      Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.\n      This does not erase saved website settings.\n    </p>\n\n    <h3>7. ABC Transcription Tools compatibility</h3>\n    <p>\n      The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,\n      but neither the portable library nor this Website Builder includes every feature of the full\n      ABC Transcription Tools application.\n    </p>\n    <p>\n      Some of the more complex ABC Transcription Tools features are implemented by application code\n      outside the abcjs library. Those features are not automatically available in exported websites.\n      This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools\n      application interprets the part structure and controls the playback sequence.\n    </p>\n\n    <h3>Notes</h3>\n    <ul>  <li>The exported website requires internet access to load the linked abcjs-eskin-portable\n          JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>\n <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>\n      <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter and to create optional ABC Transcription Tools tune links. The generated website stores those links directly in the HTML.</li>\n      <li>Very large tune collections can produce large HTML files and may take longer to render.</li>\n      <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>\n     <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>\n      <li>On other platforms, saving continues to use the browser's normal file-download behavior.</li>\n      <li>The visual styles affect the page presentation; they do not alter the tune data.</li>\n      <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>\n      <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>\n    </ul>\n\n    <hr style=\"margin-top:20px;\">\n      <h4 style=\"text-align: center;\">Tip Jars</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        <p class=\"instructions-title\"> This tool was created by</p>\n        <p class=\"instructions-title\"> <a href=\"https://michaeleskin.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">Michael Eskin</a></p>\n        <div style=\"margin-top:10px;\">\n          If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>PayPal</b><br/>\n          <a href=\"https://paypal.me/MichaelEskin\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">https://paypal.me/MichaelEskin</a>\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>Venmo</b><br/>\n          @MichaelEskin\n        </div>\n      </div>\n      <hr>\n      <h4 style=\"text-align: center;\">Source Code on GitHub</h4>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        The source code for this tool is available on GitHub<br/>\n         <div style=\"margin-top:10px;\">\n          <a href=\"https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder\" target=\"_blank\" rel=\"noopener noreferrer\">abcjs-eskin Website Builder on GitHub</a>\n        </div>\n      </div>\n      <hr>\n  </div>\n</div>", {
       width: Math.min(900, Math.max(560, window.innerWidth - 36)),
       height: Math.min(820, Math.max(500, window.innerHeight - 36)),
       okText: "Close"
@@ -3175,6 +3277,40 @@
       .trim();
   }
 
+  function isTablatureOnlyDisplayMode(displayMode) {
+    return [
+      "mandolinOnly",
+      "bouzoukiOnly",
+      "guitarOnly",
+      "dadgadGuitarOnly"
+    ].includes(String(displayMode || ""));
+  }
+
+  function addDirectiveAfterXField(abc, directive) {
+    const normalized = String(abc || "").trim();
+    if (!directive || !normalized) return normalized;
+
+    const escapedDirective = directive.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const directiveRegex = new RegExp("^\\s*" + escapedDirective + "\\s*$", "mi");
+
+    if (directiveRegex.test(normalized)) return normalized;
+
+    return normalized.replace(
+      /^(X\s*:\s*.*)$/mi,
+      `$1\n${directive}`
+    );
+  }
+
+  function prepareABCTranscriptionToolsShareAbc(abc, settings) {
+    const prepared = prepareTuneAbc(abc, "", settings);
+
+    if (isTablatureOnlyDisplayMode(settings && settings.displayMode)) {
+      return addDirectiveAfterXField(prepared, "%tablature_only");
+    }
+
+    return prepared;
+  }
+
   function prepareTuneAbc(abc, fileHeader, settings) {
     const injectSounds = isChecked(settings.injectSoundSettings);
     const displayMode = String(settings.displayMode || "notation");
@@ -3262,6 +3398,8 @@
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
+    const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
+    const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
     const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
       ? " has-top-decoration"
       : "";
@@ -3273,7 +3411,19 @@
       let suffix = 2;
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
       usedIds.add(key);
-      return { ...tune, key, number: index + 1 };
+      const exportedAbc = prepareTuneAbc(tune.abc, tune.fileHeader, s);
+      const abcToolsAbc = prepareABCTranscriptionToolsShareAbc(tune.abc, s);
+      const abcToolsURL = buildABCTranscriptionToolsTuneURL(
+        abcToolsAbc,
+        abcToolsFormat,
+        abcToolsLinkMode
+      );
+
+      const abcToolsButtonText = abcToolsURL
+        ? abcToolsLinkButtonText(abcToolsLinkMode)
+        : "";
+
+      return { ...tune, key, number: index + 1, exportedAbc, abcToolsURL, abcToolsButtonText };
     });
 
     const toc = tunes.map(tune =>
@@ -3287,11 +3437,12 @@
       const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
           <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
       return `
-      <article class="score-panel${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
+      <article class="score-panel${tune.abcToolsURL ? " has-abc-tools-link" : " toc-only-actions"}${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
         ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
         <div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
+          ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
           ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
-          <a class="back-to-toc" href="#table-of-contents">↑ Table of Contents</a>
+          <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
         </div>
         ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
         ${includeTuneTextBefore && tuneTextBefore.trim()
@@ -3308,10 +3459,9 @@
       </article>`;
     }).join('\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n');
 
-    const abcBlocks = tunes.map(tune => {
-      const exportedAbc = prepareTuneAbc(tune.abc, tune.fileHeader, s);
-      return `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(exportedAbc)}\n<\/script>`;
-    }).join("\n\n  ");
+    const abcBlocks = tunes.map(tune =>
+      `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
+    ).join("\n\n  ");
 
     const displayMode = JSON.stringify(s.displayMode);
     const cursorColors = {
@@ -3395,6 +3545,24 @@
     .tune-header { position:relative; }
     .tune-header h2 { margin:0; padding:0 155px; font-size:clamp(1.5rem,3.7vw,2.5rem); text-align:center; line-height:1.15; }
     .back-to-toc { position:absolute; top:50%; right:0; transform:translateY(-50%); padding:7px 10px; color:#fff; background:var(--primary); border:1px solid var(--accent); text-decoration:none; font-size:.8rem; font-weight:800; }
+    .abc-tools-link { left:0; right:auto; }
+    .score-panel.has-abc-tools-link .tune-header h2 { padding-left:330px; padding-right:330px; }
+    @media (min-width:761px) and (max-width:1200px) {
+      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) {
+        padding-top:58px;
+      }
+      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) h2 {
+        padding-left:0;
+        padding-right:0;
+      }
+      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) .back-to-toc {
+        top:0;
+        transform:none;
+      }
+      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) .abc-tools-link {
+        top:0;
+      }
+    }
     .tune-header.no-tune-heading { min-height:34px; }
     .tune-header.no-tune-heading .back-to-toc { top:0; transform:none; }
     .tune-meta { margin:10px 0 0; color:var(--secondary); font-weight:750; text-align:center; }
@@ -3453,11 +3621,82 @@
       .score-panel { padding:30px 14px 24px; }
       .tune-header h2 { padding:0; margin-bottom:48px; }
       .back-to-toc { top:auto; right:50%; bottom:-40px; transform:translateX(50%); white-space:nowrap; }
+      .abc-tools-link { left:0; right:auto; transform:none; }
       .tune-header.no-tune-heading { min-height:44px; }
       .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
+      .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
       .notation-wrap,.audio-controls,.status { width:100%; }
     }
     ${customThemeCss}
+    .abc-tools-link {
+      left:0;
+      right:auto;
+    }
+    @media (max-width:760px) {
+      .score-panel.has-abc-tools-link .tune-header {
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:8px;
+        min-height:0;
+        margin-bottom:14px;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header h2 {
+        order:3;
+        padding-left:0;
+        padding-right:0;
+        margin-top:8px;
+        margin-bottom:0;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header .abc-tools-link,
+      .score-panel.has-abc-tools-link .tune-header .back-to-toc {
+        position:static;
+        display:block;
+        width:100%;
+        max-width:100%;
+        text-align:center;
+        white-space:normal;
+        transform:none;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header .abc-tools-link {
+        order:1;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header .back-to-toc[data-toc-link='true'] {
+        order:2;
+      }
+
+      .score-panel.toc-only-actions .tune-header {
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:8px;
+        min-height:0;
+        margin-bottom:14px;
+      }
+
+      .score-panel.toc-only-actions .tune-header h2 {
+        order:2;
+        padding-left:0;
+        padding-right:0;
+        margin-top:8px;
+        margin-bottom:0;
+      }
+
+      .score-panel.toc-only-actions .tune-header .back-to-toc[data-toc-link='true'] {
+        position:static;
+        order:1;
+        display:block;
+        width:100%;
+        max-width:100%;
+        text-align:center;
+        white-space:normal;
+        transform:none;
+      }
+    }
     .score-panel.no-tune-number .tune-header.no-tune-heading {
       min-height:30px;
       margin-top:-16px;
@@ -3468,10 +3707,19 @@
       right:0;
       transform:none;
     }
+    .score-panel.no-tune-number .tune-header.no-tune-heading .abc-tools-link {
+      top:-2px;
+      left:0;
+      right:auto;
+      transform:none;
+    }
     .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading {
       margin-top:-4px;
     }
     .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .back-to-toc {
+      top:0;
+    }
+    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .abc-tools-link {
       top:0;
     }
   </style>
@@ -3612,7 +3860,7 @@
     }
 
     function installNavigation() {
-      document.querySelectorAll(".back-to-toc").forEach(link => {
+      document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
         link.addEventListener("click", event => {
           event.preventDefault();
           stopAllPlayback();
