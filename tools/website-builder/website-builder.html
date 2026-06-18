@@ -254,9 +254,12 @@
       min-height: 39px;
       margin: 0 !important;
       padding: 7px 9px !important;
+      color: #17241c !important;
+      -webkit-text-fill-color: #17241c !important;
       border: 1px solid #b6c5ba;
       border-radius: 5px;
       background: #fff;
+      accent-color: var(--green);
     }
 
     .website-settings-tab-panel input[type="text"],
@@ -350,6 +353,51 @@
     .modal_flat_form_buttons button {
       margin-left: 0 !important;
       margin-right: 0 !important;
+    }
+
+    .modal_default_buttons input,
+    .modal_default_buttons button,
+    .modal_flat_buttons input,
+    .modal_flat_buttons button,
+    .modal_default_form_buttons input,
+    .modal_default_form_buttons button,
+    .modal_flat_form_buttons input,
+    .modal_flat_form_buttons button {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      min-width: 96px !important;
+      padding: 8px 16px !important;
+      color: #0d4c2f !important;
+      -webkit-text-fill-color: #0d4c2f !important;
+      background: #e4efe8 !important;
+      border: 1px solid #a9c2b1 !important;
+      border-radius: 6px !important;
+      box-shadow: 0 2px 0 rgba(0,0,0,.12) !important;
+      font: inherit !important;
+      font-weight: 700 !important;
+      line-height: 1.2 !important;
+      opacity: 1 !important;
+    }
+
+    .modal_default_buttons input:hover,
+    .modal_default_buttons button:hover,
+    .modal_flat_buttons input:hover,
+    .modal_flat_buttons button:hover,
+    .modal_default_form_buttons input:hover,
+    .modal_default_form_buttons button:hover,
+    .modal_flat_form_buttons input:hover,
+    .modal_flat_form_buttons button:hover,
+    .modal_default_buttons input:focus-visible,
+    .modal_default_buttons button:focus-visible,
+    .modal_flat_buttons input:focus-visible,
+    .modal_flat_buttons button:focus-visible,
+    .modal_default_form_buttons input:focus-visible,
+    .modal_default_form_buttons button:focus-visible,
+    .modal_flat_form_buttons input:focus-visible,
+    .modal_flat_form_buttons button:focus-visible {
+      background: #d7e8dc !important;
+      outline: 2px solid #176b43 !important;
+      outline-offset: 2px !important;
     }
 
     .website-settings-reset-button {
@@ -612,6 +660,27 @@
     @media (max-width: 1200px) {
       .toolbar .instructions-button {
         margin-left: 0;
+      }
+    }
+
+    @media (min-width: 761px) and (max-width: 1100px) {
+      .toolbar {
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding: 14px;
+      }
+
+      .toolbar .button {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: 0;
+        padding: 10px 13px;
+        white-space: nowrap;
+      }
+
+      #save-button {
+        padding-left: 12px;
+        padding-right: 12px;
       }
     }
 
@@ -1932,6 +2001,18 @@
     buttonRow.querySelectorAll("button, input[type='button'], input[type='submit']").forEach(button => {
       button.style.marginLeft = "0";
       button.style.marginRight = "0";
+      button.style.webkitAppearance = "none";
+      button.style.appearance = "none";
+      button.style.minWidth = "96px";
+      button.style.padding = "8px 16px";
+      button.style.color = "#0d4c2f";
+      button.style.webkitTextFillColor = "#0d4c2f";
+      button.style.background = "#e4efe8";
+      button.style.border = "1px solid #a9c2b1";
+      button.style.borderRadius = "6px";
+      button.style.boxShadow = "0 2px 0 rgba(0,0,0,.12)";
+      button.style.fontWeight = "700";
+      button.style.opacity = "1";
     });
 
     return true;
@@ -3496,6 +3577,7 @@
     );
     const shareData = {
       files: [file],
+      title: filename
     };
 
     if (
