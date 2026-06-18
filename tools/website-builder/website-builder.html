@@ -3959,7 +3959,7 @@
 
         const paper = document.getElementById(paperId);
         paper.tabIndex = 0;
-        paper.title = "Click the notation to pause or resume playback";
+        paper.title = "Click the notation to pause or resume playing";
         paper.addEventListener("click", () => void togglePlayback(controller));
         paper.addEventListener("keydown", event => {
           if (event.key === "Enter" || event.key === " ") {
@@ -3968,7 +3968,7 @@
           }
         });
 
-        status.textContent = "Click the notation to pause or resume playback";
+        status.textContent = "Click the notation to pause or resume playing";
       } catch (error) {
         console.error(error);
         status.classList.add("error");
