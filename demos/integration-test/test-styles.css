@@ -117,7 +117,13 @@ output { font-variant-numeric: tabular-nums; font-weight: 500; }
 #test-summary { color: var(--muted); font-size: .9rem; }
 #log { min-height: 170px; max-height: 360px; overflow: auto; margin: 0; padding: 12px; border-radius: 7px; background: var(--code); color: #d9eee2; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.45; }
 footer { padding: 18px; text-align: center; color: var(--muted); font-size: .85rem; }
-.abcjs-cursor { stroke: #c62828; stroke-width: 2px; }
+.abcjs-cursor {
+  stroke: #00f000;
+  stroke-width: 12px;
+  stroke-opacity: .25;
+  transform: translate(7px, 0);
+  pointer-events: none;
+}
 .test-pass { color: var(--ok); }
 .test-fail { color: var(--danger); }
 @media (max-width: 980px) {
