@@ -460,6 +460,12 @@ h2 {
   cursor: pointer;
 }
 
+.abcjs-cursor {
+  stroke-width: 12px;
+  stroke-opacity: .25;
+  transform: translate(7px, 0);
+  pointer-events: none;
+}
 .paper:focus-visible {
   outline: 3px solid var(--burgundy);
   outline-offset: 3px;

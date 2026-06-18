@@ -194,6 +194,12 @@ h2 { margin: 0 0 16px; color: var(--navy); font: 900 clamp(1.8rem, 4vw, 3rem)/1 
 .status { min-height: 1.5em; margin: 9px 0 0; color: var(--muted); text-align: center; font-size: .92rem; }
 .status.error { color: #b21f2d; font-weight: 800; }
 .paper { width: 100%; min-height: 230px; margin-top: 13px; padding: 18px 12px; overflow-x: auto; overflow-y: visible; background: #fff; border: 3px solid var(--line); border-radius: 4px 18px 4px 18px; box-shadow: inset 0 0 0 6px rgba(242,193,78,.18); cursor: pointer; }
+.abcjs-cursor {
+  stroke-width: 12px;
+  stroke-opacity: .25;
+  transform: translate(7px, 0);
+  pointer-events: none;
+}
 .paper:focus-visible { outline: 5px solid var(--orange); outline-offset: 4px; }
 .paper svg { display: block; min-width: 100%; height: auto; overflow: visible; }
 .afterword { max-width: 86ch; margin: 22px auto 0; padding: 14px 18px; color: var(--navy); background: color-mix(in srgb, var(--accent) 18%, white); border: 2px dashed var(--line); border-radius: 14px; text-align: center; font-style: italic; }

@@ -214,9 +214,7 @@ function createCursorControl(paperId) {
       );
 
       cursor.setAttribute("class", "abcjs-cursor");
-      cursor.setAttribute("stroke", "red");
-      cursor.setAttribute("stroke-width", "2");
-      cursor.setAttribute("pointer-events", "none");
+      cursor.setAttribute("stroke", "#00f000");
       svg.appendChild(cursor);
     },
 

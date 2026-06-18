@@ -98,9 +98,7 @@ function createCursorControl(paperId) {
       svg.querySelectorAll(".abcjs-cursor").forEach((oldCursor) => oldCursor.remove());
       cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
       cursor.setAttribute("class", "abcjs-cursor");
-      cursor.setAttribute("stroke", "#ef3e36");
-      cursor.setAttribute("stroke-width", "3");
-      cursor.setAttribute("pointer-events", "none");
+      cursor.setAttribute("stroke", "#00f000");
       svg.appendChild(cursor);
     },
     onEvent(event) {
