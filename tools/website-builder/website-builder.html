@@ -3179,6 +3179,9 @@
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
+    const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
+      ? " has-top-decoration"
+      : "";
 
     const usedIds = new Set();
     const tunes = state.tunes.map((tune, index) => {
@@ -3201,7 +3204,7 @@
       const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
           <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
       return `
-      <article class="score-panel" id="tune-${tune.key}" data-key="${tune.key}">
+      <article class="score-panel${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
         ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
         <div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
           ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
@@ -3372,6 +3375,22 @@
       .notation-wrap,.audio-controls,.status { width:100%; }
     }
     ${customThemeCss}
+    .score-panel.no-tune-number .tune-header.no-tune-heading {
+      min-height:30px;
+      margin-top:-16px;
+      margin-bottom:2px;
+    }
+    .score-panel.no-tune-number .tune-header.no-tune-heading .back-to-toc {
+      top:-2px;
+      right:0;
+      transform:none;
+    }
+    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading {
+      margin-top:-4px;
+    }
+    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .back-to-toc {
+      top:0;
+    }
   </style>
 </head>
 <body>
