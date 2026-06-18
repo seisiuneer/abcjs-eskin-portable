@@ -259,6 +259,11 @@ features based on those available with the ABC Transcription Tools.
       </a>
      </li>
      <li>
+      <a href="#scope-and-abc-transcription-tools-compatibility">
+       Scope and ABC Transcription Tools compatibility
+      </a>
+     </li>
+     <li>
       <a href="#files">
        Files
       </a>
@@ -334,6 +339,45 @@ multiple instruments, and reverb
      </a>
     </li>
    </ul>
+   <h2 id="scope-and-abc-transcription-tools-compatibility">
+    Scope and ABC Transcription Tools compatibility
+   </h2>
+   <p>
+    <code>
+     abcjs-eskin-portable
+    </code>
+    includes library-level notation rendering and playback features derived
+from work done for the ABC Transcription Tools, but it is not a portable
+version of the complete ABC Transcription Tools application.
+   </p>
+   <p>
+    Some of the more complex features in the ABC Transcription Tools are
+implemented by application code outside the abcjs library. Those features are
+not automatically available when using
+    <code>
+     abcjs-eskin-portable
+    </code>
+    by itself. This includes
+    <strong>
+     <code>
+      P:
+     </code>
+     tag based parts playback
+    </strong>
+    , where the application interprets the part structure and controls the
+playback sequence.
+   </p>
+   <p>
+    More generally, features that depend on the application preprocessing or
+rewriting ABC, coordinating multiple renders or players, maintaining additional
+application state, or providing a specialized user interface must be
+implemented separately by the hosting website. The portable library supports
+only the features exposed by its abcjs rendering, synthesis, directives, and
+    <code>
+     ABCJS.eskinConfig
+    </code>
+    APIs.
+   </p>
    <h2 id="files">
     Files
    </h2>

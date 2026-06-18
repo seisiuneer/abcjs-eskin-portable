@@ -13,6 +13,25 @@ These standalone website demonstrations show features of the portable library th
 - [abcjs-eskin-portable Website Builder](https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html) — Open one or more ABC files, choose a visual style and notation format, then export a complete multi-tune website with embedded ABC, playback, and table-of-contents navigation.
 
 
+## Scope and ABC Transcription Tools compatibility
+
+`abcjs-eskin-portable` includes library-level notation rendering and playback
+features derived from work done for the ABC Transcription Tools, but it is not a
+portable version of the complete ABC Transcription Tools application.
+
+Some of the more complex features in the ABC Transcription Tools are implemented
+by application code outside the abcjs library. Those features are not
+automatically available when using `abcjs-eskin-portable` by itself. This
+includes **`P:` tag based parts playback**, where the application interprets the
+part structure and controls the playback sequence.
+
+More generally, features that depend on the application preprocessing or
+rewriting ABC, coordinating multiple renders or players, maintaining additional
+application state, or providing a specialized user interface must be implemented
+separately by the hosting website. The portable library supports only the
+features exposed by its abcjs rendering, synthesis, directives, and
+`ABCJS.eskinConfig` APIs.
+
 ## Files
 
 Load the files in this order:
