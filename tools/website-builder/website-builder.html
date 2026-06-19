@@ -143,53 +143,53 @@
       border-color: var(--green);
     }
 
-    .website-settings-tab-button.reset-tab {
-      color: #7a2222;
-      background: #f3dddd;
-      border-color: #d5aaaa;
+    .website-settings-tab-button.manage-tab {
+      color: #244d35;
+      background: #dce9df;
+      border-color: #afc2b4;
     }
 
-    .website-settings-tab-button.reset-tab:hover,
-    .website-settings-tab-button.reset-tab:focus-visible {
-      color: #651919;
-      background: #f9e9e9;
+    .website-settings-tab-button.manage-tab:hover,
+    .website-settings-tab-button.manage-tab:focus-visible {
+      color: #244d35;
+      background: #edf5ef;
     }
 
-    .website-settings-tab-button.reset-tab.active {
+    .website-settings-tab-button.manage-tab.active {
       color: #fff;
-      background: #9b2f2f;
-      border-color: #7e2424;
+      background: var(--green);
+      border-color: var(--green);
     }
 
-    .website-settings-reset-panel {
+    .website-settings-manage-panel {
       min-height: 500px;
       display: grid;
       place-items: center;
       text-align: center;
     }
 
-    .website-settings-reset-card {
+    .website-settings-manage-card {
       width: min(620px, 100%);
       padding: 34px 28px;
       background: #fff;
-      border: 1px solid #dfc4c4;
+      border: 1px solid #d8e2da;
       border-radius: 10px;
-      box-shadow: 0 4px 18px rgba(90, 25, 25, .08);
+      box-shadow: 0 4px 18px rgba(18, 43, 28, .08);
     }
 
-    .website-settings-reset-card h3 {
+    .website-settings-manage-card h3 {
       margin: 0 0 12px;
-      color: #762424;
+      color: var(--green-dark);
       font-size: 1.45rem;
     }
 
-    .website-settings-reset-card p {
+    .website-settings-manage-card p {
       max-width: 52ch;
       margin: 0 auto 22px;
       color: #675454;
     }
 
-    .website-settings-reset-action {
+    .website-settings-manage-action {
       appearance: none;
       min-width: 190px;
       padding: 11px 20px;
@@ -202,8 +202,38 @@
       cursor: pointer;
     }
 
-    .website-settings-reset-action:hover,
-    .website-settings-reset-action:focus-visible {
+    .website-settings-manage-actions {
+      display: grid;
+      gap: 78px;
+      justify-items: center;
+    }
+
+    .website-settings-manage-file-actions {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+    }
+
+    .website-settings-manage-action {
+      min-width: 230px;
+      color: #fff;
+      background: var(--green);
+      border-color: var(--green-dark);
+    }
+
+    .website-settings-manage-action:hover,
+    .website-settings-manage-action:focus-visible {
+      background: var(--green-dark);
+      outline: none;
+    }
+
+    .website-settings-manage-action.danger {
+      background: #9b2f2f;
+      border-color: #7e2424;
+    }
+
+    .website-settings-manage-action.danger:hover,
+    .website-settings-manage-action.danger:focus-visible {
       background: #7e2424;
       outline: none;
     }
@@ -1463,11 +1493,11 @@
     footer: "This is the Footer",
     includeTuneHeading: false,
     includeCollectionIntro: false,
-    collectionIntro: "This is text before all the tunes",
+    collectionIntro: "This is text before all the tunes.",
     includeTuneTextBefore: false,
     tuneTextBefore: "This is text before each tune.",
     includeTuneTextAfter: false,
-    tuneTextAfter: "This is text after each tune",
+    tuneTextAfter: "This is text after each tune.",
     theme: "irish",
     displayMode: "notation",
     cursorColor: "green",
@@ -1520,6 +1550,8 @@
   };
 
   let lastWebsiteSettingsTabId = "website_settings_text";
+  let sessionSettingsFilename = "website-settings.txt";
+  let sessionWebsiteFilename = null;
 
   const fileInput = document.getElementById("abc-files");
   const settingsButton = document.getElementById("settings-button");
@@ -2103,7 +2135,7 @@
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
-    initializeWebsiteSettingsResetAction();
+    initializeWebsiteSettingsManageActions();
     return true;
   }
 
@@ -2120,38 +2152,251 @@
     );
   }
 
-  function restoreDefaultValuesInOpenSettingsDialog() {
+  function getOpenWebsiteSettingsModalRoot() {
     const tabsRoot = document.getElementById("website-settings-tabs-root");
-    if (!tabsRoot) return false;
+    if (!tabsRoot) return null;
 
-    const modalRoot =
-      tabsRoot.closest(".modal_flat") ||
+    return tabsRoot.closest(".modal_flat") ||
       tabsRoot.closest(".modal_default") ||
       tabsRoot.closest(".dpmodal") ||
       tabsRoot.parentElement;
+  }
 
-    if (!modalRoot) return false;
+  function applySettingsValuesInOpenSettingsDialog(settings, tabId = null) {
+    const tabsRoot = document.getElementById("website-settings-tabs-root");
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+
+    if (!tabsRoot || !modalRoot) return false;
 
     Object.entries(DEFAULT_SETTINGS).forEach(([fieldId, defaultValue]) => {
       const field = findWebsiteSettingsField(modalRoot, fieldId);
       if (!field) return;
 
+      const value = Object.prototype.hasOwnProperty.call(settings, fieldId)
+        ? settings[fieldId]
+        : defaultValue;
+
       if (field.type === "checkbox") {
-        field.checked = !!defaultValue;
+        field.checked = !!value;
       } else {
-        field.value = String(defaultValue);
+        field.value = String(value);
       }
 
       field.dispatchEvent(new Event("input", { bubbles: true }));
       field.dispatchEvent(new Event("change", { bubbles: true }));
     });
 
-    activateWebsiteSettingsTab("website_settings_text");
+    if (tabId) activateWebsiteSettingsTab(tabId);
 
     const panels = tabsRoot.querySelector(".website-settings-tab-panels");
     if (panels) panels.scrollTop = 0;
 
     return true;
+  }
+
+  function restoreDefaultValuesInOpenSettingsDialog() {
+    return applySettingsValuesInOpenSettingsDialog(DEFAULT_SETTINGS, "website_settings_text");
+  }
+
+  function getCurrentSettingsFromOpenSettingsDialog() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    const current = { ...state.settings };
+
+    if (!modalRoot) return { ...DEFAULT_SETTINGS, ...current };
+
+    Object.entries(DEFAULT_SETTINGS).forEach(([fieldId]) => {
+      const field = findWebsiteSettingsField(modalRoot, fieldId);
+      if (!field) return;
+
+      current[fieldId] = field.type === "checkbox" ? !!field.checked : String(field.value);
+    });
+
+    return { ...DEFAULT_SETTINGS, ...current };
+  }
+
+  function optionIds(options) {
+    return new Set(options.map(item => String(item.id)));
+  }
+
+  function validateWebsiteSettings(rawSettings) {
+    const source = rawSettings && typeof rawSettings === "object" && !Array.isArray(rawSettings)
+      ? (rawSettings.settings && typeof rawSettings.settings === "object" && !Array.isArray(rawSettings.settings)
+          ? rawSettings.settings
+          : rawSettings)
+      : null;
+
+    if (!source) {
+      return { settings: null, errors: ["The file does not contain a settings object."] };
+    }
+
+    const errors = [];
+    const settings = { ...DEFAULT_SETTINGS };
+
+    const textFields = new Set([
+      "title", "subtitle", "footer", "collectionIntro", "tuneTextBefore", "tuneTextAfter"
+    ]);
+    const booleanFields = new Set([
+      "includeTuneHeading", "includeCollectionIntro", "includeTuneTextBefore",
+      "includeTuneTextAfter", "injectSoundSettings"
+    ]);
+    const allowedValues = {
+      theme: optionIds(THEME_OPTIONS),
+      displayMode: optionIds(DISPLAY_OPTIONS),
+      cursorColor: optionIds(CURSOR_COLOR_OPTIONS),
+      soundfont: optionIds(SOUNDFONT_OPTIONS),
+      melodyProgram: optionIds(GM_INSTRUMENT_OPTIONS),
+      bassProgram: optionIds(GM_INSTRUMENT_OPTIONS),
+      bassVolume: optionIds(VOLUME_OPTIONS),
+      chordProgram: optionIds(GM_INSTRUMENT_OPTIONS),
+      chordVolume: optionIds(VOLUME_OPTIONS),
+      playerPosition: new Set(["above", "below"]),
+      notationWidth: new Set(["50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]),
+      bodyWidth: new Set(["700", "800", "900", "1000", "1100", "1180", "1280", "1400"]),
+      tuneNumbers: new Set(["hide", "show"]),
+      abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS)
+    };
+
+    Object.keys(source).forEach(key => {
+      if (!Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) return;
+
+      const value = source[key];
+
+      if (textFields.has(key)) {
+        settings[key] = String(value ?? "");
+        return;
+      }
+
+      if (booleanFields.has(key)) {
+        if (typeof value === "boolean") {
+          settings[key] = value;
+        } else {
+          errors.push(`${key} must be true or false.`);
+        }
+        return;
+      }
+
+      if (allowedValues[key]) {
+        const stringValue = String(value ?? "");
+        if (allowedValues[key].has(stringValue)) {
+          settings[key] = stringValue;
+        } else {
+          errors.push(`${key} has an unsupported value.`);
+        }
+      }
+    });
+
+    return { settings: errors.length ? null : settings, errors };
+  }
+
+  function ensureTxtExtension(filename) {
+    let safeName = String(filename || "").trim();
+    if (!safeName) safeName = "website-settings";
+    safeName = safeName.replace(/[\/:*?"<>|]+/g, "-");
+    if (!/\.txt$/i.test(safeName)) {
+      safeName = safeName.replace(/\.[^.\/]*$/, "") + ".txt";
+    }
+    return safeName;
+  }
+
+  async function promptSettingsFilename() {
+    const defaultName = ensureTxtExtension(sessionSettingsFilename || "website-settings.txt");
+    const result = await DayPilot.Modal.form(
+      [{ name: "Settings filename", id: "filename", type: "text" }],
+      { filename: defaultName },
+      { top: 150 },
+      { title: "Save Settings", width: 470, okText: "Save", cancelText: "Cancel" }
+    );
+
+    if (result.canceled) return null;
+
+    const filename = ensureTxtExtension(result.result.filename || defaultName);
+    sessionSettingsFilename = filename;
+    return filename;
+  }
+
+  function downloadSettingsFile(filename, settings) {
+    const text = JSON.stringify(settings, null, 2);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function saveWebsiteSettingsToFile() {
+    const filename = await promptSettingsFilename();
+    if (!filename) return;
+
+    const currentSettings = getCurrentSettingsFromOpenSettingsDialog();
+    const validation = validateWebsiteSettings(currentSettings);
+
+    if (!validation.settings) {
+      await DayPilot.Modal.alert(
+        "The current settings could not be saved because they contain invalid values:<br><br>" +
+        escapeHtml(validation.errors.join("\n")).replace(/\n/g, "<br>"),
+        { title: "Invalid Settings", okText: "OK" }
+      );
+      return;
+    }
+
+    downloadSettingsFile(filename, validation.settings);
+    setStatus(`Saved website settings to ${filename}.`);
+  }
+
+  function selectSettingsFile() {
+    return new Promise(resolve => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.multiple = false;
+
+      if (!isIOSDevice()) {
+        input.setAttribute("accept", ".txt,.json,text/plain,application/json");
+      }
+
+      input.addEventListener("change", () => {
+        resolve(input.files && input.files.length ? input.files[0] : null);
+        input.remove();
+      }, { once: true });
+
+      document.body.appendChild(input);
+      input.click();
+    });
+  }
+
+  async function loadWebsiteSettingsFromFile() {
+    const file = await selectSettingsFile();
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const validation = validateWebsiteSettings(parsed);
+
+      if (!validation.settings) {
+        throw new Error(validation.errors.join("\n"));
+      }
+
+      applySettingsValuesInOpenSettingsDialog(validation.settings, "website_settings_manage");
+      setStatus(`Loaded website settings from ${file.name}. Click Apply to use them.`);
+      const loadedAlertPromise = DayPilot.Modal.alert(
+        '<div style="text-align:center;">Website settings were successfully loaded.<br><br>Click <b>Apply</b> to use them,<br/>or <b>Cancel</b> to leave the current applied settings unchanged.</div>',
+        { title: "Settings Loaded", okText: "OK", top: 150 }
+      );
+      await loadedAlertPromise;
+    } catch (error) {
+      console.warn("Unable to load website settings file.", error);
+      await DayPilot.Modal.alert(
+        "The selected settings file could not be loaded.<br><br>" +
+        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
+        { title: "Invalid Settings File", okText: "OK" }
+      );
+      setStatus("The selected settings file could not be loaded.", true);
+    }
   }
 
   function lowerResetConfirmationDialog() {
@@ -2211,12 +2456,24 @@
     setStatus("All website settings were reset to their defaults.");
   }
 
-  function initializeWebsiteSettingsResetAction() {
-    const resetButton = document.getElementById("website-settings-reset-action");
-    if (!resetButton || resetButton.dataset.initialized === "true") return;
+  function initializeWebsiteSettingsManageActions() {
+    const saveButton = document.getElementById("website-settings-save-action");
+    if (saveButton && saveButton.dataset.initialized !== "true") {
+      saveButton.addEventListener("click", saveWebsiteSettingsToFile);
+      saveButton.dataset.initialized = "true";
+    }
 
-    resetButton.addEventListener("click", resetWebsiteSettingsFromTab);
-    resetButton.dataset.initialized = "true";
+    const loadButton = document.getElementById("website-settings-load-action");
+    if (loadButton && loadButton.dataset.initialized !== "true") {
+      loadButton.addEventListener("click", loadWebsiteSettingsFromFile);
+      loadButton.dataset.initialized = "true";
+    }
+
+    const resetButton = document.getElementById("website-settings-reset-action");
+    if (resetButton && resetButton.dataset.initialized !== "true") {
+      resetButton.addEventListener("click", resetWebsiteSettingsFromTab);
+      resetButton.dataset.initialized = "true";
+    }
   }
 
   function centerWebsiteSettingsButtons() {
@@ -2303,7 +2560,7 @@
               '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Display</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_playback" role="tab" aria-selected="false">Playback &amp; Sounds</button>' +
-              '<button type="button" class="website-settings-tab-button reset-tab" data-tab="website_settings_reset" role="tab" aria-selected="false">Reset Settings</button>' +
+              '<button type="button" class="website-settings-tab-button manage-tab" data-tab="website_settings_manage" role="tab" aria-selected="false">Manage Settings</button>' +
             '</div>' +
             '<div class="website-settings-tab-panels">' +
               '<section id="website_settings_text" class="website-settings-tab-panel active" role="tabpanel">' +
@@ -2323,12 +2580,18 @@
                   '<div id="website_settings_playback_chord_volume"></div>' +
                 '</div>' +
               '</section>' +
-              '<section id="website_settings_reset" class="website-settings-tab-panel" role="tabpanel">' +
-                '<div class="website-settings-reset-panel">' +
-                  '<div class="website-settings-reset-card">' +
-                    '<h3>Reset all website settings</h3>' +
-                    '<p>This restores every website setting to its original default value and removes the saved settings from this browser.</p>' +
-                    '<button id="website-settings-reset-action" class="website-settings-reset-action" type="button">Reset all settings</button>' +
+              '<section id="website_settings_manage" class="website-settings-tab-panel" role="tabpanel">' +
+                '<div class="website-settings-manage-panel">' +
+                  '<div class="website-settings-manage-card">' +
+                    '<h3>Manage website settings</h3>' +
+                    '<p>Save the current website settings to a file, load a saved settings file, or reset every setting to the original defaults.</p>' +
+                    '<div class="website-settings-manage-actions">' +
+                      '<div class="website-settings-manage-file-actions">' +
+                        '<button id="website-settings-save-action" class="website-settings-manage-action" type="button">Save Settings</button>' +
+                        '<button id="website-settings-load-action" class="website-settings-manage-action" type="button">Load Settings</button>' +
+                      '</div>' +
+                      '<button id="website-settings-reset-action" class="website-settings-manage-action danger" type="button">Reset all Settings</button>' +
+                    '</div>' +
                   '</div>' +
                 '</div>' +
               '</section>' +
@@ -2462,15 +2725,25 @@
       return;
     }
 
-    await DayPilot.Modal.alert("<div class=\"instructions-modal-content\">\n  <h2>Instructions</h2>\n  <div class=\"instructions-scroll-area\">\n    <h3>Overview</h3>\n    <p>\n      This tool builds a complete standalone music website from one or more ABC files.\n      Each tune is embedded directly in the exported HTML and is rendered and played by\n      the abcjs-eskin-portable library. The generated site includes a table of contents,\n      individual tune sections, playback controls, cursor tracking, autoscroll, and links\n      back to the table of contents.\n    </p>\n\n    <h3>1. Open ABC files</h3>\n    <ol>\n      <li>Click <b>Open ABC Files</b>.</li>\n      <li>Select one or more <code>.abc</code> or text files.</li>\n      <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>\n      <li>The loaded file and tune lists show what will be included in the exported site.</li>\n    </ol>\n    <div class=\"instructions-note\">\n      Files can contain one tune or many tunes. Opening additional files adds their tunes\n      to the current collection. If the tool is opened from a share link containing a\n      <code>def=</code> parameter, the decoded tunes are loaded first and are shown as coming\n      from <b>Share link</b>; you can still open ABC files afterward to add more tunes.\n      Any ABC file header before the first <code>X:</code> is applied to every tune from that\n      file or share link. Blank lines are removed from the shared header, and it is placed\n      immediately after each tune's <code>X:</code> field.\n    </div>\n\n    <h3>2. Configure the website</h3>\n    <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>\n\n    <p><b>Text &amp; Content</b></p>\n    <ul>\n      <li><b>Website title</b> appears in the main header of the exported site.</li>\n      <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>\n      <li><b>Footer text</b> appears at the bottom of the exported page.</li>\n      <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>\n      <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>\n      <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>\n      <li><b>Text before each tune</b> adds the same centered text before every tune.</li>\n      <li><b>Text after each tune</b> adds the same centered text after every tune.</li>\n      <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>\n    </ul>\n\n    <p><b>Style &amp; Display</b></p>\n    <ul>\n      <li><b>Music genre style</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>\n           <li><b>Notation / tablature display</b> selects standard notation; notation with mandolin, GDAD bouzouki,\n          standard guitar, or DADGAD guitar tablature; or standalone versions of each tablature type.</li>\n      <li>GDAD bouzouki tablature uses the four-course tuning G-D-A-D.</li>\n      <li>DADGAD guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>\n      <li>Standalone mandolin and GDAD bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard guitar and DADGAD guitar tablature automatically add <code>%%staffsep 100</code>.</li>\n      <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>\n      <li><b>Player controller position</b> places the controls above or below the notation.</li>\n      <li><b>Notation width relative to page body</b> controls how much of the page width is used\n          by both the notation and its player.</li>\n      <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>\n      <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>\n      <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>\n    </ul>\n\n    <p><b>Playback &amp; Sounds</b></p>\n    <ul>\n      <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound\n          directives in every tune with the selected values.</li>\n      <li>Select the soundfont and the melody, bass, and chord instruments.</li>\n      <li>Select bass and chord volumes from 0 through 127.</li>\n      <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>\n    </ul>\n    <p>When injection is enabled, the tool inserts these directives after any shared ABC file header. For standalone tablature, the automatically selected <code>%%staffsep</code> directive is placed after the shared header and before these sound and MIDI directives:</p>\n    <ul>\n      <li><code>%soundfont &lt;soundfont&gt;</code></li>\n      <li><code>%%MIDI program &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassvol &lt;0\u2013127&gt;</code></li>\n      <li><code>%%MIDI chordprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI chordvol &lt;0\u2013127&gt;</code></li>\n    </ul>\n    <p>If neither a tune nor its shared ABC file header already contains a <code>%reverb</code> directive, the exported tune automatically receives:</p>\n    <ul>\n      <li><code>%reverb chamber 0.95 0.05</code></li>\n    </ul>\n    <p>The automatic reverb directive is placed after the shared ABC file header, any injected <code>%%staffsep</code>, and any injected soundfont and MIDI program or volume directives. An existing <code>%reverb</code> directive is preserved and prevents the default from being added.</p>\n    <div class=\"instructions-warning\">\n      When injection is enabled, existing soundfont and matching MIDI program or volume\n      directives in the source tunes are removed before the selected settings are inserted.\n      Disable injection to preserve each tune's original sound settings.\n    </div>\n\n    <p><b>Reset Settings</b></p>\n    <ul>\n      <li>Use <b>Reset all settings</b> to restore every option to its original default.</li>\n      <li>A confirmation dialog is shown before anything is reset.</li>\n    </ul>\n\n    <h3>3. Saved settings</h3>\n    <p>\n      Website settings are stored in this browser using <code>localStorage</code> whenever\n      <b>Apply</b> is clicked. They are restored automatically the next time the tool is opened.\n      Loaded ABC files and tunes are not stored and must be opened again in a new session.\n    </p>\n\n    <h3>4. Build and save the website</h3>\n    <ol>\n      <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>\n      <li>Enter the desired website HTML filename in the dialog.</li>\n      <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>\n    </ol>\n    <p>The exported file contains:</p>\n    <ul>\n      <li>All tune ABC source directly in the HTML.</li>\n      <li>A table of contents linking to every tune.</li>\n      <li>A Table of Contents button for every tune that returns to the top of the table of contents.</li>\n      <li>Optional ABC Transcription Tools link buttons for each tune.</li>\n      <li>Optional tune titles and composer/rhythm meta text above each tune.</li>\n      <li>Independent playback controls for every tune.</li>\n      <li>Click-the-notation pause and resume behavior.</li>\n      <li>A wide translucent playback cursor with smooth autoscroll.</li>\n      <li>Links to the required portable JavaScript and audio CSS libraries.</li>\n    </ul>\n    <div class=\"instructions-note\">\n      The ABC is not fetched from a separate file. It remains embedded in the generated\n     website so the page can be moved or uploaded as a single HTML document.\n    </div>\n\n    <h3>5. Using the generated website</h3>\n    <ul>\n      <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>\n      <li>Use the player controls to start, pause, restart, and change playback speed.</li>\n      <li>Click the notation itself to pause or resume playback.</li>\n      <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>\n      <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the table of contents.</li>\n    </ul>\n\n    <h3>6. Clearing the current collection</h3>\n    <p>\n      Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.\n      This does not erase saved website settings.\n    </p>\n\n    <h3>7. ABC Transcription Tools compatibility</h3>\n    <p>\n      The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,\n      but neither the portable library nor this Website Builder includes every feature of the full\n      ABC Transcription Tools application.\n    </p>\n    <p>\n      Some of the more complex ABC Transcription Tools features are implemented by application code\n      outside the abcjs library. Those features are not automatically available in exported websites.\n      This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools\n      application interprets the part structure and controls the playback sequence.\n    </p>\n\n    <h3>Notes</h3>\n    <ul>  <li>The exported website requires internet access to load the linked abcjs-eskin-portable\n          JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>\n <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>\n      <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter and to create optional ABC Transcription Tools tune links. The generated website stores those links directly in the HTML.</li>\n      <li>Very large tune collections can produce large HTML files and may take longer to render.</li>\n      <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>\n     <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>\n      <li>On other platforms, saving continues to use the browser's normal file-download behavior.</li>\n      <li>The visual styles affect the page presentation; they do not alter the tune data.</li>\n      <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>\n      <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>\n    </ul>\n\n    <hr style=\"margin-top:20px;\">\n      <h3 style=\"text-align: center;\">Tip Jars</h3>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        <p class=\"instructions-title\"> This tool was created by</p>\n        <p class=\"instructions-title\"> <a href=\"https://michaeleskin.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">Michael Eskin</a></p>\n        <div style=\"margin-top:10px;\">\n          If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>PayPal</b><br/>\n          <a href=\"https://paypal.me/MichaelEskin\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">https://paypal.me/MichaelEskin</a>\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>Venmo</b><br/>\n          @MichaelEskin\n        </div>\n      </div>\n      <hr>\n      <h3 style=\"text-align: center;\">Source Code on GitHub</h3>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        The source code for this tool is available on GitHub<br/>\n         <div style=\"margin-top:10px;\">\n          <a href=\"https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder\" target=\"_blank\" rel=\"noopener noreferrer\">abcjs-eskin Website Builder on GitHub</a>\n        </div>\n      </div>\n      <hr>\n  </div>\n</div>", {
+    await DayPilot.Modal.alert("<div class=\"instructions-modal-content\">\n  <h2>Instructions</h2>\n  <div class=\"instructions-scroll-area\">\n    <h3>Overview</h3>\n    <p>\n      This tool builds a complete standalone music website from one or more ABC files.\n      Each tune is embedded directly in the exported HTML and is rendered and played by\n      the abcjs-eskin-portable library. The generated site includes a table of contents,\n      individual tune sections, playback controls, cursor tracking, autoscroll, and links\n      back to the table of contents.\n    </p>\n\n    <h3>1. Open ABC files</h3>\n    <ol>\n      <li>Click <b>Open ABC Files</b>.</li>\n      <li>Select one or more <code>.abc</code> or text files.</li>\n      <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>\n      <li>The loaded file and tune lists show what will be included in the exported site.</li>\n    </ol>\n    <div class=\"instructions-note\">\n      Files can contain one tune or many tunes. Opening additional files adds their tunes\n      to the current collection. If the tool is opened from a share link containing a\n      <code>def=</code> parameter, the decoded tunes are loaded first and are shown as coming\n      from <b>Share link</b>; you can still open ABC files afterward to add more tunes.\n      Any ABC file header before the first <code>X:</code> is applied to every tune from that\n      file or share link. Blank lines are removed from the shared header, and it is placed\n      immediately after each tune's <code>X:</code> field.\n    </div>\n\n    <h3>2. Configure the website</h3>\n    <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>\n\n    <p><b>Text &amp; Content</b></p>\n    <ul>\n      <li><b>Website title</b> appears in the main header of the exported site.</li>\n      <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>\n      <li><b>Footer text</b> appears at the bottom of the exported page.</li>\n      <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>\n      <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>\n      <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>\n      <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>\n      <li><b>Text before each tune</b> adds the same centered text before every tune.</li>\n      <li><b>Text after each tune</b> adds the same centered text after every tune.</li>\n      <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>\n    </ul>\n\n    <p><b>Style &amp; Display</b></p>\n    <ul>\n      <li><b>Music genre style</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>\n           <li><b>Notation / tablature display</b> selects standard notation; notation with mandolin, GDAD bouzouki,\n          standard guitar, or DADGAD guitar tablature; or standalone versions of each tablature type.</li>\n      <li>GDAD bouzouki tablature uses the four-course tuning G-D-A-D.</li>\n      <li>DADGAD guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>\n      <li>Standalone mandolin and GDAD bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard guitar and DADGAD guitar tablature automatically add <code>%%staffsep 100</code>.</li>\n      <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>\n      <li><b>Player controller position</b> places the controls above or below the notation.</li>\n      <li><b>Notation width relative to page body</b> controls how much of the page width is used\n          by both the notation and its player.</li>\n      <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>\n      <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>\n      <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>\n    </ul>\n\n    <p><b>Playback &amp; Sounds</b></p>\n    <ul>\n      <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound\n          directives in every tune with the selected values.</li>\n      <li>Select the soundfont and the melody, bass, and chord instruments.</li>\n      <li>Select bass and chord volumes from 0 through 127.</li>\n      <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>\n    </ul>\n    <p>When injection is enabled, the tool inserts these directives after any shared ABC file header. For standalone tablature, the automatically selected <code>%%staffsep</code> directive is placed after the shared header and before these sound and MIDI directives:</p>\n    <ul>\n      <li><code>%soundfont &lt;soundfont&gt;</code></li>\n      <li><code>%%MIDI program &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI bassvol &lt;0\u2013127&gt;</code></li>\n      <li><code>%%MIDI chordprog &lt;program&gt;</code></li>\n      <li><code>%%MIDI chordvol &lt;0\u2013127&gt;</code></li>\n    </ul>\n    <p>If neither a tune nor its shared ABC file header already contains a <code>%reverb</code> directive, the exported tune automatically receives:</p>\n    <ul>\n      <li><code>%reverb chamber 0.95 0.05</code></li>\n    </ul>\n    <p>The automatic reverb directive is placed after the shared ABC file header, any injected <code>%%staffsep</code>, and any injected soundfont and MIDI program or volume directives. An existing <code>%reverb</code> directive is preserved and prevents the default from being added.</p>\n    <div class=\"instructions-warning\">\n      When injection is enabled, existing soundfont and matching MIDI program or volume\n      directives in the source tunes are removed before the selected settings are inserted.\n      Disable injection to preserve each tune's original sound settings.\n    </div>\n\n    <p><b>Manage Settings</b></p>\n    <ul>\n      <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool. The default filename is <code>website-settings.txt</code>, and the filename is automatically forced to use a <code>.txt</code> extension. If you enter a different filename, that filename is reused for later settings saves during the same browser session only.</li>\n      <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>\n      <li><b>Reset all Settings</b> restores every option to its original default and removes the saved settings from this browser. A confirmation dialog is shown before anything is reset.</li>\n    </ul>\n\n    <h3>3. Saved settings</h3>\n    <p>\n      Website settings are stored in this browser using <code>localStorage</code> when\n      <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.\n</p>\n\n    <h3>4. Build and save the website</h3>\n    <ol>\n      <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>\n      <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only.</li>\n      <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>\n    </ol>\n    <p>The exported file contains:</p>\n    <ul>\n      <li>All tune ABC source directly in the HTML.</li>\n      <li>A table of contents linking to every tune.</li>\n      <li>A Table of Contents button for every tune that returns to the top of the table of contents.</li>\n      <li>Optional ABC Transcription Tools link buttons for each tune.</li>\n      <li>Optional tune titles and composer/rhythm meta text above each tune.</li>\n      <li>Independent playback controls for every tune.</li>\n      <li>Click-the-notation pause and resume behavior.</li>\n      <li>A wide translucent playback cursor with smooth autoscroll.</li>\n      <li>Links to the required portable JavaScript and audio CSS libraries.</li>\n    </ul>\n    <div class=\"instructions-note\">\n      The ABC is not fetched from a separate file. It remains embedded in the generated\n     website so the page can be moved or uploaded as a single HTML document.\n    </div>\n\n    <h3>5. Using the generated website</h3>\n    <ul>\n      <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>\n      <li>Use the player controls to start, pause, restart, and change playback speed.</li>\n      <li>Click the notation itself to pause or resume playback.</li>\n      <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>\n      <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the table of contents.</li>\n    </ul>\n\n    <h3>6. Clearing the current collection</h3>\n    <p>\n      Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.\n      This does not erase saved website settings.\n    </p>\n\n    <h3>7. ABC Transcription Tools compatibility</h3>\n    <p>\n      The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,\n      but neither the portable library nor this Website Builder includes every feature of the full\n      ABC Transcription Tools application.\n    </p>\n    <p>\n      Some of the more complex ABC Transcription Tools features are implemented by application code\n      outside the abcjs library. Those features are not automatically available in exported websites.\n      This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools\n      application interprets the part structure and controls the playback sequence.\n    </p>\n\n    <h3>Notes</h3>\n    <ul>  <li>The exported website requires internet access to load the linked abcjs-eskin-portable\n          JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>\n <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>\n      <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter and to create optional ABC Transcription Tools tune links. The generated website stores those links directly in the HTML.</li>\n      <li>Very large tune collections can produce large HTML files and may take longer to render.</li>\n      <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>\n     <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>\n      <li>On other platforms, saving continues to use the browser's normal file-download behavior.</li>\n      <li>The visual styles affect the page presentation; they do not alter the tune data.</li>\n      <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>\n      <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>\n    </ul>\n\n    <hr style=\"margin-top:20px;\">\n      <h3 style=\"text-align: center;\">Tip Jars</h3>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        <p class=\"instructions-title\"> This tool was created by</p>\n        <p class=\"instructions-title\"> <a href=\"https://michaeleskin.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">Michael Eskin</a></p>\n        <div style=\"margin-top:10px;\">\n          If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>PayPal</b><br/>\n          <a href=\"https://paypal.me/MichaelEskin\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#1a73e8; text-decoration:underline;\">https://paypal.me/MichaelEskin</a>\n        </div>\n        <div style=\"margin-top:10px;\">\n          <b>Venmo</b><br/>\n          @MichaelEskin\n        </div>\n      </div>\n      <hr>\n      <h3 style=\"text-align: center;\">Source Code on GitHub</h3>\n      <div style=\"text-align: center;margin-bottom:20px;\">\n        The source code for this tool is available on GitHub<br/>\n         <div style=\"margin-top:10px;\">\n          <a href=\"https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder\" target=\"_blank\" rel=\"noopener noreferrer\">abcjs-eskin Website Builder on GitHub</a>\n        </div>\n      </div>\n      <hr>\n  </div>\n</div>", {
       width: Math.min(900, Math.max(560, window.innerWidth - 36)),
       height: Math.min(820, Math.max(500, window.innerHeight - 36)),
       okText: "Close"
     });
   }
 
+  function ensureHtmlExtension(filename) {
+    let safeName = String(filename || "").trim();
+    if (!safeName) safeName = slugify(state.settings.title, "abc-music-site") + ".html";
+    safeName = safeName.replace(/[\/:*?"<>|]+/g, "-");
+    if (!/\.html?$/i.test(safeName)) safeName += ".html";
+    return safeName;
+  }
+
   async function promptFilename() {
-    const defaultName = slugify(state.settings.title, "abc-music-site") + ".html";
+    const defaultName = ensureHtmlExtension(
+      sessionWebsiteFilename || slugify(state.settings.title, "abc-music-site") + ".html"
+    );
     const result = await DayPilot.Modal.form(
       [{ name: "Website filename", id: "filename", type: "text" }],
       { filename: defaultName },
@@ -2479,10 +2752,10 @@
     );
 
     if (result.canceled) return null;
-    let filename = String(result.result.filename || "").trim();
-    if (!filename) filename = defaultName;
-    if (!/\.html?$/i.test(filename)) filename += ".html";
-    return filename.replace(/[\\/:*?"<>|]+/g, "-");
+
+    const filename = ensureHtmlExtension(result.result.filename || defaultName);
+    sessionWebsiteFilename = filename;
+    return filename;
   }
 
   function safeScriptText(value) {
