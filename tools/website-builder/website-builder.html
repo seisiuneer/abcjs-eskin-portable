@@ -754,6 +754,8 @@
     { id: "irish", name: "Traditional Irish Music" },
     { id: "irishpub", name: "Irish Pub Songs" },
     { id: "scottish", name: "Traditional Scottish Music" },
+    { id: "english", name: "Traditional English Music" },
+    { id: "quebecois", name: "Québécois" },
 
     { id: "folk", name: "Folk / Acoustic" },
     { id: "bluegrass", name: "Bluegrass" },
@@ -4015,6 +4017,94 @@
         muted: '#5c6875', primary: '#234b73', secondary: '#8e2f38', accent: '#c8a95b',
         line: '#9ca9b4', hero: 'linear-gradient(135deg,#16324f,#315e87)', radius: '4px',
         shadow: '0 12px 28px rgba(20,40,60,.16)', ornament: '✣'
+      },
+
+
+
+      english: {
+        font: 'Georgia, "Times New Roman", serif',
+        bg: '#f2f2f4',
+        panel: '#fffdf8',
+        ink: '#20242e',
+        muted: '#626a78',
+        primary: '#012169',
+        secondary: '#c8102e',
+        accent: '#ffffff',
+        line: '#b7becb',
+        hero: '#012169',
+        radius: '5px',
+        shadow: '0 12px 28px rgba(1,33,105,.16)',
+        ornament: '✥',
+        customCss: `
+    .hero {
+      position:relative;
+      overflow:hidden;
+      background:#012169;
+    }
+    .hero::before,
+    .hero::after {
+      content:"";
+      position:absolute;
+      top:50%;
+      width:96px;
+      height:58px;
+      border-radius:4px;
+      box-shadow:0 5px 14px rgba(0,0,0,.22);
+      pointer-events:none;
+      transform:translateY(-50%);
+      background:
+        linear-gradient(90deg,transparent 0 42%,#c8102e 42% 58%,transparent 58%),
+        linear-gradient(0deg,transparent 0 38%,#c8102e 38% 62%,transparent 62%),
+        linear-gradient(90deg,transparent 0 36%,#ffffff 36% 42%,transparent 42% 58%,#ffffff 58% 64%,transparent 64%),
+        linear-gradient(0deg,transparent 0 30%,#ffffff 30% 38%,transparent 38% 62%,#ffffff 62% 70%,transparent 70%),
+        linear-gradient(30deg,transparent 0 44%,#ffffff 44% 50%,#c8102e 50% 53%,#ffffff 53% 59%,transparent 59%),
+        linear-gradient(-30deg,transparent 0 44%,#ffffff 44% 50%,#c8102e 50% 53%,#ffffff 53% 59%,transparent 59%),
+        #012169;
+    }
+    .hero::before {
+      left:clamp(14px, 3vw, 42px);
+    }
+    .hero::after {
+      right:clamp(14px, 3vw, 42px);
+    }
+    .hero h1 {
+      position:relative;
+      z-index:1;
+      display:inline;
+      padding:.06em .22em .10em;
+      border-radius:10px;
+      background:rgba(1,22,70,.50);
+      -webkit-box-decoration-break:clone;
+      box-decoration-break:clone;
+      text-shadow:
+        0 2px 0 rgba(0,0,0,.54),
+        0 4px 14px rgba(0,0,0,.44);
+    }
+    @media (max-width:760px) {
+      .hero::before,
+      .hero::after {
+        width:72px;
+        height:44px;
+        opacity:.55;
+      }
+    }
+        `
+      },
+
+      quebecois: {
+        font: 'Georgia, "Times New Roman", serif',
+        bg: '#eef4fb',
+        panel: '#fffefd',
+        ink: '#142a42',
+        muted: '#586b7c',
+        primary: '#005eb8',
+        secondary: '#174c8c',
+        accent: '#ffffff',
+        line: '#bdd0e4',
+        hero: '#005eb8',
+        radius: '6px',
+        shadow: '0 12px 28px rgba(0,94,184,.15)',
+        ornament: '✣'
       },
       jazz: {
         font: '"Avenir Next", "Segoe UI", sans-serif', bg: '#17151a', panel: '#27232b',
