@@ -751,9 +751,9 @@
   "use strict";
 
   const THEME_OPTIONS = [
-    { id: "irish", name: "Traditional Irish" },
+    { id: "irish", name: "Traditional Irish Music" },
     { id: "irishpub", name: "Irish Pub Songs" },
-    { id: "scottish", name: "Traditional Scottish" },
+    { id: "scottish", name: "Traditional Scottish Music" },
 
     { id: "folk", name: "Folk / Acoustic" },
     { id: "bluegrass", name: "Bluegrass" },
@@ -3525,7 +3525,17 @@
       font-weight:900;
       letter-spacing:.02em;
     }
-    .hero h1 { text-shadow:3px 3px 0 #0f5f2d; }
+    .hero h1 {
+      display:inline;
+      padding:.08em .24em .12em;
+      border-radius:14px;
+      background:rgba(15,95,45,.28);
+      -webkit-box-decoration-break:clone;
+      box-decoration-break:clone;
+      text-shadow:
+        0 2px 0 rgba(15,95,45,.74),
+        0 4px 12px rgba(0,0,0,.32);
+    }
     .table-of-contents,
     .score-panel {
       position:relative;
@@ -3634,28 +3644,6 @@
       border-bottom:9px solid #d6a83d;
       background:
         linear-gradient(135deg,#173a75,#1d5fa8);
-    }
-    .hero::before {
-      content:"✡";
-      position:absolute;
-      left:10%;
-      bottom:10px;
-      color:rgba(255,255,255,.18);
-      font-size:8rem;
-      line-height:1;
-      transform:rotate(-12deg);
-      pointer-events:none;
-    }
-    .hero::after {
-      content:"✡";
-      position:absolute;
-      right:10%;
-      bottom:10px;
-      color:rgba(255,255,255,.18);
-      font-size:8rem;
-      line-height:1;
-      transform:rotate(12deg);
-      pointer-events:none;
     }
     .hero .page-width { position:relative; z-index:1; }
     .hero h1,
@@ -3916,7 +3904,17 @@
       font-weight:900;
       letter-spacing:.015em;
     }
-    .hero h1 { text-shadow:3px 3px 0 #082817; }
+    .hero h1 {
+      display:inline;
+      padding:.08em .24em .12em;
+      border-radius:14px;
+      background:rgba(8,40,23,.30);
+      -webkit-box-decoration-break:clone;
+      box-decoration-break:clone;
+      text-shadow:
+        0 2px 0 rgba(8,40,23,.74),
+        0 4px 12px rgba(0,0,0,.34);
+    }
     .hero-copy { color:#f2e5c1; }
     .table-of-contents,
     .score-panel {
