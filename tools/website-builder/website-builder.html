@@ -814,7 +814,8 @@
     { id: "pride", name: "Pride" },
     { id: "christmas", name: "Christmas" },
     { id: "hanukkah", name: "Hanukkah" },
-    { id: "kwanzaa", name: "Kwanzaa" }
+    { id: "kwanzaa", name: "Kwanzaa" },
+    { id: "custom", name: "Custom" }
   ];
 
   const DISPLAY_OPTIONS = [
@@ -1490,6 +1491,7 @@
   const WHISTLE_TAB_FONT_CSS = "@font-face { font-family: 'TinWhistleFingering'; src: url(data:font/ttf;base64,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) format('truetype'); font-weight: normal; font-style: normal; }";
 
   const SETTINGS_STORAGE_KEY = "abcStandaloneWebsiteBuilderSettings_v1";
+  const CUSTOM_THEME_STORAGE_KEY = "abcStandaloneWebsiteBuilderCustomTheme_v1";
 
   const DEFAULT_SETTINGS = {
     title: "This is the Title",
@@ -1547,10 +1549,112 @@
     }
   }
 
+  function builtinThemeCss(theme) {
+    return themeCss(theme, true);
+  }
+
+  function normalizeCustomTheme(rawTheme) {
+    if (!rawTheme || typeof rawTheme !== "object" || Array.isArray(rawTheme)) {
+      return null;
+    }
+
+    const name = String(rawTheme.name || "").trim();
+    if (!name) return null;
+
+    const base = builtinThemeCss("irish");
+    const customCss = rawTheme.customCss !== undefined
+      ? rawTheme.customCss
+      : rawTheme.advancedCss;
+
+    return {
+      font: String(rawTheme.font || base.font),
+      bg: String(rawTheme.bg || base.bg),
+      panel: String(rawTheme.panel || base.panel),
+      ink: String(rawTheme.ink || base.ink),
+      muted: String(rawTheme.muted || base.muted),
+      primary: String(rawTheme.primary || base.primary),
+      secondary: String(rawTheme.secondary || base.secondary),
+      accent: String(rawTheme.accent || base.accent),
+      line: String(rawTheme.line || base.line),
+      hero: String(rawTheme.hero || base.hero),
+      radius: String(rawTheme.radius || base.radius),
+      shadow: String(rawTheme.shadow || base.shadow),
+      ornament: String(rawTheme.ornament || base.ornament),
+      customCss: String(customCss || ""),
+      name
+    };
+  }
+
+  function validateCustomTheme(rawTheme) {
+    const errors = [];
+    const theme = normalizeCustomTheme(rawTheme);
+
+    if (!theme) {
+      return {
+        theme: null,
+        errors: ["The file does not contain a usable custom theme with a non-empty name field."]
+      };
+    }
+
+    const requiredFields = [
+      "font", "bg", "panel", "ink", "muted", "primary", "secondary",
+      "accent", "line", "hero", "radius", "shadow", "ornament", "name"
+    ];
+
+    requiredFields.forEach(field => {
+      if (!String(theme[field] || "").trim()) {
+        errors.push(`${field} is missing or empty.`);
+      }
+    });
+
+    ["customCss", "hero"].forEach(field => {
+      const value = String(theme[field] || "").toLowerCase();
+      if (value.includes("</style") || value.includes("</script") || value.includes("<script")) {
+        errors.push(`${field} contains unsupported HTML/script markup.`);
+      }
+    });
+
+    return { theme: errors.length ? null : theme, errors };
+  }
+
+  function loadSavedCustomTheme() {
+    try {
+      const saved = localStorage.getItem(CUSTOM_THEME_STORAGE_KEY);
+      if (!saved) return null;
+
+      const validation = validateCustomTheme(JSON.parse(saved));
+      return validation.theme || null;
+    } catch (error) {
+      console.warn("Unable to restore custom theme from localStorage.", error);
+      return null;
+    }
+  }
+
+  function saveCustomTheme(theme) {
+    try {
+      const validation = validateCustomTheme(theme);
+      localStorage.setItem(
+        CUSTOM_THEME_STORAGE_KEY,
+        JSON.stringify(validation.theme || theme)
+      );
+    } catch (error) {
+      console.warn("Unable to save custom theme to localStorage.", error);
+    }
+  }
+
+  function clearSavedCustomTheme() {
+    try {
+      localStorage.removeItem(CUSTOM_THEME_STORAGE_KEY);
+    } catch (error) {
+      console.warn("Unable to clear custom theme from localStorage.", error);
+    }
+  }
+
   const state = {
     files: [],
     tunes: [],
-    settings: loadSavedSettings()
+    settings: loadSavedSettings(),
+    customTheme: loadSavedCustomTheme()
   };
 
   let lastWebsiteSettingsTabId = "website_settings_text";
@@ -1580,6 +1684,24 @@
 
   function optionName(options, id) {
     return (options.find(item => item.id === id) || {}).name || id;
+  }
+
+  function customThemeLabel() {
+    return state.customTheme && state.customTheme.name
+      ? `Custom - ${state.customTheme.name}`
+      : "Custom";
+  }
+
+  function themeOptionsForDisplay() {
+    return THEME_OPTIONS.map(option =>
+      option.id === "custom"
+        ? { ...option, name: customThemeLabel() }
+        : option
+    );
+  }
+
+  function themeName(id) {
+    return id === "custom" ? customThemeLabel() : optionName(THEME_OPTIONS, id);
   }
 
   function normalizeHexColor(color) {
@@ -1917,7 +2039,7 @@
 
     document.getElementById("file-count").textContent = state.files.length;
     document.getElementById("tune-count").textContent = state.tunes.length;
-    document.getElementById("theme-summary").textContent = optionName(THEME_OPTIONS, state.settings.theme);
+    document.getElementById("theme-summary").textContent = themeName(state.settings.theme);
     document.getElementById("display-summary").textContent = optionName(DISPLAY_OPTIONS, state.settings.displayMode);
 
     const hasTunes = state.tunes.length > 0;
@@ -1928,7 +2050,7 @@
 
     document.getElementById("settings-preview").innerHTML =
       `<strong>${escapeHtml(state.settings.title)}</strong><br>` +
-      `${escapeHtml(optionName(THEME_OPTIONS, state.settings.theme))} · ` +
+      `${escapeHtml(themeName(state.settings.theme))} · ` +
       `${escapeHtml(optionName(DISPLAY_OPTIONS, state.settings.displayMode))} · ` +
       `${escapeHtml(optionName(CURSOR_COLOR_OPTIONS, state.settings.cursorColor))} play cursor · ` +
       `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
@@ -2085,6 +2207,63 @@
     return true;
   }
 
+  function updateOpenSettingsCustomThemeOption() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    if (!modalRoot) return;
+
+    const themeField = findWebsiteSettingsField(modalRoot, "theme");
+    if (!themeField) return;
+
+    const customOption = Array.from(themeField.options).find(option => option.value === "custom");
+    if (customOption) customOption.textContent = customThemeLabel();
+  }
+
+  async function showCustomThemeRequiredDialog() {
+    if (window.DayPilot && DayPilot.Modal) {
+      await DayPilot.Modal.alert(
+        '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
+          'Load a custom theme before selecting <b>Custom</b><br>' +
+          'as the exported website theme.<br><br>' +
+          'Use <b>Manage Settings</b> &gt; <b>Import Custom Theme</b>.' +
+        '</div>',
+        { title: "Custom Theme Required", okText: "OK", top: 150 }
+      );
+    } else {
+      window.alert("Load a custom theme before selecting Custom as the exported website theme.");
+    }
+  }
+
+  function initializeCustomThemeSelectionGuard() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    if (!modalRoot) return;
+
+    const themeField = findWebsiteSettingsField(modalRoot, "theme");
+    if (!themeField || themeField.dataset.customThemeGuard === "true") return;
+
+    themeField.dataset.customThemePreviousValue = themeField.value || state.settings.theme || DEFAULT_SETTINGS.theme;
+    themeField.addEventListener("focus", () => {
+      themeField.dataset.customThemePreviousValue = themeField.value || state.settings.theme || DEFAULT_SETTINGS.theme;
+    });
+    themeField.addEventListener("change", async () => {
+      if (themeField.value !== "custom") {
+        themeField.dataset.customThemePreviousValue = themeField.value;
+        return;
+      }
+
+      if (state.customTheme) {
+        themeField.dataset.customThemePreviousValue = "custom";
+        return;
+      }
+
+      const fallback = themeField.dataset.customThemePreviousValue && themeField.dataset.customThemePreviousValue !== "custom"
+        ? themeField.dataset.customThemePreviousValue
+        : DEFAULT_SETTINGS.theme;
+      themeField.value = fallback;
+      await showCustomThemeRequiredDialog();
+    });
+    themeField.dataset.customThemeGuard = "true";
+  }
+
   function buildWebsiteSettingsTabs() {
     const tabsRoot = document.getElementById("website-settings-tabs-root");
     if (!tabsRoot || tabsRoot.dataset.built === "true") return !!tabsRoot;
@@ -2143,6 +2322,8 @@
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
     initializeWebsiteSettingsManageActions();
+    initializeCustomThemeSelectionGuard();
+    updateOpenSettingsCustomThemeOption();
     return true;
   }
 
@@ -2355,14 +2536,16 @@
     setStatus(`Saved website settings to ${filename}.`);
   }
 
-  function selectSettingsFile() {
+  function selectSettingsFile(accept = ".txt,.json,text/plain,application/json") {
     return new Promise(resolve => {
       const input = document.createElement("input");
       input.type = "file";
       input.multiple = false;
 
-      if (!isIOSDevice()) {
-        input.setAttribute("accept", ".txt,.json,text/plain,application/json");
+      if (!isIOSDevice() && accept) {
+        input.setAttribute("accept", accept);
+      } else {
+        input.removeAttribute("accept");
       }
 
       input.addEventListener("change", () => {
@@ -2403,6 +2586,62 @@
         { title: "Invalid Settings File", okText: "OK" }
       );
       setStatus("The selected settings file could not be loaded.", true);
+    }
+  }
+
+  function parseCustomThemeFileText(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) throw new Error("The selected custom theme file is empty.");
+
+    try {
+      return JSON.parse(trimmed);
+    } catch (jsonError) {
+      // Theme Builder exports are JavaScript object literals rather than strict JSON.
+      // The fallback keeps the imported value local to the browser and validates it before use.
+      try {
+        return Function('"use strict"; return (' + trimmed + ');')();
+      } catch (objectLiteralError) {
+        throw new Error("The selected file is not a valid custom theme file.");
+      }
+    }
+  }
+
+  async function importCustomThemeFromFile() {
+    const file = await selectSettingsFile(".txt,.js,.json,text/plain,application/json,text/javascript,application/javascript");
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = parseCustomThemeFileText(text);
+      const validation = validateCustomTheme(parsed);
+
+      if (!validation.theme) {
+        throw new Error(validation.errors.join("\n"));
+      }
+
+      state.customTheme = validation.theme;
+      saveCustomTheme(state.customTheme);
+      updateOpenSettingsCustomThemeOption();
+      renderState();
+      setStatus(`Imported custom theme: ${state.customTheme.name}.`);
+
+      await DayPilot.Modal.alert(
+        '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
+          'Custom theme was successfully loaded.<br><br>' +
+          '<div style="font-weight:750;margin:0 0 34px;">' +
+            escapeHtml(state.customTheme.name) +
+          '</div>' +
+        '</div>',
+        { title: "Custom Theme Loaded", okText: "OK", top: 150 }
+      );
+    } catch (error) {
+      console.warn("Unable to import custom theme file.", error);
+      await DayPilot.Modal.alert(
+        "The selected custom theme file could not be loaded.<br><br>" +
+        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
+        { title: "Invalid Custom Theme File", okText: "OK" }
+      );
+      setStatus("The selected custom theme file could not be loaded.", true);
     }
   }
 
@@ -2451,6 +2690,7 @@
     if (confirmation.canceled) return;
 
     state.settings = { ...DEFAULT_SETTINGS };
+    state.customTheme = null;
 
     try {
       localStorage.removeItem(SETTINGS_STORAGE_KEY);
@@ -2458,9 +2698,11 @@
       console.warn("Unable to clear saved website settings from localStorage.", error);
     }
 
+    clearSavedCustomTheme();
+    updateOpenSettingsCustomThemeOption();
     restoreDefaultValuesInOpenSettingsDialog();
     renderState();
-    setStatus("All website settings were reset to their defaults.");
+    setStatus("All website settings and imported custom themes were reset to their defaults.");
   }
 
   function initializeWebsiteSettingsManageActions() {
@@ -2474,6 +2716,12 @@
     if (loadButton && loadButton.dataset.initialized !== "true") {
       loadButton.addEventListener("click", loadWebsiteSettingsFromFile);
       loadButton.dataset.initialized = "true";
+    }
+
+    const importThemeButton = document.getElementById("website-settings-import-theme-action");
+    if (importThemeButton && importThemeButton.dataset.initialized !== "true") {
+      importThemeButton.addEventListener("click", importCustomThemeFromFile);
+      importThemeButton.dataset.initialized = "true";
     }
 
     const resetButton = document.getElementById("website-settings-reset-action");
@@ -2591,11 +2839,12 @@
                 '<div class="website-settings-manage-panel">' +
                   '<div class="website-settings-manage-card">' +
                     '<h3>Manage website settings</h3>' +
-                    '<p>Save the current website settings to a file, load a saved settings file, or reset every setting to the original defaults.</p>' +
+                    '<p>Save or load website settings, import a custom theme, or reset every setting to the original defaults.</p>' +
                     '<div class="website-settings-manage-actions">' +
                       '<div class="website-settings-manage-file-actions">' +
                         '<button id="website-settings-load-action" class="website-settings-manage-action" type="button">Load Settings</button>' +
                         '<button id="website-settings-save-action" class="website-settings-manage-action" type="button">Save Settings</button>' +
+                        '<button id="website-settings-import-theme-action" class="website-settings-manage-action" type="button">Import Custom Theme</button>' +
                       '</div>' +
                       '<button id="website-settings-reset-action" class="website-settings-manage-action danger" type="button">Reset all Settings</button>' +
                     '</div>' +
@@ -2646,7 +2895,7 @@
         type: "textarea",
         height: 44
       },
-      { name: "Music genre visual theme", id: "theme", type: "select", options: THEME_OPTIONS },
+      { name: "Music genre visual theme", id: "theme", type: "select", options: themeOptionsForDisplay() },
       { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
       { name: "Playback cursor color", id: "cursorColor", type: "select", options: CURSOR_COLOR_OPTIONS },
       {
@@ -2720,6 +2969,12 @@
     const result = await modalPromise;
 
     if (result.canceled) return;
+
+    if (result.result && result.result.theme === "custom" && !state.customTheme) {
+      await showCustomThemeRequiredDialog();
+      return;
+    }
+
     state.settings = { ...state.settings, ...result.result };
     saveSettings();
     renderState();
@@ -2829,9 +3084,18 @@
           <p><b>Manage Settings</b></p>
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
-            <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool. The default filename is <code>website-settings.txt</code>, and the filename is automatically forced to use a <code>.txt</code> extension. If you enter a different filename, that filename is reused for later settings saves during the same browser session only.</li>
-            <li><b>Reset all Settings</b> restores every option to its original default and removes the saved settings from this browser. A confirmation dialog is shown before anything is reset.</li>
+            <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
+            <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b>abcjs-eskin Website Theme Builder</b> tool. After import, the theme menu shows <b>Custom - imported theme name</b>.</li>
+            <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Select the Custom theme and click <b>Apply</b> when you want to use it for exported websites.</li>
+            <li>If no custom theme is loaded, choosing <b>Custom</b> displays a message asking you to import a custom theme first.</li>
+            <li><b>Reset all Settings</b> returns every website setting to its factory default and also removes any imported custom theme.</li>
           </ul>
+
+          <div class="instructions-note">
+            Custom themes are intended for advanced/developer use. They can be created with the
+            <b>abcjs-eskin Website Theme Builder</b> tool. Contact the developer for more information
+            if you are interested in creating your own custom themes.
+          </div>
 
           <h3>3. Saved settings</h3>
           <p>
@@ -2972,7 +3236,11 @@
     return String(value).replace(/<\/script/gi, "<\\/script");
   }
 
-  function themeCss(theme) {
+  function themeCss(theme, builtInOnly = false) {
+    if (!builtInOnly && theme === "custom" && state && state.customTheme) {
+      return state.customTheme;
+    }
+
     const themes = {
       retro60: {
         font: '"Trebuchet MS", Arial, sans-serif', bg: '#f3d96b', panel: '#fff8d4',
@@ -5538,6 +5806,12 @@
 
   async function saveSite() {
     if (!state.tunes.length) return;
+
+    if (state.settings.theme === "custom" && !state.customTheme) {
+      await showCustomThemeRequiredDialog();
+      setStatus("Load a custom theme before building a website with the Custom theme.", true);
+      return;
+    }
 
     try {
       const filename = await promptFilename();
