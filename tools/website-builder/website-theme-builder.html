@@ -1374,6 +1374,11 @@
 
     .status.error { color: #9d1c1c; font-weight: 700; }
 
+    .theme-builder-status {
+      margin-top: 16px;
+      text-align: center;
+    }
+
     .help {
       color: var(--muted);
       font-size: .93rem;
@@ -1494,8 +1499,8 @@
   </header>
 
   <main class="app theme-builder-app">
-    <p id="status" class="status" aria-live="polite" hidden></p>
     <div id="theme-builder-container"></div>
+    <p id="status" class="status theme-builder-status" aria-live="polite" hidden></p>
   </main>
 <script>
 (() => {
@@ -1640,6 +1645,7 @@
 
   function setStatus(message, error = false) {
     status.textContent = message;
+    status.hidden = !message;
     status.classList.toggle("error", error);
   }
 
@@ -3083,7 +3089,7 @@
         </p>
         <p>
           The controls are organized into three tabs: <b>Theme Basics</b>, <b>Header &amp; Shadows</b>, and <b>Colors</b>.
-          The live preview shows the header, Table-of-contents tiles, a sample tune panel, and an ornament/divider so you can
+          The live preview shows the header, Table-of-contents tiles, a sample tune panel, and the decorative ornament between tunes so you can
           see the major visual effects before saving the theme.
         </p>
 
@@ -3113,7 +3119,7 @@
         <h3>Theme Basics tab</h3>
         <ul>
           <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this tool. When you integrate the theme into the abcjs-eskin Website Builder source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
-          <li><b>Ornament character</b> sets the decorative character used for section dividers in the generated abcjs-eskin Website Builder site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
+          <li><b>Ornament character</b> sets the decorative character used for the decorative ornament between tunes in the generated abcjs-eskin Website Builder site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
           <li><b>Font stack</b> controls the main website font family used by the generated abcjs-eskin Website Builder page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
           <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the generated website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is imported into or pasted into the main abcjs-eskin Website Builder.</li>
           <li><b>Show simple highlight geometric graphics in the header</b> adds a simple decorative highlight shape behind part of the header. When saved, the generated CSS for this graphic is also included in <code>customCss</code>.</li>
@@ -3170,7 +3176,7 @@
           <li>Click <b>Save Theme File</b> in this tool.</li>
           <li>Open the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Builder</a></b>.</li>
           <li>Open <b>Website Settings</b>, go to the <b>Manage Settings</b> tab, click <b>Import Custom Theme</b>, and open the saved custom theme file.</li>
-          <li>Select <b>Custom</b> as the visual style on the <b>Style &amp; Display</b> tab and click <b>Apply</b> to use the custom theme.</li>
+          <li>After importing, the visual style is set to <b>Custom</b> automatically. Click <b>Apply</b> to use the imported custom theme.</li>
         </ol>
 
         <h3>Adding a saved theme to the abcjs-eskin Website Builder source code</h3>
