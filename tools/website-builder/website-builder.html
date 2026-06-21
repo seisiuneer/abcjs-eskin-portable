@@ -273,8 +273,19 @@
     .website-settings-fields-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px 16px;
+      gap: 14px 16px;
       align-items: start;
+    }
+
+    #website_settings_text_fields {
+      display: grid;
+      gap: 14px;
+    }
+
+    #website_settings_text_fields .website-settings-field-includeCollectionIntro,
+    #website_settings_text_fields .website-settings-field-includeTuneTextBefore,
+    #website_settings_text_fields .website-settings-field-includeTuneTextAfter {
+      margin-bottom: -7px !important;
     }
 
     .website-settings-tab-panel .modal_default_form_item,
@@ -854,6 +865,11 @@
     { id: "player", name: "Add Open in Player buttons" },
     { id: "editor", name: "Add Open in Editor buttons" },
     { id: "fullscreen", name: "Add Open in Full Screen buttons" }
+  ];
+
+  const HIDE_SHOW_OPTIONS = [
+    { id: "hide", name: "Hide" },
+    { id: "show", name: "Show" }
   ];
 
   const SOUNDFONT_OPTIONS = [
@@ -1519,6 +1535,8 @@
     theme: "irish",
     displayMode: "notation",
     cursorColor: "green",
+    showTuneDividers: "show",
+    includeTableOfContents: "show",
     injectSoundSettings: true,
     soundfont: "fatboy",
     melodyProgram: "0",
@@ -1701,7 +1719,7 @@
   function customThemeLabel() {
     return state.customTheme && state.customTheme.name
       ? `Custom - ${state.customTheme.name}`
-      : "Custom";
+      : "Custom - No theme loaded";
   }
 
   function themeOptionsForDisplay() {
@@ -2068,6 +2086,8 @@
       `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
       `Player ${state.settings.playerPosition} notation · ` +
       `Notation ${state.settings.notationWidth}% of page body · ` +
+      `${state.settings.includeTableOfContents === "hide" ? "Table of contents hidden" : "Table of contents shown"} · ` +
+      `${state.settings.showTuneDividers === "hide" ? "Decorative tune dividers hidden" : "Decorative tune dividers shown"} · ` +
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
       `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
@@ -2215,6 +2235,7 @@
       field.closest(".modal_default_form_field");
 
     if (!row) return false;
+    row.classList.add("website-settings-field-row", "website-settings-field-" + fieldId);
     destination.appendChild(row);
     return true;
   }
@@ -2297,7 +2318,8 @@
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
-        "tuneNumbers", "abcToolsLinks"
+        "includeTableOfContents", "tuneNumbers",
+        "showTuneDividers", "abcToolsLinks"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -2329,7 +2351,7 @@
       });
     });
 
-    if (moved < 25) return false;
+    if (moved < 27) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -2452,6 +2474,8 @@
       playerPosition: new Set(["above", "below"]),
       notationWidth: new Set(["50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]),
       bodyWidth: new Set(["700", "800", "900", "1000", "1100", "1180", "1280", "1400"]),
+      showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
+      includeTableOfContents: optionIds(HIDE_SHOW_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS)
     };
@@ -2952,6 +2976,12 @@
         ]
       },
       {
+        name: "Include table of contents",
+        id: "includeTableOfContents",
+        type: "select",
+        options: HIDE_SHOW_OPTIONS
+      },
+      {
         name: "Tune numbers in table of contents and tune sections",
         id: "tuneNumbers",
         type: "select",
@@ -2959,6 +2989,12 @@
           { id: "hide", name: "Hide" },
           { id: "show", name: "Show" }
         ]
+      },
+      {
+        name: "Show decorative divider between tunes",
+        id: "showTuneDividers",
+        type: "select",
+        options: HIDE_SHOW_OPTIONS
       },
       {
         name: "Add ABC Transcription Tools link buttons to each tune",
@@ -3007,9 +3043,9 @@
           <p>
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
-            the abcjs-eskin-portable library. The generated site includes a table of contents,
-            individual tune sections, playback controls, cursor tracking, autoscroll, and links
-            back to the table of contents.
+            the abcjs-eskin-portable library. The generated site can include a table of contents,
+            individual tune sections, playback controls, cursor tracking, autoscroll, decorative
+            tune dividers, and links back to the table of contents.
           </p>
 
           <h3>1. Open ABC files</h3>
@@ -3061,6 +3097,8 @@
             <li><b>Notation width relative to page body</b> controls how much of the page width is used
                 by both the notation and its player.</li>
             <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
+            <li><b>Show decorative divider between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
+            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. If set to <b>Hide</b>, the per-tune <b>Table of Contents</b> buttons are also omitted.</li>
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>
             <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>
           </ul>
@@ -3097,16 +3135,14 @@
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
-            <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b>abcjs-eskin Website Theme Builder</b> tool. After import, the theme menu shows <b>Custom - imported theme name</b>.</li>
+            <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu shows <b>Custom - Imported theme name</b>.</li>
             <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Select the Custom theme and click <b>Apply</b> when you want to use it for exported websites.</li>
-            <li>If no custom theme is loaded, choosing <b>Custom</b> displays a message asking you to import a custom theme first.</li>
+            <li>If no custom theme is loaded, the theme menu shows <b>Custom - No theme loaded</b>. Choosing it displays a message asking you to import a custom theme first.</li>
             <li><b>Reset all Settings</b> returns every website setting to its factory default and also removes any imported custom theme.</li>
           </ul>
 
           <div class="instructions-note">
-            Custom themes are intended for advanced/developer use. They can be created with the
-            <b>abcjs-eskin Website Theme Builder</b> tool. Contact the developer for more information
-            if you are interested in creating your own custom themes.
+            Custom themes are intended for advanced/developer use. Contact the developer if you need help creating or refining a custom theme.
           </div>
 
           <h3>3. Saved settings</h3>
@@ -3124,8 +3160,9 @@
           <p>The exported file contains:</p>
           <ul>
             <li>All tune ABC source directly in the HTML.</li>
-            <li>A table of contents linking to every tune.</li>
-            <li>A Table of Contents button for every tune that returns to the top of the table of contents.</li>
+            <li>An optional table of contents linking to every tune.</li>
+            <li>An optional Table of Contents button for every tune that returns to the top of the table of contents when the table of contents is included.</li>
+            <li>Optional decorative dividers between tune sections.</li>
             <li>Optional ABC Transcription Tools link buttons for each tune.</li>
             <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
             <li>Independent playback controls for every tune.</li>
@@ -3140,11 +3177,11 @@
 
           <h3>5. Using the generated website</h3>
           <ul>
-            <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>
+            <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
             <li>Click the notation itself to pause or resume playback.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
-            <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
+            <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
           </ul>
 
           <h3>6. Clearing the current collection</h3>
@@ -3315,20 +3352,6 @@
     .score-panel {
       border-radius:24px 5px 24px 5px;
     }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:9px;
-      background:repeating-linear-gradient(90deg,#49b7ad 0 34px,transparent 34px 45px);
-    }
-    .score-panel:nth-of-type(4n+1)::before { background:repeating-linear-gradient(90deg,#f26a2e 0 34px,transparent 34px 45px); }
-    .score-panel:nth-of-type(4n+2)::before { background:repeating-linear-gradient(90deg,#49b7ad 0 34px,transparent 34px 45px); }
-    .score-panel:nth-of-type(4n+3)::before { background:repeating-linear-gradient(90deg,#f2c14e 0 34px,transparent 34px 45px); }
-    .score-panel:nth-of-type(4n)::before { background:repeating-linear-gradient(90deg,#d968a5 0 34px,transparent 34px 45px); }
     .table-of-contents h2,
     .tune-header h2 {
       color:#222a55;
@@ -3817,24 +3840,6 @@
           transparent 27px
         );
     }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:12px;
-      height:8px;
-      border-radius:999px;
-      background:
-        repeating-linear-gradient(
-          90deg,
-          #e05b4f 0 28px,
-          #f5c94a 28px 56px,
-          #4aa3df 56px 84px,
-          #7bc96f 84px 112px
-        );
-    }
     .table-of-contents,
     .score-panel {
       position:relative;
@@ -4018,18 +4023,6 @@
       border:2px solid transparent;
       backdrop-filter:blur(8px);
     }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:24px;
-      right:24px;
-      top:16px;
-      height:4px;
-      border-radius:999px;
-      background:linear-gradient(90deg,#e40303,#ff8c00,#ffed00,#008026,#24408e,#732982);
-      opacity:.85;
-    }
     .table-of-contents h2,
     .tune-header h2 {
       color:#141827;
@@ -4153,17 +4146,6 @@
       background:
         linear-gradient(rgba(255,241,210,.96),rgba(255,241,210,.96)),
         repeating-linear-gradient(45deg,transparent 0 14px,rgba(141,63,31,.10) 14px 16px);
-    }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:8px;
-      background:repeating-linear-gradient(90deg,#8d3f1f 0 24px,#d49a3a 24px 34px,#1f5f73 34px 46px);
-      border-radius:999px;
     }
     .toc-links a {
       border:3px solid #5d3822;
@@ -4311,17 +4293,6 @@
         linear-gradient(rgba(255,250,240,.97),rgba(255,250,240,.97)),
         repeating-linear-gradient(-45deg,transparent 0 18px,rgba(215,25,32,.16) 18px 21px);
     }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:9px;
-      border-radius:999px;
-      background:repeating-linear-gradient(90deg,#d71920 0 22px,#fff7e6 22px 32px,#00843d 32px 54px,#f6c945 54px 66px);
-    }
     .toc-links a {
       border:2px solid #0f5f2d;
       border-radius:18px;
@@ -4430,17 +4401,6 @@
         linear-gradient(rgba(255,255,255,.97),rgba(255,255,255,.97)),
         repeating-linear-gradient(60deg,transparent 0 24px,rgba(29,95,168,.10) 24px 27px);
     }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:9px;
-      background:repeating-linear-gradient(90deg,#1d5fa8 0 28px,#d6a83d 28px 38px,#2450a4 38px 66px);
-      border-radius:999px;
-    }
     .toc-links a {
       border:2px solid #173a75;
       border-radius:14px 4px 14px 4px;
@@ -4544,17 +4504,6 @@
       background:
         linear-gradient(rgba(255,246,223,.97),rgba(255,246,223,.97)),
         repeating-linear-gradient(90deg,transparent 0 34px,rgba(17,17,17,.08) 34px 38px);
-    }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:10px;
-      background:linear-gradient(90deg,#111111 0 33%,#b8202e 33% 66%,#1f7a3a 66% 100%);
-      border-radius:999px;
     }
     .toc-links a {
       color:#1f1b14;
@@ -4690,17 +4639,6 @@
       background:
         linear-gradient(rgba(255,248,223,.96),rgba(255,248,223,.96)),
         radial-gradient(circle at 18px 18px,rgba(15,109,63,.10) 0 7px,transparent 8px) 0 0/52px 52px;
-    }
-    .table-of-contents::before,
-    .score-panel::before {
-      content:"";
-      position:absolute;
-      left:18px;
-      right:18px;
-      top:13px;
-      height:9px;
-      border-radius:999px;
-      background:repeating-linear-gradient(90deg,#0f6d3f 0 28px,#d4a33d 28px 38px,#9a5a24 38px 50px);
     }
     .toc-links a {
       color:#1b2e20;
@@ -5078,7 +5016,8 @@
       s.includeTuneHeading === true || s.includeTuneHeading === "true" || s.includeTuneHeading === 1;
     const includeCollectionIntro =
       s.includeCollectionIntro === true || s.includeCollectionIntro === "true" || s.includeCollectionIntro === 1;
-    const collectionIntroMarkup = includeCollectionIntro && collectionIntro.trim()
+    const hasCollectionIntro = includeCollectionIntro && collectionIntro.trim();
+    const collectionIntroMarkup = hasCollectionIntro
       ? `<section class="collection-intro page-width"><p>${collectionIntro}</p></section>`
       : "";
     const tuneTextBefore = escapeHtmlAllowLinksAndBreaks(s.tuneTextBefore);
@@ -5090,6 +5029,8 @@
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
+    const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
+    const includeTableOfContents = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) !== "hide";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
     const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
@@ -5122,20 +5063,43 @@
       `<a href="#tune-${tune.key}">${showTuneNumbers ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.title)}</a>`
     ).join("\n        ");
 
+    const tocMarkup = includeTableOfContents
+      ? `<nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
+    <h2 id="toc-title">Table of Contents</h2>
+    <div class="toc-links">
+        ${toc}
+    </div>
+  </nav>`
+      : "";
+
     const playerAbove = s.playerPosition === "above";
+    const tuneSeparator = showTuneDividers
+      ? '\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n'
+      : "\n";
 
     const articles = tunes.map(tune => {
       const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
       const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
           <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
-      return `
-      <article class="score-panel${tune.abcToolsURL ? " has-abc-tools-link" : " toc-only-actions"}${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
-        ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
-        <div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
+      const articleActionClass =
+        (tune.abcToolsURL ? " has-abc-tools-link" : (includeTableOfContents ? " toc-only-actions" : "")) +
+        (includeTableOfContents ? " has-toc-link" : " no-toc-link") +
+        (!tune.abcToolsURL && !includeTableOfContents ? " no-tune-actions" : "");
+      const hasTuneHeader = includeTuneHeading || tune.abcToolsURL || includeTableOfContents;
+      const numberOnlyClass = showTuneNumbers && !hasTuneHeader ? " number-only-tune" : "";
+      const numberOnlyWithActionsClass = showTuneNumbers && !includeTuneHeading && hasTuneHeader ? " number-only-with-actions" : "";
+      const tuneHeaderMarkup = hasTuneHeader
+        ? `<div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
           ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
           ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
-          <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
-        </div>
+          ${includeTableOfContents ? `<a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>` : ""}
+        </div>`
+        : "";
+
+      return `
+      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
+        ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
+        ${tuneHeaderMarkup}
         ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
         ${includeTuneTextBefore && tuneTextBefore.trim()
           ? `<div class="prose tune-text-before"><p>${tuneTextBefore}</p></div>`
@@ -5149,7 +5113,7 @@
           ? `<div class="afterword tune-text-after"><p>${tuneTextAfter}</p></div>`
           : ""}
       </article>`;
-    }).join('\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n');
+    }).join(tuneSeparator);
 
     const abcBlocks = tunes.map(tune =>
       `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
@@ -5228,17 +5192,22 @@
       outline:none;
     }
     .ornament { margin-top:16px; color:var(--accent); font-size:2rem; }
-    .collection-intro { margin:34px auto 0; padding:22px 28px; color:var(--muted); background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .collection-intro { margin:24px auto; padding:22px 28px; color:var(--muted); background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
     .collection-intro p { max-width:82ch; margin:0 auto; text-align:center; }
-    .table-of-contents { margin:38px auto; padding:28px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
+    .collection-intro + .table-of-contents,
+    .collection-intro + .score-panel { margin-top:0; }
+    .table-of-contents { margin:24px auto; padding:28px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
+    .table-of-contents + .score-panel { margin-top:0; }
     .table-of-contents h2 { margin:0 0 20px; font-size:clamp(1.7rem,4vw,2.6rem); }
     .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
     .toc-links a { display:flex; align-items:center; gap:10px; min-height:54px; padding:10px 13px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); text-decoration:none; text-align:left; }
     .toc-links a:hover,.toc-links a:focus-visible { color:#fff; background:var(--primary); outline:none; }
     .toc-links span,.chapter-label { display:grid; place-items:center; color:#fff; background:var(--primary); border:2px solid var(--accent); border-radius:50%; font-weight:800; }
     .toc-links span { flex:0 0 34px; height:34px; }
-    main { padding-bottom:64px; }
-    .score-panel { position:relative; padding:38px 34px 30px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    main { padding-top:${includeTableOfContents || hasCollectionIntro ? "0" : "24px"}; padding-bottom:64px; }
+    .score-panel { position:relative; padding:32px 34px 30px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .score-panel + .score-panel { margin-top:${showTuneDividers ? "0" : "24px"}; }
+    .score-panel.no-tune-actions .tune-header h2 { padding-left:0; padding-right:0; }
     .chapter-label { width:50px; height:50px; margin:0 auto 12px; }
     .tune-header { position:relative; }
     .tune-header h2 { margin:0; padding:0 155px; font-size:clamp(1.5rem,3.7vw,2.5rem); text-align:center; line-height:1.15; }
@@ -5421,6 +5390,20 @@
     .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .abc-tools-link {
       top:0;
     }
+    .score-panel.number-only-tune,
+    .score-panel.number-only-with-actions {
+      padding-top:24px;
+    }
+    @media (min-width:761px) {
+      .score-panel.number-only-with-actions .tune-header.no-tune-heading {
+        min-height:0;
+      }
+      .score-panel.number-only-with-actions .tune-header.no-tune-heading .back-to-toc,
+      .score-panel.number-only-with-actions .tune-header.no-tune-heading .abc-tools-link {
+        top:-40px;
+        transform:none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -5433,12 +5416,7 @@
 
   ${collectionIntroMarkup}
 
-  <nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
-    <h2 id="toc-title">Table of Contents</h2>
-    <div class="toc-links">
-        ${toc}
-    </div>
-  </nav>
+  ${tocMarkup}
 
   <main class="page-width">
     ${articles}
