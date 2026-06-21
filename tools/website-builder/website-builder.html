@@ -5127,6 +5127,9 @@
 
       if (tune.isSectionHeader) {
         const sectionHeaderActionClass = includeTableOfContents ? " has-toc-link" : " no-tune-actions";
+        const sectionHeaderNumberMarkup = showThisNumber
+          ? `<div class="chapter-label section-header-number">${tune.number}</div>`
+          : "";
         const sectionHeaderTocMarkup = includeTableOfContents
           ? `<div class="tune-header no-tune-heading section-header-actions">
           <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
@@ -5135,9 +5138,11 @@
 
         return `
       <article class="score-panel section-header-panel${sectionHeaderActionClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}">
-        ${showThisNumber ? `<div class="chapter-label">${tune.number}</div>` : ""}
         <div class="section-header-main">
-          ${sectionHeaderTocMarkup}
+          <div class="section-header-topline">
+            ${sectionHeaderNumberMarkup}
+            ${sectionHeaderTocMarkup}
+          </div>
           <div class="section-header-title">${escapeHtml(tune.title)}</div>
         </div>
       </article>`;
@@ -5270,21 +5275,27 @@
     .table-of-contents h2 { margin:0 0 20px; }
     .section-header-title { margin:0; text-align:center; }
     .section-header-panel {
-      min-height:150px;
+      min-height:132px;
+      padding-top:24px;
+      padding-bottom:24px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
     }
-    .section-header-panel .chapter-label {
+    .section-header-panel .section-header-number {
       margin:0 auto 12px;
     }
     .section-header-main {
       position:relative;
       width:100%;
       display:flex;
+      flex-direction:column;
       align-items:center;
       justify-content:center;
+    }
+    .section-header-topline {
+      display:contents;
     }
     .section-header-panel .section-header-title {
       width:100%;
@@ -5318,6 +5329,7 @@
     .toc-links span { flex:0 0 34px; height:34px; }
     main { padding-top:${includeTableOfContents || hasCollectionIntro ? "0" : "24px"}; padding-bottom:64px; }
     .score-panel { position:relative; padding:32px 34px 30px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+    .score-panel.section-header-panel { min-height:132px; padding-top:24px; padding-bottom:24px; }
     .score-panel + .score-panel { margin-top:${showTuneDividers ? "0" : "24px"}; }
     .score-panel.no-tune-actions .tune-header h2 { padding-left:0; padding-right:0; }
     .chapter-label { width:50px; height:50px; margin:0 auto 12px; }
@@ -5406,26 +5418,48 @@
       .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
       .notation-wrap,.audio-controls,.status { width:100%; }
     }
-    @media (max-width:760px) {
+    @media (max-width:900px) {
       .section-header-panel {
-        min-height:150px;
-        padding-left:14px;
-        padding-right:14px;
+        min-height:0;
+        padding:24px 18px;
+        gap:12px;
+      }
+      .section-header-main {
+        gap:12px;
+      }
+      .section-header-topline {
+        order:1;
+        display:flex;
+        flex-direction:column;
+        flex-wrap:nowrap;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        width:100%;
+      }
+      .section-header-panel .section-header-number {
+        margin:0;
       }
       .section-header-panel .section-header-title,
       .section-header-panel.has-toc-link .section-header-title {
+        order:2;
         padding-left:0;
         padding-right:0;
       }
-      .section-header-panel .section-header-actions {
-        right:0;
-      }
-      .section-header-panel.has-toc-link .section-header-title {
-        padding-right:142px;
+      .section-header-panel .section-header-actions,
+      .section-header-panel.no-tune-number .section-header-actions {
+        position:static;
+        width:auto;
+        min-height:0;
+        margin:0;
+        transform:none;
+        display:flex;
+        justify-content:center;
       }
       .section-header-panel .section-header-actions .back-to-toc {
+        display:inline-block;
+        max-width:min(260px,100%);
         white-space:normal;
-        max-width:132px;
         text-align:center;
       }
     }
@@ -5537,6 +5571,58 @@
       .score-panel.number-only-with-actions .tune-header.no-tune-heading .abc-tools-link {
         top:-40px;
         transform:none;
+      }
+    }
+    @media (max-width:900px) {
+      .section-header-panel .section-header-main {
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:12px !important;
+      }
+      .section-header-panel .section-header-topline {
+        order:1 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        flex-wrap:nowrap !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:12px !important;
+        width:100% !important;
+      }
+      .section-header-panel .section-header-number {
+        order:1 !important;
+        margin:0 !important;
+      }
+      .section-header-panel .section-header-actions,
+      .section-header-panel.no-tune-number .section-header-actions {
+        order:2 !important;
+        position:static !important;
+        top:auto !important;
+        right:auto !important;
+        width:auto !important;
+        min-height:0 !important;
+        margin:0 !important;
+        transform:none !important;
+        display:flex !important;
+        justify-content:center !important;
+      }
+      .section-header-panel .section-header-actions .back-to-toc {
+        position:static !important;
+        display:inline-block !important;
+        max-width:min(260px,100%) !important;
+        white-space:normal !important;
+        text-align:center !important;
+        transform:none !important;
+      }
+      .section-header-panel .section-header-title,
+      .section-header-panel.has-toc-link .section-header-title {
+        order:2 !important;
+        width:100% !important;
+        padding-left:0 !important;
+        padding-right:0 !important;
+        text-align:center !important;
       }
     }
   </style>
