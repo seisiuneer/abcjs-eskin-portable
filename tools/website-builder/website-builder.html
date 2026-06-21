@@ -868,6 +868,11 @@
     { id: "show", name: "Show" }
   ];
 
+  const DISABLED_ENABLED_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "enabled", name: "Enabled" }
+  ];
+
   const SOUNDFONT_OPTIONS = [
   {
     "id": "fluid",
@@ -1544,6 +1549,7 @@
     notationWidth: "100",
     bodyWidth: "1180",
     tuneNumbers: "show",
+    includeSectionHeaderNumbers: "hide",
     abcToolsLinks: "disabled"
   };
 
@@ -1805,6 +1811,16 @@
     return match ? match[1].trim() : "";
   }
 
+  function isSectionHeaderTitle(title) {
+    return String(title || "").trim().startsWith("*");
+  }
+
+  function sectionHeaderTextFromTitle(title) {
+    const text = String(title || "").trim();
+    if (!isSectionHeaderTitle(text)) return text;
+    return text.replace(/^\*\s*/, "").trim() || "Section";
+  }
+
   function splitAbcRecords(text, filename) {
     const normalized = String(text || "").replace(/\r\n?/g, "\n");
     const starts = [];
@@ -1994,12 +2010,18 @@
   function buildTunesFromRecords(records, sourceName) {
     return records.map((record, recordIndex) => {
       const abc = record.abc;
-      const title = extractField(abc, "T") || `${sourceName} — Tune ${recordIndex + 1}`;
+      const rawTitle = extractField(abc, "T");
+      const isSectionHeader = isSectionHeaderTitle(rawTitle);
+      const title = isSectionHeader
+        ? sectionHeaderTextFromTitle(rawTitle)
+        : (rawTitle || `${sourceName} — Tune ${recordIndex + 1}`);
       const composer = extractField(abc, "C");
       const rhythm = extractField(abc, "R");
 
       return {
         title,
+        rawTitle,
+        isSectionHeader,
         composer,
         rhythm,
         sourceName,
@@ -2055,7 +2077,7 @@
 
     state.tunes.forEach((tune, index) => {
       const li = document.createElement("li");
-      const detail = [tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
+      const detail = [tune.isSectionHeader ? "Section Header" : "", tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
       li.innerHTML =
         `<span><strong>${index + 1}. ${escapeHtml(tune.title)}</strong>` +
         (detail ? `<br><small>${escapeHtml(detail)}</small>` : "") +
@@ -2083,9 +2105,10 @@
       `Player ${state.settings.playerPosition} notation · ` +
       `Notation ${state.settings.notationWidth}% of page body · ` +
       `${state.settings.includeTableOfContents === "hide" ? "Table of contents hidden" : "Table of contents shown"} · ` +
-      `${state.settings.showTuneDividers === "hide" ? "Decorative tune dividers hidden" : "Decorative tune dividers shown"} · ` +
+      `${state.settings.showTuneDividers === "hide" ? "Decorative tune ornaments hidden" : "Decorative tune ornaments shown"} · ` +
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
+      `${state.settings.includeSectionHeaderNumbers === "hide" ? "Section header numbers hidden" : "Section header numbers shown"} · ` +
       `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
       `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"} · ` +
       `${state.settings.includeTuneTextBefore ? "Text before each tune" : "No text before each tune"} · ` +
@@ -2314,8 +2337,8 @@
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
-        "includeTableOfContents", "tuneNumbers",
-        "showTuneDividers", "abcToolsLinks"
+        "includeTableOfContents", "showTuneDividers", "tuneNumbers",
+        "includeSectionHeaderNumbers", "abcToolsLinks"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -2473,6 +2496,7 @@
       showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
       includeTableOfContents: optionIds(HIDE_SHOW_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
+      includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS)
     };
 
@@ -2654,15 +2678,26 @@
       state.customTheme = validation.theme;
       saveCustomTheme(state.customTheme);
       updateOpenSettingsCustomThemeOption();
-      renderState();
-      setStatus(`Imported custom theme: ${state.customTheme.name}.`);
+
+      const themeField = findWebsiteSettingsField(getOpenWebsiteSettingsModalRoot(), "theme");
+      if (themeField) {
+        themeField.value = "custom";
+        themeField.dataset.customThemePreviousValue = "custom";
+        themeField.dispatchEvent(new Event("input", { bubbles: true }));
+        themeField.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      setStatus(`Imported custom theme: ${state.customTheme.name}. Click Apply to use it.`);
 
       await DayPilot.Modal.alert(
         '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
           'Custom theme was successfully loaded.<br><br>' +
-          '<div style="font-weight:750;margin:0 0 34px;">' +
+          '<div style="font-weight:750;margin:0 0 24px;">' +
             escapeHtml(state.customTheme.name) +
           '</div>' +
+          'The theme menu has been set to <b>Custom</b>.<br><br>' +
+          'Click <b>Apply</b> to use it,<br>' +
+          'or <b>Cancel</b> to leave the current applied theme unchanged.' +
         '</div>',
         { title: "Custom Theme Loaded", okText: "OK", top: 150 }
       );
@@ -2978,6 +3013,12 @@
         options: HIDE_SHOW_OPTIONS
       },
       {
+        name: "Show decorative ornament between tunes",
+        id: "showTuneDividers",
+        type: "select",
+        options: HIDE_SHOW_OPTIONS
+      },
+      {
         name: "Tune numbers in table of contents and tune sections",
         id: "tuneNumbers",
         type: "select",
@@ -2987,8 +3028,8 @@
         ]
       },
       {
-        name: "Show decorative divider between tunes",
-        id: "showTuneDividers",
+        name: "Include numbers on T:* style section headers",
+        id: "includeSectionHeaderNumbers",
         type: "select",
         options: HIDE_SHOW_OPTIONS
       },
@@ -3040,8 +3081,8 @@
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
             the abcjs-eskin-portable library. The generated site can include a table of contents,
-            individual tune sections, playback controls, cursor tracking, autoscroll, decorative
-            tune dividers, and links back to the table of contents.
+            individual tune sections, T:* style section headers, playback controls, cursor tracking, autoscroll, decorative 
+            ornaments between tunes, and links back to the table of contents.
           </p>
 
           <h3>1. Open ABC files</h3>
@@ -3093,9 +3134,10 @@
             <li><b>Notation width relative to page body</b> controls how much of the page width is used
                 by both the notation and its player.</li>
             <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
-            <li><b>Show decorative divider between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
-            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. If set to <b>Hide</b>, the per-tune <b>Table of Contents</b> buttons are also omitted.</li>
-            <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>
+            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. If set to <b>Hide</b>, the <b>Table of Contents</b> buttons in tune and section-header panels are also omitted.</li>
+            <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
+            <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
+            <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
             <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>
           </ul>
 
@@ -3131,8 +3173,8 @@
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
-            <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu shows <b>Custom - Imported theme name</b>.</li>
-            <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Select the Custom theme and click <b>Apply</b> when you want to use it for exported websites.</li>
+            <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu switches to <b>Custom - Imported theme name</b>.</li>
+            <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Click <b>Apply</b> to use the imported custom theme for exported websites, or <b>Cancel</b> to leave the currently applied theme unchanged.</li>
             <li>If no custom theme is loaded, the theme menu shows <b>Custom - No theme loaded</b>. Choosing it displays a message asking you to import a custom theme first.</li>
             <li><b>Reset all Settings</b> returns every website setting to its factory default and also removes any imported custom theme.</li>
           </ul>
@@ -3158,9 +3200,10 @@
             <li>All tune ABC source directly in the HTML.</li>
             <li>An optional table of contents linking to every tune.</li>
             <li>An optional Table of Contents button for every tune that returns to the top of the table of contents when the table of contents is included.</li>
-            <li>Optional decorative dividers between tune sections.</li>
+            <li>Optional decorative ornaments between tune sections.</li>
             <li>Optional ABC Transcription Tools link buttons for each tune.</li>
             <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
+            <li>T:* style section headers if present.</li>
             <li>Independent playback controls for every tune.</li>
             <li>Click-the-notation pause and resume behavior.</li>
             <li>A wide translucent playback cursor with smooth autoscroll.</li>
@@ -5025,6 +5068,8 @@
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
+    const showSectionHeaderNumbers = String(s.includeSectionHeaderNumbers || DEFAULT_SETTINGS.includeSectionHeaderNumbers) !== "hide";
+    const shouldShowNumber = tune => tune.isSectionHeader ? showSectionHeaderNumbers : showTuneNumbers;
     const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
     const includeTableOfContents = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) !== "hide";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
@@ -5034,29 +5079,33 @@
       : "";
 
     const usedIds = new Set();
+    let visibleNumber = 0;
     const tunes = state.tunes.map((tune, index) => {
       let key = slugify(tune.title, "tune-" + (index + 1));
       const base = key;
       let suffix = 2;
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
       usedIds.add(key);
-      const exportedAbc = prepareTuneAbc(tune.abc, tune.fileHeader, s);
-      const abcToolsAbc = prepareABCTranscriptionToolsShareAbc(tune.abc, s);
-      const abcToolsURL = buildABCTranscriptionToolsTuneURL(
-        abcToolsAbc,
-        abcToolsFormat,
-        abcToolsLinkMode
-      );
+      const exportedAbc = tune.isSectionHeader ? "" : prepareTuneAbc(tune.abc, tune.fileHeader, s);
+      const abcToolsURL = tune.isSectionHeader
+        ? ""
+        : buildABCTranscriptionToolsTuneURL(
+            prepareABCTranscriptionToolsShareAbc(tune.abc, s),
+            abcToolsFormat,
+            abcToolsLinkMode
+          );
 
       const abcToolsButtonText = abcToolsURL
         ? abcToolsLinkButtonText(abcToolsLinkMode)
         : "";
 
-      return { ...tune, key, number: index + 1, exportedAbc, abcToolsURL, abcToolsButtonText };
+      const number = shouldShowNumber(tune) ? ++visibleNumber : "";
+
+      return { ...tune, key, number, exportedAbc, abcToolsURL, abcToolsButtonText };
     });
 
     const toc = tunes.map(tune =>
-      `<a href="#tune-${tune.key}">${showTuneNumbers ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.title)}</a>`
+      `<a href="#tune-${tune.key}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.title)}</a>`
     ).join("\n        ");
 
     const tocMarkup = includeTableOfContents
@@ -5074,6 +5123,26 @@
       : "\n";
 
     const articles = tunes.map(tune => {
+      const showThisNumber = shouldShowNumber(tune);
+
+      if (tune.isSectionHeader) {
+        const sectionHeaderActionClass = includeTableOfContents ? " has-toc-link" : " no-tune-actions";
+        const sectionHeaderTocMarkup = includeTableOfContents
+          ? `<div class="tune-header no-tune-heading section-header-actions">
+          <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
+        </div>`
+          : "";
+
+        return `
+      <article class="score-panel section-header-panel${sectionHeaderActionClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}">
+        ${showThisNumber ? `<div class="chapter-label">${tune.number}</div>` : ""}
+        <div class="section-header-main">
+          ${sectionHeaderTocMarkup}
+          <div class="section-header-title">${escapeHtml(tune.title)}</div>
+        </div>
+      </article>`;
+      }
+
       const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
       const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
           <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
@@ -5082,8 +5151,8 @@
         (includeTableOfContents ? " has-toc-link" : " no-toc-link") +
         (!tune.abcToolsURL && !includeTableOfContents ? " no-tune-actions" : "");
       const hasTuneHeader = includeTuneHeading || tune.abcToolsURL || includeTableOfContents;
-      const numberOnlyClass = showTuneNumbers && !hasTuneHeader ? " number-only-tune" : "";
-      const numberOnlyWithActionsClass = showTuneNumbers && !includeTuneHeading && hasTuneHeader ? " number-only-with-actions" : "";
+      const numberOnlyClass = showThisNumber && !hasTuneHeader ? " number-only-tune" : "";
+      const numberOnlyWithActionsClass = showThisNumber && !includeTuneHeading && hasTuneHeader ? " number-only-with-actions" : "";
       const tuneHeaderMarkup = hasTuneHeader
         ? `<div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
           ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
@@ -5093,8 +5162,8 @@
         : "";
 
       return `
-      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
-        ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
+      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
+        ${showThisNumber ? `<div class="chapter-label">${tune.number}</div>` : ""}
         ${tuneHeaderMarkup}
         ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
         ${includeTuneTextBefore && tuneTextBefore.trim()
@@ -5111,9 +5180,11 @@
       </article>`;
     }).join(tuneSeparator);
 
-    const abcBlocks = tunes.map(tune =>
-      `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
-    ).join("\n\n  ");
+    const abcBlocks = tunes
+      .filter(tune => !tune.isSectionHeader)
+      .map(tune =>
+        `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
+      ).join("\n\n  ");
 
     const displayMode = JSON.stringify(s.displayMode);
     const cursorColors = {
@@ -5194,7 +5265,52 @@
     .collection-intro + .score-panel { margin-top:0; }
     .table-of-contents { margin:24px auto; padding:28px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
     .table-of-contents + .score-panel { margin-top:0; }
-    .table-of-contents h2 { margin:0 0 20px; font-size:clamp(1.7rem,4vw,2.6rem); }
+    .table-of-contents h2,
+    .section-header-title { color:var(--ink); font-size:clamp(1.7rem,4vw,2.6rem); font-weight:800; line-height:1.1; }
+    .table-of-contents h2 { margin:0 0 20px; }
+    .section-header-title { margin:0; text-align:center; }
+    .section-header-panel {
+      min-height:150px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .section-header-panel .chapter-label {
+      margin:0 auto 12px;
+    }
+    .section-header-main {
+      position:relative;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .section-header-panel .section-header-title {
+      width:100%;
+      padding:0 84px;
+    }
+    .section-header-panel.has-toc-link .section-header-title {
+      padding-left:176px;
+      padding-right:176px;
+    }
+    .section-header-panel .section-header-actions {
+      position:absolute;
+      top:50%;
+      right:0;
+      min-height:0;
+      margin:0;
+      transform:translateY(-50%);
+    }
+    .section-header-panel.no-tune-number .section-header-actions {
+      top:calc(50% + 16px);
+    }
+    .section-header-panel .section-header-actions .back-to-toc {
+      position:static;
+      display:inline-block;
+      transform:none;
+      white-space:nowrap;
+    }
     .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
     .toc-links a { display:flex; align-items:center; gap:10px; min-height:54px; padding:10px 13px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); text-decoration:none; text-align:left; }
     .toc-links a:hover,.toc-links a:focus-visible { color:#fff; background:var(--primary); outline:none; }
@@ -5289,6 +5405,29 @@
       .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
       .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
       .notation-wrap,.audio-controls,.status { width:100%; }
+    }
+    @media (max-width:760px) {
+      .section-header-panel {
+        min-height:150px;
+        padding-left:14px;
+        padding-right:14px;
+      }
+      .section-header-panel .section-header-title,
+      .section-header-panel.has-toc-link .section-header-title {
+        padding-left:0;
+        padding-right:0;
+      }
+      .section-header-panel .section-header-actions {
+        right:0;
+      }
+      .section-header-panel.has-toc-link .section-header-title {
+        padding-right:142px;
+      }
+      .section-header-panel .section-header-actions .back-to-toc {
+        white-space:normal;
+        max-width:132px;
+        text-align:center;
+      }
     }
     ${customThemeCss}
     ${whistleTabCss}
