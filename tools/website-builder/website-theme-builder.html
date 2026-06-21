@@ -15,8 +15,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="https://michaeleskin.com/abctools/img/abc-favicon-32x32.png"> 
 
   <script src="daypilot-modal.min-3.10.1.js"></script>
-  <script src="pako.min.js"></script>
-  
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM0N9HL3MK"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -250,8 +248,8 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 14px;
-      margin: 0 0 12px;
+      gap: 10px;
+      margin: 0 0 10px;
     }
 
     .theme-builder-root .theme-builder-note {
@@ -259,6 +257,86 @@
       margin: 0 auto 14px;
       color: #675454;
       text-align: center;
+    }
+
+    .theme-builder-top-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(390px, .85fr);
+      gap: 18px;
+      align-items: center;
+      margin: 0 0 10px;
+    }
+
+    .theme-builder-file-actions,
+    .theme-builder-built-in-actions,
+    .theme-builder-side-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .theme-builder-file-actions,
+    .theme-builder-built-in-actions {
+      justify-content: flex-start;
+    }
+
+    .theme-builder-side-actions {
+      justify-content: flex-end;
+    }
+
+    .theme-builder-built-in-actions .theme-builder-select {
+      flex: 1 1 260px;
+      max-width: 360px;
+    }
+
+    .theme-builder-file-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .theme-builder-file-actions .website-settings-manage-action {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .theme-builder-built-in-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(230px, .64fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .theme-builder-built-in-actions .theme-builder-select,
+    .theme-builder-built-in-actions .website-settings-manage-action {
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+    }
+
+    #theme-builder-color-sampler-action {
+      background: #6b2f8f !important;
+      border-color: #52206f !important;
+    }
+
+    #theme-builder-color-sampler-action:hover,
+    #theme-builder-color-sampler-action:focus-visible {
+      background: #52206f !important;
+      outline: none !important;
+    }
+
+    .theme-builder-instructions-action {
+      background: #174a8b !important;
+      border-color: #0f3566 !important;
+    }
+
+    .theme-builder-instructions-action:hover,
+    .theme-builder-instructions-action:focus-visible {
+      background: #0f3566 !important;
+      outline: none !important;
     }
 
     .theme-builder-layout {
@@ -786,8 +864,21 @@
 
     @media (max-width: 840px) {
       .theme-builder-layout,
-      .theme-builder-grid {
+      .theme-builder-grid,
+      .theme-builder-top-grid {
         display: block;
+      }
+
+      .theme-builder-file-actions,
+      .theme-builder-built-in-actions,
+      .theme-builder-side-actions {
+        justify-content: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .theme-builder-file-actions,
+      .theme-builder-built-in-actions {
+        grid-template-columns: 1fr;
       }
 
       .theme-builder-section .modal_default_form_item,
@@ -1043,21 +1134,22 @@
       background:
         linear-gradient(135deg, rgba(11, 55, 34, .97), rgba(23, 107, 67, .96)),
         repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.025) 12px 24px);
-      border-bottom: 5px solid var(--accent);
-      padding: 34px 20px 30px;
+      border-bottom: 4px solid var(--accent);
+      padding: 14px 20px 12px;
       text-align: center;
     }
 
     .app-header h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-size: clamp(1.2rem, 2vw, 1.7rem);
       line-height: 1.1;
     }
 
     .app-header p {
       max-width: 760px;
-      margin: 12px auto 0;
+      margin: 6px auto 0;
       color: #dcebe2;
+      font-size: .92rem;
     }
 
     .app {
@@ -1171,6 +1263,19 @@
       margin-top: 18px;
       padding: 20px;
       border-radius: 10px;
+    }
+
+    .theme-builder-start-panel {
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    .theme-builder-main-actions {
+      justify-content: center;
+      margin-top: 18px;
+      box-shadow: none;
     }
 
     .panel h2 { margin: 0 0 8px; font-size: 1.35rem; }
@@ -1317,6 +1422,66 @@
         padding-right: 10px;
       }
     }
+
+    .theme-builder-app {
+      width: min(1280px, calc(100% - 28px));
+      margin: 14px auto 36px;
+    }
+
+    .theme-builder-page-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 0 0 16px;
+      padding: 20px 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .theme-builder-page-head h2 {
+      margin: 0 0 6px;
+      color: var(--green-dark);
+      font-size: 1.45rem;
+    }
+
+    .theme-builder-page-head .help {
+      max-width: 76ch;
+      margin: 0;
+    }
+
+    .theme-builder-page-head .instructions-button {
+      flex: 0 0 auto;
+      width: auto;
+      margin-left: auto;
+    }
+
+    #theme-builder-container > .theme-builder-root {
+      padding: 0;
+    }
+
+    #theme-builder-container .theme-builder-layout {
+      align-items: start;
+    }
+
+    #theme-builder-container .theme-builder-controls,
+    #theme-builder-container .theme-builder-preview-card {
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 760px) {
+      .theme-builder-page-head {
+        display: block;
+      }
+
+      .theme-builder-page-head .instructions-button {
+        width: 100%;
+        margin-top: 14px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1328,45 +1493,10 @@
     </p>
   </header>
 
-  <main class="app">
-    <div class="toolbar">
-      <label class="button" for="abc-files">Open ABC Files</label>
-      <input id="abc-files" type="file" accept=".abc,.txt,text/plain" multiple>
-      <button id="settings-button" class="button secondary" type="button">Website Settings</button>
-      <button id="save-button" class="button" type="button" disabled>Build and Save Website</button>
-      <button id="clear-button" class="button danger" type="button" disabled>Clear</button>
-      <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
-    </div>
-
-    <section class="panel">
-      <h2>Loaded Tunes</h2>
-      <p class="help">
-        Each <code>X:</code> record becomes an independent tune with its own
-        player. The original ABC text is stored directly in the exported HTML.
-      </p>
-
-      <div class="summary">
-        <div class="summary-card"><strong id="file-count">0</strong>files</div>
-        <div class="summary-card"><strong id="tune-count">0</strong>tunes</div>
-        <div class="summary-card"><strong id="theme-summary">Traditional Irish Music</strong>style</div>
-        <div class="summary-card"><strong id="display-summary">Notation</strong>display</div>
-      </div>
-
-      <div id="empty-message" class="empty">No ABC files have been opened.</div>
-
-      <div id="loaded-details" hidden>
-        <h3>Files</h3>
-        <ul id="file-list" class="file-list"></ul>
-
-        <h3>Tunes</h3>
-        <ol id="tune-list" class="tune-list"></ol>
-      </div>
-
-      <div id="settings-preview" class="settings-preview"></div>
-      <p id="status" class="status" aria-live="polite"></p>
-    </section>
+  <main class="app theme-builder-app">
+    <p id="status" class="status" aria-live="polite" hidden></p>
+    <div id="theme-builder-container"></div>
   </main>
-
 <script>
 (() => {
   "use strict";
@@ -1408,674 +1538,6 @@
     { id: "kwanzaa", name: "Kwanzaa" },
     { id: "custom", name: "Custom" }
   ];
-
-  const DISPLAY_OPTIONS = [
-    { id: "notation", name: "Standard notation" },
-    { id: "mandolinNotation", name: "Mandolin tablature with notation" },
-    { id: "mandolinOnly", name: "Mandolin tablature without notation" },
-    { id: "bouzoukiNotation", name: "GDAD Bouzouki tablature with notation" },
-    { id: "bouzoukiOnly", name: "GDAD Bouzouki tablature without notation" },
-    { id: "guitarNotation", name: "Standard Guitar tablature with notation" },
-    { id: "guitarOnly", name: "Standard Guitar tablature without notation" },
-    { id: "dadgadGuitarNotation", name: "DADGAD Guitar tablature with notation" },
-    { id: "dadgadGuitarOnly", name: "DADGAD Guitar tablature without notation" }
-  ];
-
-  const CURSOR_COLOR_OPTIONS = [
-    { id: "green", name: "Green" },
-    { id: "blue", name: "Blue" },
-    { id: "red", name: "Red" }
-  ];
-
-  const ABC_TOOLS_LINK_OPTIONS = [
-    { id: "disabled", name: "Disabled" },
-    { id: "player", name: "Add Open in Player buttons" },
-    { id: "editor", name: "Add Open in Editor buttons" },
-    { id: "fullscreen", name: "Add Open in Full Screen buttons" }
-  ];
-
-  const SOUNDFONT_OPTIONS = [
-  {
-    "id": "fluid",
-    "name": "Fluid"
-  },
-  {
-    "id": "musyng",
-    "name": "Musyng Kite"
-  },
-  {
-    "id": "fatboy",
-    "name": "FatBoy"
-  },
-  {
-    "id": "canvas",
-    "name": "Canvas"
-  },
-  {
-    "id": "mscore",
-    "name": "MScore"
-  },
-  {
-    "id": "arachno",
-    "name": "Arachno"
-  },
-  {
-    "id": "fluidhq",
-    "name": "FluidHQ"
-  }
-];
-
-  const GM_INSTRUMENT_OPTIONS = [
-  {
-    "id": "mute",
-    "name": "Mute"
-  },
-  {
-    "id": "0",
-    "name": "Acoustic Grand Piano"
-  },
-  {
-    "id": "1",
-    "name": "Bright Acoustic Piano"
-  },
-  {
-    "id": "2",
-    "name": "Electric Grand Piano"
-  },
-  {
-    "id": "3",
-    "name": "Honky-tonk Piano"
-  },
-  {
-    "id": "4",
-    "name": "Electric Piano 1"
-  },
-  {
-    "id": "5",
-    "name": "Electric Piano 2"
-  },
-  {
-    "id": "6",
-    "name": "Harpsichord"
-  },
-  {
-    "id": "7",
-    "name": "Clavi"
-  },
-  {
-    "id": "8",
-    "name": "Celesta"
-  },
-  {
-    "id": "9",
-    "name": "Glockenspiel"
-  },
-  {
-    "id": "10",
-    "name": "Music Box"
-  },
-  {
-    "id": "11",
-    "name": "Vibraphone"
-  },
-  {
-    "id": "12",
-    "name": "Marimba"
-  },
-  {
-    "id": "13",
-    "name": "Xylophone"
-  },
-  {
-    "id": "14",
-    "name": "Tubular Bells"
-  },
-  {
-    "id": "15",
-    "name": "Dulcimer"
-  },
-  {
-    "id": "16",
-    "name": "Drawbar Organ"
-  },
-  {
-    "id": "17",
-    "name": "Percussive Organ"
-  },
-  {
-    "id": "18",
-    "name": "Rock Organ"
-  },
-  {
-    "id": "19",
-    "name": "Church Organ"
-  },
-  {
-    "id": "20",
-    "name": "Reed Organ"
-  },
-  {
-    "id": "21",
-    "name": "Accordion"
-  },
-  {
-    "id": "22",
-    "name": "Harmonica"
-  },
-  {
-    "id": "23",
-    "name": "Tango Accordion"
-  },
-  {
-    "id": "24",
-    "name": "Acoustic Guitar (nylon)"
-  },
-  {
-    "id": "25",
-    "name": "Acoustic Guitar (steel)"
-  },
-  {
-    "id": "26",
-    "name": "Electric Guitar (jazz)"
-  },
-  {
-    "id": "27",
-    "name": "Electric Guitar (clean)"
-  },
-  {
-    "id": "28",
-    "name": "Electric Guitar (muted)"
-  },
-  {
-    "id": "29",
-    "name": "Overdriven Guitar"
-  },
-  {
-    "id": "30",
-    "name": "Distortion Guitar"
-  },
-  {
-    "id": "31",
-    "name": "Guitar Harmonics"
-  },
-  {
-    "id": "32",
-    "name": "Acoustic Bass"
-  },
-  {
-    "id": "33",
-    "name": "Electric Bass (finger)"
-  },
-  {
-    "id": "34",
-    "name": "Electric Bass (pick)"
-  },
-  {
-    "id": "35",
-    "name": "Fretless Bass"
-  },
-  {
-    "id": "36",
-    "name": "Slap Bass 1"
-  },
-  {
-    "id": "37",
-    "name": "Slap Bass 2"
-  },
-  {
-    "id": "38",
-    "name": "Synth Bass 1"
-  },
-  {
-    "id": "39",
-    "name": "Synth Bass 2"
-  },
-  {
-    "id": "40",
-    "name": "Violin"
-  },
-  {
-    "id": "41",
-    "name": "Viola"
-  },
-  {
-    "id": "42",
-    "name": "Cello"
-  },
-  {
-    "id": "43",
-    "name": "Contrabass"
-  },
-  {
-    "id": "44",
-    "name": "Tremolo Strings"
-  },
-  {
-    "id": "45",
-    "name": "Pizzicato Strings"
-  },
-  {
-    "id": "46",
-    "name": "Orchestral Harp"
-  },
-  {
-    "id": "47",
-    "name": "Timpani"
-  },
-  {
-    "id": "48",
-    "name": "String Ensemble 1"
-  },
-  {
-    "id": "49",
-    "name": "String Ensemble 2"
-  },
-  {
-    "id": "50",
-    "name": "SynthStrings 1"
-  },
-  {
-    "id": "51",
-    "name": "SynthStrings 2"
-  },
-  {
-    "id": "52",
-    "name": "Choir Aahs"
-  },
-  {
-    "id": "53",
-    "name": "Voice Oohs"
-  },
-  {
-    "id": "54",
-    "name": "Synth Voice"
-  },
-  {
-    "id": "55",
-    "name": "Orchestra Hit"
-  },
-  {
-    "id": "56",
-    "name": "Trumpet"
-  },
-  {
-    "id": "57",
-    "name": "Trombone"
-  },
-  {
-    "id": "58",
-    "name": "Tuba"
-  },
-  {
-    "id": "59",
-    "name": "Muted Trumpet"
-  },
-  {
-    "id": "60",
-    "name": "French Horn"
-  },
-  {
-    "id": "61",
-    "name": "Brass Section"
-  },
-  {
-    "id": "62",
-    "name": "SynthBrass 1"
-  },
-  {
-    "id": "63",
-    "name": "SynthBrass 2"
-  },
-  {
-    "id": "64",
-    "name": "Soprano Sax"
-  },
-  {
-    "id": "65",
-    "name": "Alto Sax"
-  },
-  {
-    "id": "66",
-    "name": "Tenor Sax"
-  },
-  {
-    "id": "67",
-    "name": "Baritone Sax"
-  },
-  {
-    "id": "68",
-    "name": "Oboe"
-  },
-  {
-    "id": "69",
-    "name": "English Horn"
-  },
-  {
-    "id": "70",
-    "name": "Bassoon"
-  },
-  {
-    "id": "71",
-    "name": "Clarinet"
-  },
-  {
-    "id": "72",
-    "name": "Piccolo"
-  },
-  {
-    "id": "73",
-    "name": "Flute"
-  },
-  {
-    "id": "74",
-    "name": "Recorder"
-  },
-  {
-    "id": "75",
-    "name": "Pan Flute"
-  },
-  {
-    "id": "76",
-    "name": "Blown Bottle"
-  },
-  {
-    "id": "77",
-    "name": "Shakuhachi"
-  },
-  {
-    "id": "78",
-    "name": "Tin Whistle"
-  },
-  {
-    "id": "79",
-    "name": "Ocarina"
-  },
-  {
-    "id": "80",
-    "name": "Lead 1 (square)"
-  },
-  {
-    "id": "81",
-    "name": "Lead 2 (sawtooth)"
-  },
-  {
-    "id": "82",
-    "name": "Lead 3 (calliope)"
-  },
-  {
-    "id": "83",
-    "name": "Lead 4 (chiff)"
-  },
-  {
-    "id": "84",
-    "name": "Lead 5 (charang)"
-  },
-  {
-    "id": "85",
-    "name": "Lead 6 (voice)"
-  },
-  {
-    "id": "86",
-    "name": "Lead 7 (fifths)"
-  },
-  {
-    "id": "87",
-    "name": "Lead 8 (bass + lead)"
-  },
-  {
-    "id": "88",
-    "name": "Pad 1 (new age)"
-  },
-  {
-    "id": "89",
-    "name": "Pad 2 (warm)"
-  },
-  {
-    "id": "90",
-    "name": "Pad 3 (polysynth)"
-  },
-  {
-    "id": "91",
-    "name": "Pad 4 (choir)"
-  },
-  {
-    "id": "92",
-    "name": "Pad 5 (bowed)"
-  },
-  {
-    "id": "93",
-    "name": "Pad 6 (metallic)"
-  },
-  {
-    "id": "94",
-    "name": "Pad 7 (halo)"
-  },
-  {
-    "id": "95",
-    "name": "Pad 8 (sweep)"
-  },
-  {
-    "id": "96",
-    "name": "FX 1 (rain)"
-  },
-  {
-    "id": "97",
-    "name": "FX 2 (soundtrack)"
-  },
-  {
-    "id": "98",
-    "name": "FX 3 (crystal)"
-  },
-  {
-    "id": "99",
-    "name": "FX 4 (atmosphere)"
-  },
-  {
-    "id": "100",
-    "name": "FX 5 (brightness)"
-  },
-  {
-    "id": "101",
-    "name": "FX 6 (goblins)"
-  },
-  {
-    "id": "102",
-    "name": "FX 7 (echoes)"
-  },
-  {
-    "id": "103",
-    "name": "FX 8 (sci-fi)"
-  },
-  {
-    "id": "104",
-    "name": "Sitar"
-  },
-  {
-    "id": "105",
-    "name": "Banjo"
-  },
-  {
-    "id": "106",
-    "name": "Shamisen"
-  },
-  {
-    "id": "107",
-    "name": "Koto"
-  },
-  {
-    "id": "108",
-    "name": "Kalimba"
-  },
-  {
-    "id": "109",
-    "name": "Bagpipe"
-  },
-  {
-    "id": "110",
-    "name": "Fiddle"
-  },
-  {
-    "id": "111",
-    "name": "Shanai"
-  },
-  {
-    "id": "112",
-    "name": "Tinkle Bell"
-  },
-  {
-    "id": "113",
-    "name": "Agogo"
-  },
-  {
-    "id": "114",
-    "name": "Steel Drums"
-  },
-  {
-    "id": "115",
-    "name": "Woodblock"
-  },
-  {
-    "id": "116",
-    "name": "Taiko Drum"
-  },
-  {
-    "id": "117",
-    "name": "Bodhran"
-  },
-  {
-    "id": "118",
-    "name": "Synth Drum"
-  },
-  {
-    "id": "119",
-    "name": "Reverse Cymbal"
-  },
-  {
-    "id": "120",
-    "name": "Guitar Fret Noise"
-  },
-  {
-    "id": "121",
-    "name": "Breath Noise"
-  },
-  {
-    "id": "122",
-    "name": "Seashore"
-  },
-  {
-    "id": "123",
-    "name": "Bird Tweet"
-  },
-  {
-    "id": "124",
-    "name": "Telephone Ring"
-  },
-  {
-    "id": "125",
-    "name": "Helicopter"
-  },
-  {
-    "id": "126",
-    "name": "Applause"
-  },
-  {
-    "id": "127",
-    "name": "Gunshot"
-  },
-  {
-    "id": "128",
-    "name": "abcjs Percussion"
-  },
-  {
-    "id": "129",
-    "name": "Uilleann Pipes"
-  },
-  {
-    "id": "130",
-    "name": "Smallpipes (D)"
-  },
-  {
-    "id": "131",
-    "name": "Smallpipes (A)"
-  },
-  {
-    "id": "132",
-    "name": "Säckpipa"
-  },
-  {
-    "id": "133",
-    "name": "Concertina"
-  },
-  {
-    "id": "134",
-    "name": "Melodica"
-  },
-  {
-    "id": "135",
-    "name": "Cajun Accordion"
-  },
-  {
-    "id": "136",
-    "name": "Solfège"
-  },
-  {
-    "id": "137",
-    "name": "Chorused Guitar (nylon)"
-  },
-  {
-    "id": "138",
-    "name": "Chorused Guitar (steel)"
-  },
-  {
-    "id": "139",
-    "name": "Irish Bouzouki"
-  },
-  {
-    "id": "140",
-    "name": "Irish Bouzouki 2"
-  },
-  {
-    "id": "141",
-    "name": "Mandolin"
-  },
-  {
-    "id": "142",
-    "name": "Marching Drums"
-  },
-  {
-    "id": "143",
-    "name": "Border Pipes"
-  },
-  {
-    "id": "144",
-    "name": "Soprano Recorder"
-  },
-  {
-    "id": "145",
-    "name": "Alto Recorder"
-  },
-  {
-    "id": "146",
-    "name": "Tenor Recorder"
-  },
-  {
-    "id": "147",
-    "name": "Bass Recorder"
-  },
-  {
-    "id": "148",
-    "name": "Mountain Dulcimer (Solo)"
-  },
-  {
-    "id": "149",
-    "name": "Mountain Dulcimer (DAD)"
-  }
-];
-
-  const VOLUME_OPTIONS = Array.from({ length: 128 }, (_, value) => ({
-    id: String(value),
-    name: String(value)
-  }));
 
   const FONT_STACK_OPTIONS = [
     { id: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', name: 'System UI / Segoe UI / sans-serif' },
@@ -2162,113 +1624,18 @@
     "includeHeaderOrnaments", "includeHeaderGraphics", "includeBuiltInAdvancedCss"
   ]);
 
-  const SETTINGS_STORAGE_KEY = "abcStandaloneWebsiteBuilderSettings_v1";
-  const CUSTOM_THEME_STORAGE_KEY = "abcStandaloneWebsiteBuilderCustomTheme_v1";
-
-  const DEFAULT_SETTINGS = {
-    title: "This is the Title",
-    subtitle: "This is the Subtitle",
-    footer: "This is the Footer",
-    includeTuneHeading: false,
-    includeCollectionIntro: false,
-    collectionIntro: "This is text before all the tunes.",
-    includeTuneTextBefore: false,
-    tuneTextBefore: "This is text before each tune.",
-    includeTuneTextAfter: false,
-    tuneTextAfter: "This is text after each tune.",
-    theme: "irish",
-    displayMode: "notation",
-    cursorColor: "green",
-    injectSoundSettings: true,
-    soundfont: "fatboy",
-    melodyProgram: "0",
-    bassProgram: "0",
-    bassVolume: "64",
-    chordProgram: "0",
-    chordVolume: "64",
-    playerPosition: "below",
-    notationWidth: "100",
-    bodyWidth: "1180",
-    tuneNumbers: "show",
-    abcToolsLinks: "disabled"
-  };
-
-  function loadSavedSettings() {
-    try {
-      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (!saved) return { ...DEFAULT_SETTINGS };
-
-      const parsed = JSON.parse(saved);
-      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        return { ...DEFAULT_SETTINGS };
-      }
-
-      return { ...DEFAULT_SETTINGS, ...parsed };
-    } catch (error) {
-      console.warn("Unable to restore website settings from localStorage.", error);
-      return { ...DEFAULT_SETTINGS };
-    }
-  }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(
-        SETTINGS_STORAGE_KEY,
-        JSON.stringify(state.settings)
-      );
-    } catch (error) {
-      console.warn("Unable to save website settings to localStorage.", error);
-    }
-  }
-
-  function loadSavedCustomTheme() {
-    try {
-      const saved = localStorage.getItem(CUSTOM_THEME_STORAGE_KEY);
-      if (!saved) return null;
-      return normalizeCustomTheme(JSON.parse(saved));
-    } catch (error) {
-      console.warn("Unable to restore custom theme from localStorage.", error);
-      return null;
-    }
-  }
-
-  function saveCustomThemeToStorage(theme) {
-    try {
-      localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(normalizeCustomTheme(theme)));
-    } catch (error) {
-      console.warn("Unable to save custom theme to localStorage.", error);
-    }
-  }
-
   const state = {
-    files: [],
-    tunes: [],
-    settings: loadSavedSettings(),
-    customTheme: loadSavedCustomTheme()
+    customTheme: normalizeCustomTheme(DEFAULT_CUSTOM_THEME)
   };
 
-  let lastWebsiteSettingsTabId = "website_settings_text";
-  let sessionSettingsFilename = "website-settings.txt";
   let sessionThemeFilename = "custom-theme.txt";
-  let sessionWebsiteFilename = null;
-  let latestThemeBuilderTheme = null;
-  let forceCustomThemeOnNextSettingsApply = false;
-  let themeBuilderSelectedCustomInOpenSettingsDialog = false;
+  let latestThemeBuilderTheme = state.customTheme;
 
-  const fileInput = document.getElementById("abc-files");
-  const settingsButton = document.getElementById("settings-button");
-  const saveButton = document.getElementById("save-button");
-  const clearButton = document.getElementById("clear-button");
-  const instructionsButton = document.getElementById("instructions-button");
   const status = document.getElementById("status");
 
   function isIOSDevice() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  }
-
-  if (isIOSDevice()) {
-    fileInput.removeAttribute("accept");
   }
 
   function setStatus(message, error = false) {
@@ -2434,679 +1801,6 @@
     return match ? match[1].trim() : "";
   }
 
-  function splitAbcRecords(text, filename) {
-    const normalized = String(text || "").replace(/\r\n?/g, "\n");
-    const starts = [];
-    const regex = /^X\s*:/gm;
-    let match;
-    while ((match = regex.exec(normalized))) starts.push(match.index);
-
-    if (!starts.length) {
-      throw new Error(`${filename} does not contain an X: tune record.`);
-    }
-
-    const fileHeader = normalized
-      .slice(0, starts[0])
-      .split("\n")
-      .map(line => line.replace(/\s+$/g, ""))
-      .filter(line => line.trim() !== "")
-      .join("\n");
-
-    return starts.map((start, index) => {
-      const end = index + 1 < starts.length ? starts[index + 1] : normalized.length;
-      return {
-        abc: normalized.slice(start, end).trim(),
-        fileHeader
-      };
-    });
-  }
-
-  function base64URLToBytes(base64URLText) {
-    let base64 = String(base64URLText || "")
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
-
-    while (base64.length % 4) base64 += "=";
-
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-
-    for (let index = 0; index < binary.length; index += 1) {
-      bytes[index] = binary.charCodeAt(index);
-    }
-
-    return bytes;
-  }
-
-  function bytesToBase64URL(bytes) {
-    const chunkSize = 0x8000;
-    let binary = "";
-
-    for (let index = 0; index < bytes.length; index += chunkSize) {
-      const chunk = bytes.subarray(index, index + chunkSize);
-      binary += String.fromCharCode.apply(null, chunk);
-    }
-
-    return btoa(binary)
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/g, "");
-  }
-
-  function compressABCDeflateForShareLink(abcText) {
-    if (typeof pako === "undefined") {
-      throw new Error("pako is not loaded. Include pako before using deflate share links.");
-    }
-
-    if (typeof TextEncoder === "undefined") {
-      throw new Error("TextEncoder is not available in this browser.");
-    }
-
-    const utf8Bytes = new TextEncoder().encode(abcText || "");
-    const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
-    return bytesToBase64URL(deflatedBytes);
-  }
-
-  function abcToolsFormatForDisplayMode(displayMode) {
-    switch (String(displayMode || "notation")) {
-      case "mandolinNotation":
-      case "mandolinOnly":
-        return "mandolin";
-
-      case "bouzoukiNotation":
-      case "bouzoukiOnly":
-        return "gdad";
-
-      case "guitarNotation":
-      case "guitarOnly":
-        return "guitare";
-
-      case "dadgadGuitarNotation":
-      case "dadgadGuitarOnly":
-        return "guitard";
-
-      case "notation":
-      default:
-        return "noten";
-    }
-  }
-
-  function buildABCTranscriptionToolsTuneURL(abcText, format, linkMode) {
-    if (!abcText || !abcText.length) return "";
-    if (!["player", "editor", "fullscreen"].includes(linkMode)) return "";
-
-    const params = new URLSearchParams();
-    params.set("def", compressABCDeflateForShareLink(abcText));
-    params.set("format", format || "noten");
-
-    if (linkMode === "player") {
-      params.set("play", "1");
-    } else if (linkMode === "editor") {
-      params.set("editor", "1");
-    }
-
-    const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
-    return url.length <= 8100 ? url : "";
-  }
-
-  function abcToolsLinkButtonText(linkMode) {
-    switch (linkMode) {
-      case "player":
-        return "Play in ABC Transcription Tools";
-
-      case "editor":
-        return "Edit in ABC Transcription Tools";
-
-      case "fullscreen":
-        return "Open in ABC Transcription Tools";
-
-      default:
-        return "Open in ABC Transcription Tools";
-    }
-  }
-
-  function decompressABCDeflateFromShareLink(defText) {
-    if (typeof pako === "undefined") {
-      throw new Error("pako is not loaded. Include pako before using deflate share links.");
-    }
-
-    if (typeof TextDecoder === "undefined") {
-      throw new Error("TextDecoder is not available in this browser.");
-    }
-
-    const compressedBytes = base64URLToBytes(defText);
-    const inflatedBytes = pako.inflate(compressedBytes);
-    return new TextDecoder("utf-8").decode(inflatedBytes);
-  }
-
-  function getDeflatedABCFromURL() {
-    let defText = "";
-
-    try {
-      const params = new URLSearchParams(window.location.search || "");
-      defText = params.get("def") || "";
-    } catch (error) {
-      return {
-        found: false,
-        abc: null,
-        error
-      };
-    }
-
-    if (!defText) {
-      return {
-        found: false,
-        abc: null,
-        error: null
-      };
-    }
-
-    try {
-      return {
-        found: true,
-        abc: decompressABCDeflateFromShareLink(defText),
-        error: null
-      };
-    } catch (error) {
-      console.error("Could not decode def= ABC share-link parameter:", error);
-      return {
-        found: true,
-        abc: null,
-        error
-      };
-    }
-  }
-
-
-  const DEFAULT_TUNES_ABC = String.raw`X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Abbey 
-L:1/8
-M:4/4
-Q:2/4=90
-R:Reel
-%swing 0.1
-K:G
-"Am" A3 B A2 GE | AAGA "G" BddB | "Am" AAAB AGEF | "G" GGGA BddB |
-"Am" A2 AB A2 GE | AAGA "G" BddB | "Am" A2 AB AGEF | "G" GGGA Bddg ||
-"Am" eggg a2 ba | "G" gabg aged | "Am" eggg a2 ga | "G"bgaf ge d2 |
-"Am" eggg agbg | "G"agbg aged | "Am" eggg a2 ga | "G"bgaf gedB |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Arra Mountains
-R: Slip Jig 
-%swing 0.1
-L:1/8
-M:9/8
-Q:3/8=110
-K:G
-|: "Am" EAA EAB "C"cBc | "Am" EAA AGF "G" GED | "Am" EAA EAB c2 d |"C" e2 e ege "G"dBG :| 
-"Am" A2 a gef "G" g2 g | "Am" a2 a ged "G" Bcd | "Am" e2 a gef "G" g2 e |"D" d^cd ege "G"dBG | 
-"Am" A2 a gef "G" g2 g | "Am" a2 a ged "G" Bcd |"C" ege "D" faf "G" g2 e |"D" d^cd ege "G" dBG |]
-
-X: 1
-T: The Arran Boat Song
-R: Waltz
-M: 3/4
-L: 1/8
-K: Edor
-Q: 1/4=110
-|:"Em" E3 FE2|B3 cd2|"D" A3 FD2|A3 FD2|
-"Em" E3 FE2|B3 cd2|"D" AF3 D2| "Em" E4 z2:|
-|:"Em" e3 fe2|g3 fe2|"G" d3 B G2|"D" A2 F2 D2|
-[1 "Em" e3 fe2|g3 fe2|"D" dB3 d2|"Em" e6:|
-[2 "Em" E3 FE2|B3 cd2|"D" AF3 D2|"Em" E6|]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:Babes in the Woods
-R: Polka 
-L:1/8
-M:2/4
-Q:1/4=120
-K:D
-|: "D" AB/A/ FA | de f2 | "G" gg "A"fe | "D" df "A" A2 |"D" AB/A/ FA | de f2 | "G" gg "A"fe | "D" d2 d2 :|
-|: "A" ef/e/ ce | fe a2 | ef/e/ ce | "D" fe "E"c/B/A |"A" ef/e/ ce | fe a2 | "D" ef/e/ "E"dB | "A" BA A2 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Ballydesmond #1
-R: Polka 
-L:1/8
-M:2/4
-Q:1/4=120
-K:G
-AB |: "Am" cd/c/ Bc/B/ | AB/A/ GA | "G" B/c/d ed |g2 ed | 
-"Am" ea ge | "G" dB GA/B/ | "C" ce "D" dB |1 "Am" A2 AB :|2 "Am" A2 A2|| 
-|: "Am" ea ag/e/ | "G" dg gd |"Am" ea ab | "G" g>f gd |
-"Am" ea ge | "G" dB GA/B/ |"C" ce "D" dB |1 "Am" A2 A2 :|2 "Am" A2 AB |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Ballydesmond #2
-R:Polka 
-L:1/8
-M:2/4
-Q:1/4=120
-K:G
-|: "Am" EA AB | cd eg | "G" G>F GA | GE ED |
-"Am" EA AB | cd ef | "G" g/f/e "D" dB | "Am" A2 A2 :|
-|:"Am" a>g ab | ag ef | "G" g>f ga | ge ed |
-"Am" ea ab | ag ef | "G" g/f/e "D" dB | "Am" A2 A2 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Ballyvourney
-R:Polka 
-L:1/8
-M:2/4
-Q:1/4=120
-K:D
-|: "A" EF/G/ FE | "D" FD FA | "A" EF/G/ FE | "D" FD A2 |
-"A" EF/G/ FE | "D" FD FA | "G" B>A "D" B/c/d |1 "A" e2 e2 :|2"A" e2 AB/c/ ||
-|: "D" dA FA | DA FA | "G" c/d/c/B/ GB |"A" A2 AB/c/ | 
-"D" dA FA | DA FA | "G" B>A "D" B/c/d |1 "A" e2 AB/c/ :|2 "A" e2 e2 |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:Banish Misfortune
-R:Jig
-%swing 0.1
-L:1/8
-M:6/8
-Q:3/8=110
-K:G
-|: "D" fed cAG | A2 d cAG | F2 D DED |F3 GFG | 
-"C" AGA cAG | AGA ^cde | fed cAG |"A" Ad^c "D" d2 e :|
-|: "D" f2 d d^cd | f2 g agf | "C" e2 c cBc |e2 f gfe | 
-"D" f2 g agf | "C" e2 f gfe | "D" fed "C" cAG |"A" Ad^c "D" d2 e :|
-|: "D" f2 g e2 f | d2 e c2 d | A2 A GAG |F2 F FED |
-"C" c2 c cAG | AGA ^cde | fed cAG |1 "A" Ad^c "D" d2 e :|2 "A" Ad^c "D" d3 |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Banshee
-R:Reel 
-L:1/8
-M:4/4
-Q:2/4=90
-K:G
-%swing 0.1
-|: "G" G2 GD EDB,D | GFGB d2 Bd | "C" eged "G" BAGA | "Am" BAGE "D" EDDE |
-"G" G2 GD EDB,D | GFGB d2 Bd | "C" eged "G" BAGA | "Am" BAGE "D" ED D2 :|
-|:"Am" eaag efge | "Em" dBBA B3 d | "Am" eBBB gBfB | "G" eBBA B3 d |
-"Am" eaag efge | "Em" dBBA B3 d | "C" eged "G" BAGA | "Am" BAGE "D" ED D2 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Beeswing
-R:Hornpipe
-L:1/8
-M:4/4
-Q:2/4=72
-K:G
-|: (3DEF | "G" GdBG "D" FcAF | "G" DBGD B,GDB, | "C" CEAc "G" B,DGB |"Am" (3ABA (3GFE "D" D2 (3DEF | 
-"G"GdBG "D" FcAF | "G" DBGD B,GDB, | "C"CEAc "G"BAGF |"D" (3ABA GF "G" G2 :|
-|: dc |"G" (3BAG dB gdBG | "D" (3AGF dA fdAF |"C" ECGE cABG | "Am" (3ABA (3GFE "D" D2 (3DEF |
-"G" GdBG "D" FcAF | "G" DBGD B,GDB, | "C"CEAc "G" BAGF | "D" (3ABA GF "G"G2 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Blarney Pilgrim
-R:Jig
-%swing 0.1
-L:1/8
-M:6/8
-Q:3/8=110
-K:G
-|: "G" DED DEG | "D" A2 G ABc | "C" BAG AGE |GEA "D" GED | 
-"G" DED DEG | "D" A2 G ABc | "C" BAG AGE |GED "D" D3 :|
-|: "G" ded dBG | "D" AGA "Em" BGE | "G" ded dBG |"D" AGA B2 d |
-"C" g2 e "G" dBG | "D" AGA "G" BGE | B2 G AGE |GED "D" D3 :|
-|: "D" ADD "C" BDD | "D" ADD ABc | "C" BAG AGE |GEA "D" GED |
-"D" ADD "C" BDD | "D" ADD ABc | "C" BAG AGE |GED "D" D3 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Boys of Bluehill
-R:Hornpipe 
-L:1/8
-M:4/4
-Q:2/4=78
-K:D
-|: dB | "D" BAFA DAFA | "G" BA (3Bcd "A" e2 de | "D" fagf "A" egfe |"D" dfed "G" B2 dB |
-"D" BAFA DAFA | "G" BA (3Bcd "A" e2 de | "D"fagf "A" egfe |1 "D" d2 dc d2 :|2 "D" d2 dc defg ||
-|: "D"afdf a2 gf | "G" efga b2 ag |"D" fagf "A" egfe | "D" dfed "G" B2 dB |
-"D" BAFA DAFA | "G" BA (3Bcd "A" e2 de |"D" fagf "A" egfe |1 "D" d2 dc defg :|2 "D" d2 dc d2 |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Britches Full of Stitches
-R:Polka 
-L:1/8
-M:2/4
-Q:1/4=120
-K:A
-|: "A" A>B cA | BA "D" ce | "A" A>B cA | BA "D" F2 |
-"A" A>B cA | BA "D" ce | "A" A>B AF | "D" FE "E" E2 :|
-|:"E" e>f ec | "A" BA Bc | "E" e>f ec | "A" BA "D" F2 |
-"E" e>f ec | "A" BA B "D"c | "A" A>B AF | "D" FE "E" E2 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Butterfly
-R:Slip Jig 
-%swing 0.1
-L:1/8
-M:9/8
-Q:3/8=110
-K:G
-|: "Em" B2 E G2 E "D" F3 | "Em" B2 E G2 E "D" FGA | "Em" B2 E G2 E F2 A | "G" B2 d d2 B "D" AFD :|
-|:"Am" B2 c e2 f g3 | B2 c g2 e "G" dBA | "Am" B2 c e2 f g2 a | "G"b2 a g2 e "D"dBA :|
-|:"Em" B3 B2 A G2 A | B3 BAB "D" dBA | "Em" B3 B2 A G2 A | "G" B2 d g2 e "D"dBA :|
-
-X: 1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T: The Cat's Meow
-R:Jig
-%swing 0.1
-Q: 3/8=110
-M: 6/8
-L: 1/8
-K: Dmaj
-|:"D" FAd f2b|afe dBA|"Bm" ~B3 BAF|"D" dAF "A" E2A|
-"D" FAd ~f3|afe dBA|"G" B/c/de "A" fdB|1 "D" AFE D3:|2 "D" AFE D2e||
-|:"D" fdB ~A3|DFA def|"G" gef ged|"A" ced cBA|
-"D" fdB ~A3|DFA def|"G" g2g "A" age|1 "D" edc d2e:|2 "D" edc d2B||
-|:"D" Adf a2a|agf agf|"A" Ace ~g3|gfe gfe|
-"D" ~f3 ~g3|"Bm" a2a bag|"G" f/g/af "A" gec|1 "D" edc d2B:|2 "D" edc d3|]
-
-X: 1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T: The Chaffpool Post
-R: Barndance
-M: 4/4
-L: 1/8
-Q:2/4=90
-%swing 0.2
-K: Gmaj
-|:"G" B2^AB e2dB|"C" d2cA E2FG| "D7" A^GAB cAFA|"G" GABG D2B,D|
-"G" B2^AB e2dB|"C" d2cA E2FG|"D7" A^GAB cAFA|1 "G" G2GF G4:|2 "G" G2g2 g3f||
-|:"C" e^def gfga|"G" b2d2 d4|"D7" cBAB cdef|"G" g2B2 g2gf|
-"C" e^def gfga|"G" b2d2 d4|"D7" cBAB cdef|1 "G" g2fa g2gf:|2 "G" g2fa g4||
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T: The Cliffs Of Moher
-R: Jig
-M: 6/8
-L: 1/8
-K: Ador
-Q:3/8 = 110
-|:"Am" eaa bag|eaf "G" ged|"Am" c2A "G" BAG|"Em" EFG "Am" ABd|
-eaa bag|eaf "G" ged|"Am" c2A "G" BAG|"Em" EFG "Am"A3:|
-|:"Am" efe dBA|efe dBA|"G" GAB dBA|GAB dBd|
-[1 "Am" efe dBA|efe dBA|"G" GAB dBG|"Em" EFG "Am" A3:|
-[2 "Am" efe "Em" dee|"C" cee "G" Bee|"Em" EFG BAG|EFG "Am" A3||
-
-X: 1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T: Coleman's Cross
-R:Jig
-%swing 0.1
-M: 6/8
-L: 1/8
-Q:3/8=110
-K: Edor
-|:"Em" B2e efe|B2e efe|"D" A2d ded|A2d ded|
-"Em" B2e efe|Bef g2a|"G" bag "D" agf|1 "Em" ged e2d:|2 "Em" ged e2f||
-|:"G" gdB G3|"D" FDF AFD|"G" GBd "C" efg|"D" fdc def|
-"G" gdB G3|"D" FDF AFD|"G" GBd "C" efg|1 "D" fdc def:|2 "D" fdc d2d|]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Connaughtman's Rambles
-R:Jig
-%swing 0.1
-L:1/8
-M:6/8
-Q:3/8=110
-K:D
-|: "D" FAA dAA | BAB "G" dAG | "D" FAA dfe |dBB "G" BAG |
-"D" FAA dAA | BAB def | "G" gfe "D" dfe |1"Bm" dBB "A"BAG :|2 "Bm" dBB "A" B2 e ||
-|: "Bm" fbb faa | fef "A" deg |"Bm" fbb faa | fed "A" e2 e |
-"Bm" fbb faa | fef def |"G" gfe "D" dfe |1 "Bm" dBB "A" B2 e :|2 "Bm" dBB "A" BAG |]
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:The Cook in the Kitchen
-R:Jig
-%swing 0.1
-L:1/8
-M:6/8
-Q:3/8=110
-K:G
-|: "G" DGG GAG | FDE "F" =F2 E | "G" DGG GFG | "D" Add "C" cAG |
-"G"DGG GAG | FDE "F" =F2 d | "C" cAG "D" FGA |1 "G" BGF G2 G :|2 "G" BGF G2 A ||
-|: "G" BcB BAG | "D" ABA AGF | "Em" GAG GFG |"D" Add "C" cAG |
-"G" BcB BAG | "D" ABA A2 d | "C" cAG "D" FGA |1"G" BGF G2 A :|2 "G" BGF G2 B ||
-|: "D" d2 e f2 g | a2 g fed |"C" cAG FGA | "G" BAB "C"cAF |
-"D" d2 e f2 g | a2 g fed |"C" cAG "D" FGA | "G" BGF G3 :|
-
-X:1
-%%titlefont Palatino 18
-%%subtitlefont Palatino 13
-%%infofont Palatino 13
-%%partsfont Palatino 13
-%%tempofont Palatino 13
-%%textfont Palatino 13
-T:Cooley's
-R:Reel 
-L:1/8
-M:4/4
-Q:2/4=90
-K:Edor
-%swing 0.1
-|: "Em" EBBA B2 EB | B2 AB dBAG | "D" (3FED AD BDAG | FDFA BAGF |
-"Em" EBBA B2 EB | B2 AB defg | "D"afge dBAF |1 "Bm" DEFD "Em" E3 D :|2"Bm" DEFD "Em" E2 gf ||
-|: "Em" eBBB eBgf | eBBB gedB | "D" A2 FA DAFA |BAFA defg |
-"Em" eBBB eBgf | eBBB defg | "D" afge dBAF |1 "Bm" DEFD "Em" E2 gf :|2 "Bm" DEFD "Em" E4 |]`;
-
-  function buildTunesFromRecords(records, sourceName) {
-    return records.map((record, recordIndex) => {
-      const abc = record.abc;
-      const title = extractField(abc, "T") || `${sourceName} — Tune ${recordIndex + 1}`;
-      const composer = extractField(abc, "C");
-      const rhythm = extractField(abc, "R");
-
-      return {
-        title,
-        composer,
-        rhythm,
-        sourceName,
-        fileHeader: record.fileHeader,
-        abc
-      };
-    });
-  }
-
-  function appendAbcTextSource(text, sourceName, size) {
-    const records = splitAbcRecords(text, sourceName);
-    const tunes = buildTunesFromRecords(records, sourceName);
-
-    state.files.push({
-      name: sourceName,
-      size: Number.isFinite(size) ? size : String(text || "").length,
-      count: records.length
-    });
-    state.tunes.push(...tunes);
-
-    return records.length;
-  }
-
-  async function readFiles(fileList) {
-    const incoming = Array.from(fileList || []);
-    if (!incoming.length) return;
-
-    setStatus("Reading ABC files…");
-
-    let newTuneCount = 0;
-
-    for (const file of incoming) {
-      const text = await file.text();
-      newTuneCount += appendAbcTextSource(text, file.name, file.size);
-    }
-
-    renderState();
-    setStatus(`Loaded ${newTuneCount} tune${newTuneCount === 1 ? "" : "s"}.`);
-    fileInput.value = "";
-  }
-
-  function renderState() {
-    const fileList = document.getElementById("file-list");
-    const tuneList = document.getElementById("tune-list");
-    fileList.replaceChildren();
-    tuneList.replaceChildren();
-
-    state.files.forEach(file => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span>${escapeHtml(file.name)}</span><span class="tag">${file.count}</span>`;
-      fileList.appendChild(li);
-    });
-
-    state.tunes.forEach((tune, index) => {
-      const li = document.createElement("li");
-      const detail = [tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
-      li.innerHTML =
-        `<span><strong>${index + 1}. ${escapeHtml(tune.title)}</strong>` +
-        (detail ? `<br><small>${escapeHtml(detail)}</small>` : "") +
-        `</span>`;
-      tuneList.appendChild(li);
-    });
-
-    document.getElementById("file-count").textContent = state.files.length;
-    document.getElementById("tune-count").textContent = state.tunes.length;
-    document.getElementById("theme-summary").textContent = optionName(THEME_OPTIONS, state.settings.theme);
-    document.getElementById("display-summary").textContent = optionName(DISPLAY_OPTIONS, state.settings.displayMode);
-
-    const hasTunes = state.tunes.length > 0;
-    document.getElementById("empty-message").hidden = hasTunes;
-    document.getElementById("loaded-details").hidden = !hasTunes;
-    saveButton.disabled = !hasTunes;
-    clearButton.disabled = !hasTunes;
-
-    document.getElementById("settings-preview").innerHTML =
-      `<strong>${escapeHtml(state.settings.title)}</strong><br>` +
-      `${escapeHtml(optionName(THEME_OPTIONS, state.settings.theme))} · ` +
-      `${escapeHtml(optionName(DISPLAY_OPTIONS, state.settings.displayMode))} · ` +
-      `${escapeHtml(optionName(CURSOR_COLOR_OPTIONS, state.settings.cursorColor))} play cursor · ` +
-      `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
-      `Player ${state.settings.playerPosition} notation · ` +
-      `Notation ${state.settings.notationWidth}% of page body · ` +
-      `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
-      `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
-      `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
-      `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"} · ` +
-      `${state.settings.includeTuneTextBefore ? "Text before each tune" : "No text before each tune"} · ` +
-      `${state.settings.includeTuneTextAfter ? "Text after tunes" : "No text after tunes"}`;
-  }
-
   function escapeHtml(value) {
     return String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -3180,286 +1874,6 @@ K:Edor
     return result;
   }
 
-  function activateWebsiteSettingsTab(tabId) {
-    const root = document.getElementById("website-settings-tabs-root");
-    if (!root) return;
-
-    if (root.querySelector('[data-tab="' + tabId + '"]')) {
-      lastWebsiteSettingsTabId = tabId;
-    }
-
-    root.querySelectorAll(".website-settings-tab-button").forEach(button => {
-      const active = button.dataset.tab === tabId;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-selected", active ? "true" : "false");
-    });
-
-    root.querySelectorAll(".website-settings-tab-panel").forEach(panel => {
-      panel.classList.toggle("active", panel.id === tabId);
-    });
-
-    const panels = root.querySelector(".website-settings-tab-panels");
-    if (panels) panels.scrollTop = 0;
-  }
-
-  function initializeWebsiteSettingsTabs() {
-    const root = document.getElementById("website-settings-tabs-root");
-    if (!root || root.dataset.initialized === "true") return;
-
-    root.querySelectorAll(".website-settings-tab-button").forEach(button => {
-      button.addEventListener("click", () => {
-        activateWebsiteSettingsTab(button.dataset.tab);
-      });
-    });
-
-    root.addEventListener("keydown", event => {
-      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
-      const buttons = Array.from(root.querySelectorAll(".website-settings-tab-button"));
-      const current = buttons.indexOf(document.activeElement);
-      if (current < 0) return;
-      event.preventDefault();
-      const offset = event.key === "ArrowRight" ? 1 : -1;
-      const next = buttons[(current + offset + buttons.length) % buttons.length];
-      next.focus();
-      activateWebsiteSettingsTab(next.dataset.tab);
-    });
-
-    root.dataset.initialized = "true";
-    activateWebsiteSettingsTab(lastWebsiteSettingsTabId);
-  }
-
-  function moveWebsiteSettingsField(modalRoot, fieldId, destinationId) {
-    const destination = document.getElementById(destinationId);
-    if (!destination) return false;
-
-    const selector =
-      'input[name="' + fieldId + '"], select[name="' + fieldId + '"], textarea[name="' + fieldId + '"], ' +
-      'input[id="' + fieldId + '"], select[id="' + fieldId + '"], textarea[id="' + fieldId + '"]';
-
-    const field = modalRoot.querySelector(selector);
-    if (!field) return false;
-
-    const row =
-      field.closest(".modal_flat_form_item") ||
-      field.closest(".modal_default_form_item") ||
-      field.closest(".modal_flat_form_field") ||
-      field.closest(".modal_default_form_field");
-
-    if (!row) return false;
-    destination.appendChild(row);
-    return true;
-  }
-
-  function buildWebsiteSettingsTabs() {
-    const tabsRoot = document.getElementById("website-settings-tabs-root");
-    if (!tabsRoot || tabsRoot.dataset.built === "true") return !!tabsRoot;
-
-    const modalRoot =
-      tabsRoot.closest(".modal_flat") ||
-      tabsRoot.closest(".modal_default") ||
-      tabsRoot.closest(".dpmodal") ||
-      document;
-
-    const groups = {
-      website_settings_text_fields: [
-        "title", "subtitle", "footer",
-        "includeTuneHeading",
-        "includeCollectionIntro", "collectionIntro",
-        "includeTuneTextBefore", "tuneTextBefore",
-        "includeTuneTextAfter", "tuneTextAfter"
-      ],
-      website_settings_display_fields: [
-        "theme", "displayMode", "cursorColor",
-        "playerPosition", "notationWidth", "bodyWidth",
-        "tuneNumbers", "abcToolsLinks"
-      ],
-      website_settings_playback_inject: [
-        "injectSoundSettings"
-      ],
-      website_settings_playback_melody: [
-        "melodyProgram"
-      ],
-      website_settings_playback_soundfont: [
-        "soundfont"
-      ],
-      website_settings_playback_bass: [
-        "bassProgram"
-      ],
-      website_settings_playback_bass_volume: [
-        "bassVolume"
-      ],
-      website_settings_playback_chord: [
-        "chordProgram"
-      ],
-      website_settings_playback_chord_volume: [
-        "chordVolume"
-      ]
-    };
-
-    let moved = 0;
-    Object.entries(groups).forEach(([destinationId, fieldIds]) => {
-      fieldIds.forEach(fieldId => {
-        if (moveWebsiteSettingsField(modalRoot, fieldId, destinationId)) moved += 1;
-      });
-    });
-
-    if (moved < 25) return false;
-
-    tabsRoot.dataset.built = "true";
-    initializeWebsiteSettingsTabs();
-    initializeWebsiteSettingsManageActions();
-    return true;
-  }
-
-  function findWebsiteSettingsField(modalRoot, fieldId) {
-    if (!modalRoot) return null;
-
-    return modalRoot.querySelector(
-      'input[name="' + fieldId + '"], ' +
-      'select[name="' + fieldId + '"], ' +
-      'textarea[name="' + fieldId + '"], ' +
-      'input[id="' + fieldId + '"], ' +
-      'select[id="' + fieldId + '"], ' +
-      'textarea[id="' + fieldId + '"]'
-    );
-  }
-
-  function getOpenWebsiteSettingsModalRoot() {
-    const tabsRoot = document.getElementById("website-settings-tabs-root");
-    if (!tabsRoot) return null;
-
-    return tabsRoot.closest(".modal_flat") ||
-      tabsRoot.closest(".modal_default") ||
-      tabsRoot.closest(".dpmodal") ||
-      tabsRoot.parentElement;
-  }
-
-  function applySettingsValuesInOpenSettingsDialog(settings, tabId = null) {
-    const tabsRoot = document.getElementById("website-settings-tabs-root");
-    const modalRoot = getOpenWebsiteSettingsModalRoot();
-
-    if (!tabsRoot || !modalRoot) return false;
-
-    Object.entries(DEFAULT_SETTINGS).forEach(([fieldId, defaultValue]) => {
-      const field = findWebsiteSettingsField(modalRoot, fieldId);
-      if (!field) return;
-
-      const value = Object.prototype.hasOwnProperty.call(settings, fieldId)
-        ? settings[fieldId]
-        : defaultValue;
-
-      if (field.type === "checkbox") {
-        field.checked = !!value;
-      } else {
-        field.value = String(value);
-      }
-
-      field.dispatchEvent(new Event("input", { bubbles: true }));
-      field.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-
-    if (tabId) activateWebsiteSettingsTab(tabId);
-
-    const panels = tabsRoot.querySelector(".website-settings-tab-panels");
-    if (panels) panels.scrollTop = 0;
-
-    return true;
-  }
-
-  function restoreDefaultValuesInOpenSettingsDialog() {
-    return applySettingsValuesInOpenSettingsDialog(DEFAULT_SETTINGS, "website_settings_text");
-  }
-
-  function getCurrentSettingsFromOpenSettingsDialog() {
-    const modalRoot = getOpenWebsiteSettingsModalRoot();
-    const current = { ...state.settings };
-
-    if (!modalRoot) return { ...DEFAULT_SETTINGS, ...current };
-
-    Object.entries(DEFAULT_SETTINGS).forEach(([fieldId]) => {
-      const field = findWebsiteSettingsField(modalRoot, fieldId);
-      if (!field) return;
-
-      current[fieldId] = field.type === "checkbox" ? !!field.checked : String(field.value);
-    });
-
-    return { ...DEFAULT_SETTINGS, ...current };
-  }
-
-  function optionIds(options) {
-    return new Set(options.map(item => String(item.id)));
-  }
-
-  function validateWebsiteSettings(rawSettings) {
-    const source = rawSettings && typeof rawSettings === "object" && !Array.isArray(rawSettings)
-      ? (rawSettings.settings && typeof rawSettings.settings === "object" && !Array.isArray(rawSettings.settings)
-          ? rawSettings.settings
-          : rawSettings)
-      : null;
-
-    if (!source) {
-      return { settings: null, errors: ["The file does not contain a settings object."] };
-    }
-
-    const errors = [];
-    const settings = { ...DEFAULT_SETTINGS };
-
-    const textFields = new Set([
-      "title", "subtitle", "footer", "collectionIntro", "tuneTextBefore", "tuneTextAfter"
-    ]);
-    const booleanFields = new Set([
-      "includeTuneHeading", "includeCollectionIntro", "includeTuneTextBefore",
-      "includeTuneTextAfter", "injectSoundSettings"
-    ]);
-    const allowedValues = {
-      theme: optionIds(THEME_OPTIONS),
-      displayMode: optionIds(DISPLAY_OPTIONS),
-      cursorColor: optionIds(CURSOR_COLOR_OPTIONS),
-      soundfont: optionIds(SOUNDFONT_OPTIONS),
-      melodyProgram: optionIds(GM_INSTRUMENT_OPTIONS),
-      bassProgram: optionIds(GM_INSTRUMENT_OPTIONS),
-      bassVolume: optionIds(VOLUME_OPTIONS),
-      chordProgram: optionIds(GM_INSTRUMENT_OPTIONS),
-      chordVolume: optionIds(VOLUME_OPTIONS),
-      playerPosition: new Set(["above", "below"]),
-      notationWidth: new Set(["50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]),
-      bodyWidth: new Set(["700", "800", "900", "1000", "1100", "1180", "1280", "1400"]),
-      tuneNumbers: new Set(["hide", "show"]),
-      abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS)
-    };
-
-    Object.keys(source).forEach(key => {
-      if (!Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) return;
-
-      const value = source[key];
-
-      if (textFields.has(key)) {
-        settings[key] = String(value ?? "");
-        return;
-      }
-
-      if (booleanFields.has(key)) {
-        if (typeof value === "boolean") {
-          settings[key] = value;
-        } else {
-          errors.push(`${key} must be true or false.`);
-        }
-        return;
-      }
-
-      if (allowedValues[key]) {
-        const stringValue = String(value ?? "");
-        if (allowedValues[key].has(stringValue)) {
-          settings[key] = stringValue;
-        } else {
-          errors.push(`${key} has an unsupported value.`);
-        }
-      }
-    });
-
-    return { settings: errors.length ? null : settings, errors };
-  }
-
   function ensureTxtExtension(filename) {
     let safeName = String(filename || "").trim();
     if (!safeName) safeName = "website-settings";
@@ -3468,22 +1882,6 @@ K:Edor
       safeName = safeName.replace(/\.[^.\/]*$/, "") + ".txt";
     }
     return safeName;
-  }
-
-  async function promptSettingsFilename() {
-    const defaultName = ensureTxtExtension(sessionSettingsFilename || "website-settings.txt");
-    const result = await DayPilot.Modal.form(
-      [{ name: "Settings filename", id: "filename", type: "text" }],
-      { filename: defaultName },
-      { top: 150 },
-      { title: "Save Settings", width: 470, okText: "Save", cancelText: "Cancel" }
-    );
-
-    if (result.canceled) return null;
-
-    const filename = ensureTxtExtension(result.result.filename || defaultName);
-    sessionSettingsFilename = filename;
-    return filename;
   }
 
   function themeNameToFilename(themeName, fallback = "custom-theme.txt") {
@@ -3525,20 +1923,6 @@ K:Edor
     const filename = ensureTxtExtension(result.result.filename || defaultName);
     sessionThemeFilename = filename;
     return filename;
-  }
-
-  function downloadSettingsFile(filename, settings) {
-    const text = JSON.stringify(settings, null, 2);
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function normalizeCustomTheme(rawTheme) {
@@ -3833,13 +2217,7 @@ K:Edor
   }
 
   function getOpenThemeBuilderModalRoot() {
-    const root = document.getElementById("theme-builder-root");
-    if (!root) return null;
-
-    return root.closest(".modal_flat") ||
-      root.closest(".modal_default") ||
-      root.closest(".dpmodal") ||
-      root.parentElement;
+    return document.getElementById("theme-builder-root");
   }
 
   function findThemeBuilderField(modalRoot, fieldId) {
@@ -3901,28 +2279,6 @@ K:Edor
     return true;
   }
 
-  function setOpenSettingsThemeToCustom() {
-    const modalRoot = getOpenWebsiteSettingsModalRoot();
-    const field = findWebsiteSettingsField(modalRoot, "theme");
-
-    if (field) {
-      field.value = "custom";
-      field.dispatchEvent(new Event("input", { bubbles: true }));
-      field.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    // Also update the live settings object immediately. This makes the custom
-    // theme robust even if DayPilot returns a stale select value after a nested
-    // Theme Builder modal has changed the parent settings dialog.
-    state.settings = { ...state.settings, theme: "custom" };
-    themeBuilderSelectedCustomInOpenSettingsDialog = true;
-    saveSettings();
-    renderState();
-
-    activateWebsiteSettingsTab("website_settings_display");
-    return !!field;
-  }
-
   async function saveCustomThemeFromBuilder() {
     const currentTheme = getCurrentThemeFromOpenThemeBuilderDialog();
     const validation = validateCustomTheme(currentTheme);
@@ -3957,7 +2313,7 @@ K:Edor
       }
 
       applyThemeValuesInOpenThemeBuilderDialog(validation.theme);
-      setStatus(`Loaded custom theme from ${file.name}. Click Use Theme to make it available.`);
+      setStatus(`Loaded custom theme from ${file.name}. Edit the loaded values or save a theme file when ready.`);
     } catch (error) {
       console.warn("Unable to load custom theme file.", error);
       await DayPilot.Modal.alert(
@@ -4257,10 +2613,6 @@ K:Edor
     const modalRoot = getOpenThemeBuilderModalRoot();
     if (!root || !modalRoot) return false;
 
-    root.closest(".modal_flat")?.classList.add("theme-builder-dialog-root");
-    root.closest(".modal_default")?.classList.add("theme-builder-dialog-root");
-
-    hideThemeBuilderPayloadRow();
     initializeThemeBuilderTabs();
 
     CUSTOM_THEME_FIELDS.forEach(fieldId => {
@@ -4492,7 +2844,7 @@ K:Edor
     });
 
     applyThemeValuesInOpenThemeBuilderDialog(sourceTheme);
-    setStatus(`Loaded ${themeName} values into the Theme Builder. Click Use Theme to make them available.`);
+    setStatus(`Loaded ${themeName} values into the Theme Builder. Edit the loaded values or save a theme file when ready.`);
   }
 
   async function openThemeBuilder() {
@@ -4555,18 +2907,25 @@ K:Edor
       .map(option => '<option value="' + escapeHtml(option.id) + '">' + escapeHtml(option.name) + '</option>')
       .join('');
 
-    const form = [
-      {
-        html:
+    const themeBuilderHtml =
           '<div id="theme-builder-root" class="theme-builder-root">' +
-            '<div class="theme-builder-actions">' +
-              '<button id="theme-builder-load-action" class="website-settings-manage-action" type="button">Load Theme File</button>' +
-              '<button id="theme-builder-save-action" class="website-settings-manage-action" type="button">Save Theme File</button>' +
+            '<div class="theme-builder-top-grid theme-builder-file-row">' +
+              '<div class="theme-builder-file-actions">' +
+                '<button id="theme-builder-load-action" class="website-settings-manage-action" type="button">Load Theme File</button>' +
+                '<button id="theme-builder-save-action" class="website-settings-manage-action" type="button">Save Theme File</button>' +
+              '</div>' +
+              '<div class="theme-builder-side-actions">' +
+                '<button id="instructions-button" class="website-settings-manage-action theme-builder-instructions-action" type="button">Instructions</button>' +
+              '</div>' +
             '</div>' +
-            '<div class="theme-builder-load-row">' +
-              '<select id="theme-builder-built-in-theme" class="theme-builder-select" aria-label="Built-in theme starting point">' + builtInThemeOptions + '</select>' +
-              '<button id="theme-builder-load-built-in-action" class="website-settings-manage-action" type="button">Load Built-In Theme</button>' +
-              '<button id="theme-builder-color-sampler-action" class="website-settings-manage-action" type="button">Sample Image Color</button>' +
+            '<div class="theme-builder-top-grid theme-builder-built-in-row">' +
+              '<div class="theme-builder-built-in-actions">' +
+                '<select id="theme-builder-built-in-theme" class="theme-builder-select" aria-label="Built-in theme starting point">' + builtInThemeOptions + '</select>' +
+                '<button id="theme-builder-load-built-in-action" class="website-settings-manage-action" type="button">Load Built-In Theme</button>' +
+              '</div>' +
+              '<div class="theme-builder-side-actions">' +
+                '<button id="theme-builder-color-sampler-action" class="website-settings-manage-action" type="button">Sample Image Color</button>' +
+              '</div>' +
               '<input id="theme-builder-color-sampler-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg">' +
             '</div>' +
             '<div id="theme-builder-color-sampler-panel" class="theme-builder-color-sampler" hidden>' +
@@ -4667,72 +3026,24 @@ K:Edor
                 '</div>' +
               '</aside>' +
             '</div>' +
-          '</div>'
-      }
-    ];
+          '</div>';
 
-    const modalData = { ...initialTheme };
+    const container = document.getElementById("theme-builder-container");
+    if (!container) return;
 
-    const modalPromise = DayPilot.Modal.form(form, modalData, {
-      title: "Theme Builder",
-      width: Math.min(1240, Math.max(960, window.innerWidth - 90)),
-      height: Math.min(820, Math.max(660, window.innerHeight - 60)),
-      autoFocus: false,
-      okText: "Use\u00a0Theme",
-      cancelText: "Cancel"
-    });
+    container.innerHTML = themeBuilderHtml;
 
+    const inlineInstructionsButton = document.getElementById("instructions-button");
+    if (inlineInstructionsButton) {
+      inlineInstructionsButton.addEventListener("click", () => void openInstructions());
+    }
+
+    state.customTheme = normalizeCustomTheme(initialTheme);
+    latestThemeBuilderTheme = state.customTheme;
     scheduleThemeBuilderActions();
-    const result = await modalPromise;
-
-    if (result.canceled) return;
-
-    let resultTheme = latestThemeBuilderTheme;
-    if (!resultTheme) {
-      try {
-        resultTheme = JSON.parse(result.result.themeJson || "{}");
-      } catch (error) {
-        resultTheme = result.result;
-      }
-    }
-
-    const validation = validateCustomTheme(resultTheme);
-
-    if (!validation.theme) {
-      await DayPilot.Modal.alert(
-        "The custom theme could not be used because it contains invalid values:<br><br>" +
-        escapeHtml(validation.errors.join("\n")).replace(/\n/g, "<br>"),
-        { title: "Invalid Custom Theme", okText: "OK", top: 150 }
-      );
-      return;
-    }
-
-    state.customTheme = validation.theme;
-    saveCustomThemeToStorage(state.customTheme);
-    forceCustomThemeOnNextSettingsApply = true;
-    setOpenSettingsThemeToCustom();
-    setStatus("Custom theme loaded and selected. Click Apply in Website Settings to confirm the current settings before saving the website.");
+    setStatus("Theme Builder ready. Load a built-in theme or a saved theme file, edit the controls, then save a theme file for the abcjs-eskin Website Builder.");
   }
 
-  async function saveWebsiteSettingsToFile() {
-    const filename = await promptSettingsFilename();
-    if (!filename) return;
-
-    const currentSettings = getCurrentSettingsFromOpenSettingsDialog();
-    const validation = validateWebsiteSettings(currentSettings);
-
-    if (!validation.settings) {
-      await DayPilot.Modal.alert(
-        "The current settings could not be saved because they contain invalid values:<br><br>" +
-        escapeHtml(validation.errors.join("\n")).replace(/\n/g, "<br>"),
-        { title: "Invalid Settings", okText: "OK" }
-      );
-      return;
-    }
-
-    downloadSettingsFile(filename, validation.settings);
-    setStatus(`Saved website settings to ${filename}.`);
-  }
 
   function selectSettingsFile() {
     return new Promise(resolve => {
@@ -4754,639 +3065,120 @@ K:Edor
     });
   }
 
-  async function loadWebsiteSettingsFromFile() {
-    const file = await selectSettingsFile();
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const validation = validateWebsiteSettings(parsed);
-
-      if (!validation.settings) {
-        throw new Error(validation.errors.join("\n"));
-      }
-
-      applySettingsValuesInOpenSettingsDialog(validation.settings, "website_settings_manage");
-      setStatus(`Loaded website settings from ${file.name}. Click Apply to use them.`);
-      const loadedAlertPromise = DayPilot.Modal.alert(
-        '<div style="text-align:center;">Website settings were successfully loaded.<br><br>Click <b>Apply</b> to use them,<br/>or <b>Cancel</b> to leave the current applied settings unchanged.</div>',
-        { title: "Settings Loaded", okText: "OK", top: 150 }
-      );
-      await loadedAlertPromise;
-    } catch (error) {
-      console.warn("Unable to load website settings file.", error);
-      await DayPilot.Modal.alert(
-        "The selected settings file could not be loaded.<br><br>" +
-        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-        { title: "Invalid Settings File", okText: "OK" }
-      );
-      setStatus("The selected settings file could not be loaded.", true);
-    }
-  }
-
-  function lowerResetConfirmationDialog() {
-    let attempts = 0;
-    const confirmationText =
-      "Reset all website settings to their default values? This cannot be undone.";
-
-    const positionDialog = () => {
-      attempts += 1;
-
-      const candidates = Array.from(document.querySelectorAll(
-        ".modal_default_main, .modal_flat_main, .dpmodal, [class*='modal_'][class*='_main']"
-      ));
-
-      const dialog = candidates.reverse().find(element =>
-        element.textContent && element.textContent.includes(confirmationText)
-      );
-
-      if (dialog) {
-        dialog.style.transform = "translateY(150px)";
-        return;
-      }
-
-      if (attempts < 40) {
-        setTimeout(positionDialog, 20);
-      }
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(positionDialog));
-  }
-
-  async function resetWebsiteSettingsFromTab() {
-    const confirmationPromise = DayPilot.Modal.confirm(
-      "Reset all website settings to their default values? This cannot be undone.",
-      {
-        title: "Reset All Settings",
-        okText: "Reset",
-        cancelText: "Cancel"
-      }
-    );
-
-    lowerResetConfirmationDialog();
-    const confirmation = await confirmationPromise;
-
-    if (confirmation.canceled) return;
-
-    state.settings = { ...DEFAULT_SETTINGS };
-
-    try {
-      localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    } catch (error) {
-      console.warn("Unable to clear saved website settings from localStorage.", error);
-    }
-
-    restoreDefaultValuesInOpenSettingsDialog();
-    renderState();
-    setStatus("All website settings were reset to their defaults.");
-  }
-
-  function initializeWebsiteSettingsManageActions() {
-    const saveButton = document.getElementById("website-settings-save-action");
-    if (saveButton && saveButton.dataset.initialized !== "true") {
-      saveButton.addEventListener("click", saveWebsiteSettingsToFile);
-      saveButton.dataset.initialized = "true";
-    }
-
-    const loadButton = document.getElementById("website-settings-load-action");
-    if (loadButton && loadButton.dataset.initialized !== "true") {
-      loadButton.addEventListener("click", loadWebsiteSettingsFromFile);
-      loadButton.dataset.initialized = "true";
-    }
-
-    const resetButton = document.getElementById("website-settings-reset-action");
-    if (resetButton && resetButton.dataset.initialized !== "true") {
-      resetButton.addEventListener("click", resetWebsiteSettingsFromTab);
-      resetButton.dataset.initialized = "true";
-    }
-
-    const themeBuilderButton = document.getElementById("website-settings-theme-builder-action");
-    if (themeBuilderButton && themeBuilderButton.dataset.initialized !== "true") {
-      themeBuilderButton.addEventListener("click", openThemeBuilder);
-      themeBuilderButton.dataset.initialized = "true";
-    }
-  }
-
-  function centerWebsiteSettingsButtons() {
-    const tabsRoot = document.getElementById("website-settings-tabs-root");
-    if (!tabsRoot) return false;
-
-    const modalRoot =
-      tabsRoot.closest(".modal_flat") ||
-      tabsRoot.closest(".modal_default") ||
-      tabsRoot.closest(".dpmodal") ||
-      tabsRoot.parentElement;
-
-    if (!modalRoot) return false;
-
-    const candidates = Array.from(modalRoot.querySelectorAll("div, td"));
-    const buttonRow = candidates.find(element => {
-      const buttons = Array.from(element.querySelectorAll("button, input[type='button'], input[type='submit']"));
-      const labels = buttons.map(button => (button.value || button.textContent || "").trim());
-      return labels.includes("Apply") && labels.includes("Cancel") &&
-             !Array.from(element.children).some(child =>
-               child !== buttons[0] &&
-               child.querySelector &&
-               child.querySelector("button, input[type='button'], input[type='submit']")
-             );
-    });
-
-    if (!buttonRow) return false;
-
-    buttonRow.style.display = "flex";
-    buttonRow.style.justifyContent = "center";
-    buttonRow.style.alignItems = "center";
-    buttonRow.style.gap = "18px";
-    buttonRow.style.textAlign = "center";
-    buttonRow.style.paddingLeft = "0";
-    buttonRow.style.paddingRight = "0";
-
-    buttonRow.querySelectorAll("button, input[type='button'], input[type='submit']").forEach(button => {
-      button.style.marginLeft = "0";
-      button.style.marginRight = "0";
-      button.style.webkitAppearance = "none";
-      button.style.appearance = "none";
-      button.style.minWidth = "96px";
-      button.style.padding = "8px 16px";
-      button.style.color = "#0d4c2f";
-      button.style.webkitTextFillColor = "#0d4c2f";
-      button.style.background = "#e4efe8";
-      button.style.border = "1px solid #a9c2b1";
-      button.style.borderRadius = "6px";
-      button.style.boxShadow = "0 2px 0 rgba(0,0,0,.12)";
-      button.style.fontWeight = "700";
-      button.style.opacity = "1";
-    });
-
-    return true;
-  }
-
-  function scheduleWebsiteSettingsTabs() {
-    let attempts = 0;
-
-    const apply = () => {
-      attempts += 1;
-      const tabsReady = buildWebsiteSettingsTabs();
-      const buttonsReady = centerWebsiteSettingsButtons();
-
-      if ((!tabsReady || !buttonsReady) && attempts < 30) {
-        setTimeout(apply, 25);
-      }
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(apply));
-  }
-
-  async function openSettings() {
-    if (!window.DayPilot || !DayPilot.Modal) {
-      setStatus("DayPilot.Modal could not be loaded.", true);
-      return;
-    }
-
-    const form = [
-      {
-        html:
-          '<div id="website-settings-tabs-root" class="website-settings-tabs">' +
-            '<div class="website-settings-tab-bar" role="tablist" aria-label="Website settings sections">' +
-              '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
-              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Display</button>' +
-              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_playback" role="tab" aria-selected="false">Playback &amp; Sounds</button>' +
-              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_theme_builder" role="tab" aria-selected="false">Theme Builder</button>' +
-              '<button type="button" class="website-settings-tab-button manage-tab" data-tab="website_settings_manage" role="tab" aria-selected="false">Manage Settings</button>' +
-            '</div>' +
-            '<div class="website-settings-tab-panels">' +
-              '<section id="website_settings_text" class="website-settings-tab-panel active" role="tabpanel">' +
-                '<div id="website_settings_text_fields"></div>' +
-              '</section>' +
-              '<section id="website_settings_display" class="website-settings-tab-panel" role="tabpanel">' +
-                '<div id="website_settings_display_fields" class="website-settings-fields-grid"></div>' +
-              '</section>' +
-              '<section id="website_settings_playback" class="website-settings-tab-panel" role="tabpanel">' +
-                '<div class="website-settings-playback-layout">' +
-                  '<div id="website_settings_playback_inject" class="website-settings-playback-full"></div>' +
-                  '<div id="website_settings_playback_melody"></div>' +
-                  '<div id="website_settings_playback_soundfont"></div>' +
-                  '<div id="website_settings_playback_bass"></div>' +
-                  '<div id="website_settings_playback_bass_volume"></div>' +
-                  '<div id="website_settings_playback_chord"></div>' +
-                  '<div id="website_settings_playback_chord_volume"></div>' +
-                '</div>' +
-              '</section>' +
-              '<section id="website_settings_theme_builder" class="website-settings-tab-panel" role="tabpanel">' +
-                '<div class="website-settings-manage-panel">' +
-                  '<div class="website-settings-manage-card">' +
-                    '<h3>Theme Builder</h3>' +
-                    '<p>Build, preview, load, save, and select a reusable custom theme for the generated website.</p>' +
-                    '<div class="website-settings-manage-file-actions">' +
-                      '<button id="website-settings-theme-builder-action" class="website-settings-manage-action" type="button">Open Theme Builder</button>' +
-                    '</div>' +
-                  '</div>' +
-                '</div>' +
-              '</section>' +
-              '<section id="website_settings_manage" class="website-settings-tab-panel" role="tabpanel">' +
-                '<div class="website-settings-manage-panel">' +
-                  '<div class="website-settings-manage-card">' +
-                    '<h3>Manage website settings</h3>' +
-                    '<p>Save or load website settings, or reset every setting to the original defaults.</p>' +
-                    '<div class="website-settings-manage-actions">' +
-                      '<div class="website-settings-manage-file-actions">' +
-                        '<button id="website-settings-load-action" class="website-settings-manage-action" type="button">Load Settings</button>' +
-                        '<button id="website-settings-save-action" class="website-settings-manage-action" type="button">Save Settings</button>' +
-                      '</div>' +
-                      '<button id="website-settings-reset-action" class="website-settings-manage-action danger" type="button">Reset all Settings</button>' +
-                    '</div>' +
-                  '</div>' +
-                '</div>' +
-              '</section>' +
-            '</div>' +
-          '</div>'
-      },
-      { name: "Website title", id: "title", type: "text" },
-      { name: "Subtitle", id: "subtitle", type: "text" },
-      { name: "Footer text", id: "footer", type: "textarea", height: 38 },
-      {
-        name: "Include tune title and meta text above each tune",
-        id: "includeTuneHeading",
-        type: "checkbox"
-      },
-      {
-        name: "Include text before all the tunes",
-        id: "includeCollectionIntro",
-        type: "checkbox"
-      },
-      {
-        name: "Text before all the tunes",
-        id: "collectionIntro",
-        type: "textarea",
-        height: 46
-      },
-      {
-        name: "Include text before each tune",
-        id: "includeTuneTextBefore",
-        type: "checkbox"
-      },
-      {
-        name: "Text before each tune",
-        id: "tuneTextBefore",
-        type: "textarea",
-        height: 44
-      },
-      {
-        name: "Include text after each tune",
-        id: "includeTuneTextAfter",
-        type: "checkbox"
-      },
-      {
-        name: "Text after each tune",
-        id: "tuneTextAfter",
-        type: "textarea",
-        height: 44
-      },
-      { name: "Music genre visual theme", id: "theme", type: "select", options: THEME_OPTIONS },
-      { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
-      { name: "Playback cursor color", id: "cursorColor", type: "select", options: CURSOR_COLOR_OPTIONS },
-      {
-        name: "Inject soundfont and MIDI settings",
-        id: "injectSoundSettings",
-        type: "checkbox"
-      },
-      { name: "Soundfont", id: "soundfont", type: "select", options: SOUNDFONT_OPTIONS },
-      { name: "Melody instrument", id: "melodyProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
-      { name: "Bass instrument", id: "bassProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
-      { name: "Bass volume (0–127)", id: "bassVolume", type: "select", options: VOLUME_OPTIONS },
-      { name: "Chord instrument", id: "chordProgram", type: "select", options: GM_INSTRUMENT_OPTIONS },
-      { name: "Chord volume (0–127)", id: "chordVolume", type: "select", options: VOLUME_OPTIONS },
-      {
-        name: "Player controller position",
-        id: "playerPosition",
-        type: "select",
-        options: [
-          { id: "above", name: "Above notation" },
-          { id: "below", name: "Below notation" }
-        ]
-      },
-      {
-        name: "Notation width relative to page body",
-        id: "notationWidth",
-        type: "select",
-        options: ["50","55","60","65","70","75","80","85","90","95","100"].map(v => ({ id: v, name: v + "%" }))
-      },
-      {
-        name: "Maximum website body width",
-        id: "bodyWidth",
-        type: "select",
-        options: [
-          { id: "700", name: "700 px" },
-          { id: "800", name: "800 px" },
-          { id: "900", name: "900 px" },
-          { id: "1000", name: "1000 px" },
-          { id: "1100", name: "1100 px" },
-          { id: "1180", name: "1180 px " },
-          { id: "1280", name: "1280 px" },
-          { id: "1400", name: "1400 px" }
-        ]
-      },
-      {
-        name: "Tune numbers in table of contents and tune sections",
-        id: "tuneNumbers",
-        type: "select",
-        options: [
-          { id: "hide", name: "Hide" },
-          { id: "show", name: "Show" }
-        ]
-      },
-      {
-        name: "Add ABC Transcription Tools link buttons to each tune",
-        id: "abcToolsLinks",
-        type: "select",
-        options: ABC_TOOLS_LINK_OPTIONS
-      }
-    ];
-
-    themeBuilderSelectedCustomInOpenSettingsDialog = false;
-
-    const modalPromise = DayPilot.Modal.form(form, { ...state.settings }, {
-      title: "Website Settings",
-      width: Math.min(1240, Math.max(960, window.innerWidth - 90)),
-      height: Math.min(820, Math.max(660, window.innerHeight - 60)),
-      autoFocus: false,
-      okText: "Apply",
-      cancelText: "Cancel"
-    });
-
-    scheduleWebsiteSettingsTabs();
-    const result = await modalPromise;
-
-    if (result.canceled) {
-      forceCustomThemeOnNextSettingsApply = false;
-      themeBuilderSelectedCustomInOpenSettingsDialog = false;
-      return;
-    }
-
-    const appliedSettings = { ...result.result };
-    if (forceCustomThemeOnNextSettingsApply || themeBuilderSelectedCustomInOpenSettingsDialog) {
-      appliedSettings.theme = "custom";
-    }
-    forceCustomThemeOnNextSettingsApply = false;
-    themeBuilderSelectedCustomInOpenSettingsDialog = false;
-
-    state.settings = { ...state.settings, ...appliedSettings };
-    saveSettings();
-    renderState();
-    setStatus("Website settings updated and saved.");
-  }
-
   async function openInstructions() {
     if (!window.DayPilot || !DayPilot.Modal) {
       setStatus("DayPilot.Modal could not be loaded.", true);
       return;
     }
 
-    const instructionsHtml = `
-    <div class="instructions-modal-content">
+    const instructionsHtml = `    <div class="instructions-modal-content">
       <h2>Instructions</h2>
       <div class="instructions-scroll-area">
         <h3>Overview</h3>
         <p>
-          This is a developer-facing theme builder for creating, previewing, saving, and
-          exporting new abcjs-eskin website themes. It can also build a complete standalone
-          music website from one or more ABC files so you can test a theme in context. Each
-          tune is embedded directly in the exported HTML and is rendered and played by the
-          abcjs-eskin-portable library. The generated site includes a table of contents,
-          individual tune sections, playback controls, cursor tracking, autoscroll, and links
-          back to the table of contents.
+          The abcjs-eskin Website Theme Builder is a tool for creating, previewing, loading, and saving custom themes
+          for the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Builder</a></b>.
+          Use it to design a custom theme, save the custom theme file, then import that file into
+          the main abcjs-eskin Website Builder or copy it into the abcjs-eskin Website Builder source code as a new built-in theme.
+        </p>
+        <p>
+          The controls are organized into three tabs: <b>Theme Basics</b>, <b>Header &amp; Shadows</b>, and <b>Colors</b>.
+          The live preview shows the header, Table-of-contents tiles, a sample tune panel, and an ornament/divider so you can
+          see the major visual effects before saving the theme.
         </p>
 
-        <h3>1. Open ABC files</h3>
+        <h3>Basic workflow</h3>
         <ol>
-          <li>Click <b>Open ABC Files</b>.</li>
-          <li>Select one or more <code>.abc</code> or text files.</li>
-          <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>
-          <li>The loaded file and tune lists show what will be included in the exported site.</li>
+          <li>Choose a built-in theme from the menu and click <b>Load Built-In Theme</b> to use it as a starting point.</li>
+          <li>Edit the theme controls. The live preview updates as you work.</li>
+          <li>Optionally use <b>Sample Image Color</b> to sample exact colors from a local PNG or JPEG image.</li>
+          <li>Click <b>Save Theme File</b> to export the finished theme as a reusable text file.</li>
+          <li>Import the saved theme file into the main abcjs-eskin Website Builder, or manually add it to the abcjs-eskin Website Builder source code as a built-in theme.</li>
         </ol>
-        <div class="instructions-note">
-          Files can contain one tune or many tunes. Opening additional files adds their tunes
-          to the current collection. When the tool is opened normally, a built-in starter
-          collection is loaded automatically and shown as <b>Default tunes</b> so themes can be
-          previewed immediately. Use <b>Clear</b> to remove those default tunes. If the tool is
-          opened from a share link containing a <code>def=</code> parameter, the decoded tunes are
-          loaded instead and are shown as coming from <b>Share link</b>; you can still open ABC
-          files afterward to add more tunes. Any ABC file header before the first <code>X:</code> is
-          applied to every tune from that file, the default collection, or the share link.
-          Blank lines are removed from the shared header, and it is placed immediately after
-          each tune's <code>X:</code> field.
-        </div>
 
-        <h3>2. Configure the website</h3>
-        <p>Click <b>Website Settings</b>. The settings are divided into five tabs:</p>
-
-        <p><b>Text &amp; Content</b></p>
-        <ul>
-          <li><b>Website title</b> appears in the main header of the exported site.</li>
-          <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>
-          <li><b>Footer text</b> appears at the bottom of the exported page.</li>
-          <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>
-          <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>
-          <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>
-          <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>
-          <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>
-          <li><b>Text before each tune</b> adds the same centered text before every tune.</li>
-          <li><b>Text after each tune</b> adds the same centered text after every tune.</li>
-          <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>
-        </ul>
-
-        <p><b>Style &amp; Display</b></p>
-        <ul>
-          <li><b>Music genre visual theme</b> selects the complete visual theme for the exported site including colors and graphic decorations. Choose <b>Custom</b> to use the currently loaded Theme Builder theme. If no custom theme has been loaded, <b>Custom</b> uses the same colors and layout values as <b>Traditional Irish Music</b>.</li>
-               <li><b>Notation / tablature display</b> selects standard notation; notation with mandolin, GDAD bouzouki,
-              standard guitar, or DADGAD guitar tablature; or standalone versions of each tablature type.</li>
-          <li>GDAD bouzouki tablature uses the four-course tuning G-D-A-D.</li>
-          <li>DADGAD guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>
-          <li>Standalone mandolin and GDAD bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard guitar and DADGAD guitar tablature automatically add <code>%%staffsep 100</code>.</li>
-          <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>
-          <li><b>Player controller position</b> places the controls above or below the notation.</li>
-          <li><b>Notation width relative to page body</b> controls how much of the page width is used
-              by both the notation and its player.</li>
-          <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
-          <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows the numbered badges in the table of contents and above each tune. The default is <b>Show</b>.</li>
-          <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>
-        </ul>
-
-        <p><b>Playback &amp; Sounds</b></p>
-        <ul>
-          <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
-              directives in every tune with the selected values.</li>
-          <li>Select the soundfont and the melody, bass, and chord instruments.</li>
-          <li>Select bass and chord volumes from 0 through 127.</li>
-          <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>
-        </ul>
-        <p>When injection is enabled, the tool inserts these directives after any shared ABC file header. For standalone tablature, the automatically selected <code>%%staffsep</code> directive is placed after the shared header and before these sound and MIDI directives:</p>
-        <ul>
-          <li><code>%soundfont &lt;soundfont&gt;</code></li>
-          <li><code>%%MIDI program &lt;program&gt;</code></li>
-          <li><code>%%MIDI bassprog &lt;program&gt;</code></li>
-          <li><code>%%MIDI bassvol &lt;0–127&gt;</code></li>
-          <li><code>%%MIDI chordprog &lt;program&gt;</code></li>
-          <li><code>%%MIDI chordvol &lt;0–127&gt;</code></li>
-        </ul>
-        <p>If neither a tune nor its shared ABC file header already contains a <code>%reverb</code> directive, the exported tune automatically receives:</p>
-        <ul>
-          <li><code>%reverb chamber 0.95 0.05</code></li>
-        </ul>
-        <p>The automatic reverb directive is placed after the shared ABC file header, any injected <code>%%staffsep</code>, and any injected soundfont and MIDI program or volume directives. An existing <code>%reverb</code> directive is preserved and prevents the default from being added.</p>
-        <div class="instructions-warning">
-          When injection is enabled, existing soundfont and matching MIDI program or volume
-          directives in the source tunes are removed before the selected settings are inserted.
-          Disable injection to preserve each tune's original sound settings.
-        </div>
-
-        <p><b>Theme Builder</b></p>
-        <ul>
-          <li><b>Open Theme Builder</b> opens the custom theme editor. See the Theme Builder section near the end of these instructions for details about creating, saving, loading, and installing reusable built-in theme objects.</li>
-        </ul>
-
-        <p><b>Manage Settings</b></p>
-        <ul>
-          <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
-          <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool. The default filename is <code>website-settings.txt</code>, and the filename is automatically forced to use a <code>.txt</code> extension. If you enter a different filename, that filename is reused for later settings saves during the same browser session only.</li>
-          <li><b>Reset all Settings</b> restores every option to its original default and removes the saved settings from this browser. A confirmation dialog is shown before anything is reset.</li>
-        </ul>
-
-        <h3>3. Saved settings</h3>
-        <p>
-          Website settings are stored in this browser using <code>localStorage</code> when
-          <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened. The last theme loaded with <b>Use Theme</b> is also stored in this browser so selecting <b>Custom</b> can continue to use it later. Custom themes can still be saved and loaded with separate Theme Builder files; if the stored settings select <b>Custom</b> but no custom theme has ever been loaded in this browser, the builder uses the default custom-theme values.
-        </p>
-
-        <h3>4. Build and save the website</h3>
-        <ol>
-          <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>
-          <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only.</li>
-          <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>
-        </ol>
-        <p>The exported file contains:</p>
-        <ul>
-          <li>All tune ABC source directly in the HTML.</li>
-          <li>A table of contents linking to every tune.</li>
-          <li>A Table of Contents button for every tune that returns to the top of the table of contents.</li>
-          <li>Optional ABC Transcription Tools link buttons for each tune.</li>
-          <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
-          <li>Independent playback controls for every tune.</li>
-          <li>Click-the-notation pause and resume behavior.</li>
-          <li>A wide translucent playback cursor with smooth autoscroll.</li>
-          <li>Links to the required portable JavaScript and audio CSS libraries.</li>
-        </ul>
-        <div class="instructions-note">
-          The ABC is not fetched from a separate file. It remains embedded in the generated
-         website so the page can be moved or uploaded as a single HTML document.
-        </div>
-
-        <h3>5. Using the generated website</h3>
-        <ul>
-          <li>Choose a tune from the table of contents to stop current playback, hide all play cursors, and jump directly to it.</li>
-          <li>Use the player controls to start, pause, restart, and change playback speed.</li>
-          <li>Click the notation itself to pause or resume playback.</li>
-          <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
-          <li>Use the Table of Contents button for a tune to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
-        </ul>
-
-        <h3>6. Clearing the current collection</h3>
-        <p>
-          Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.
-          This does not erase saved website settings.
-        </p>
-
-        <h3>7. ABC Transcription Tools compatibility</h3>
-        <p>
-          The Website Theme Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,
-          but neither the portable library nor this Website Theme Builder includes every feature of the full
-          ABC Transcription Tools application.
-        </p>
-        <p>
-          Some of the more complex ABC Transcription Tools features are implemented by application code
-          outside the abcjs library. Those features are not automatically available in exported websites.
-          This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools
-          application interprets the part structure and controls the playback sequence.
-        </p>
-
-        <h3>Theme Builder</h3>
-        <p>
-          The <b>Theme Builder</b> is a developer tool for creating a custom website style
-          that can be used temporarily in this Theme Builder tool or copied into the main
-          abcjs-eskin Website Builder source code as a new built-in theme.
-        </p>
-        <p>
-          The controls are organized into three tabs: <b>Theme Basics</b>,
-          <b>Header &amp; Shadows</b>, and <b>Colors</b>. The live preview shows the header,
-          table of contents tiles, a sample tune panel, and an ornament/divider so you can
-          see the major visual effects before exporting a website.
-        </p>
-        <div class="instructions-note">
-          Any color field that shows a color swatch also has a built-in color picker. Click
-          the swatch next to the text field to open the browser color picker, or type/paste
-          a color value directly into the text box. The text box is useful for exact values
-          such as <code>#0b4b2c</code>, while the swatch is useful for visual selection.
-        </div>
-
-        <p><b>Theme Builder top buttons</b></p>
+        <h3>Top buttons</h3>
         <ul>
           <li><b>Load Theme File</b> loads a previously saved Theme Builder theme file. The file should be the JavaScript object-literal format saved by this tool.</li>
-          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This is the file you can later paste into the main Website Builder source code.</li>
-          <li><b>Load Built-In Theme</b> copies the settings from a built-in theme into the Theme Builder as a starting point. This replaces the current working custom theme in the Theme Builder.</li>
+          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This file can be imported by the main abcjs-eskin Website Builder and can also be pasted into the abcjs-eskin Website Builder source code by developers.</li>
+          <li><b>Load Built-In Theme</b> copies the settings from a built-in theme into the Theme Builder as a starting point. This replaces the current working theme in the editor.</li>
           <li><b>Sample Image Color</b> opens a PNG or JPEG image as a color reference. Click a pixel in the image to copy its color as <code>#RRGGBB</code>, then paste it into any color field.</li>
-          <li><b>Use Theme</b> makes the current Theme Builder theme available as <b>Custom</b> in the open Website Settings dialog. After clicking <b>Use Theme</b>, click the main <b>Apply</b> button to use it for generated websites.</li>
+          <li><b>Instructions</b> opens this help dialog.</li>
         </ul>
+        <div class="instructions-note">
+          Any color field that shows a color swatch also has a built-in browser color picker. Click the swatch next to the
+          text field to open the picker, or type/paste a color value directly into the text box. The text box is useful for
+          exact values such as <code>#0b4b2c</code>, while the swatch is useful for visual selection.
+        </div>
 
-        <p><b>Theme Basics tab</b></p>
+        <h3>Theme Basics tab</h3>
         <ul>
-          <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this developer tool. When you integrate the theme into the main Website Builder source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
-          <li><b>Ornament character</b> sets the decorative character used for section dividers in the exported website. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
-          <li><b>Font stack</b> controls the main website font family used by the exported page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
-          <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the exported website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is pasted into the main Website Builder.</li>
+          <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this tool. When you integrate the theme into the abcjs-eskin Website Builder source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
+          <li><b>Ornament character</b> sets the decorative character used for section dividers in the generated abcjs-eskin Website Builder site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
+          <li><b>Font stack</b> controls the main website font family used by the generated abcjs-eskin Website Builder page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
+          <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the generated website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is imported into or pasted into the main abcjs-eskin Website Builder.</li>
           <li><b>Show simple highlight geometric graphics in the header</b> adds a simple decorative highlight shape behind part of the header. When saved, the generated CSS for this graphic is also included in <code>customCss</code>.</li>
-          <li><b>Preserve special built-in theme CSS</b> includes the contents of <b>Additional custom CSS</b> in the generated website and saved theme file. This is most useful after loading a built-in theme that has decorative CSS not represented by the normal Theme Builder controls.</li>
-          <li><b>Additional custom CSS</b> is advanced CSS appended to exported websites when <b>Preserve special built-in theme CSS</b> is enabled. It can be edited by hand for custom effects not covered by the normal fields. When you load a built-in theme with special CSS, this field may be filled automatically. When you save a theme, generated header ornament/header graphic CSS and this advanced CSS are combined into the saved theme's <code>customCss</code> field.</li>
+          <li><b>Preserve special built-in theme CSS</b> includes the contents of <b>Additional custom CSS</b> in the saved theme file. This is most useful after loading a built-in theme that has decorative CSS not represented by the normal Theme Builder controls.</li>
+          <li><b>Additional custom CSS</b> is advanced CSS appended to generated websites when <b>Preserve special built-in theme CSS</b> is enabled. It can be edited by hand for custom effects not covered by the normal fields. When you load a built-in theme with special CSS, this field may be filled automatically. When you save a theme, generated header ornament/header graphic CSS and this advanced CSS are combined into the saved theme's <code>customCss</code> field.</li>
         </ul>
 
-        <p><b>Header &amp; Shadows tab</b></p>
+        <h3>Header &amp; Shadows tab</h3>
         <ul>
-          <li><b>Header background begin color</b> sets the first color used by the default header gradient. It affects the exported website's large top hero/header area.</li>
+          <li><b>Header background begin color</b> sets the first color used by the default header gradient. It affects the generated website's large top hero/header area.</li>
           <li><b>Header background end color</b> sets the second color used by the default header gradient.</li>
-          <li><b>Header background CSS</b> is the actual CSS background value used for the exported website header. For a normal two-color gradient, it is usually something like <code>linear-gradient(135deg,#0b4b2c,#16834e)</code>. You can edit this directly for more complex gradients or background effects.</li>
+          <li><b>Header background CSS</b> is the actual CSS background value used for the generated website header. For a normal two-color gradient, it is usually something like <code>linear-gradient(135deg,#0b4b2c,#16834e)</code>. You can edit this directly for more complex gradients or background effects.</li>
           <li><b>Panel shadow color</b> is used to build the default panel shadow. It affects the perceived shadow color around table-of-contents tiles, tune panels, and other card-like areas.</li>
-          <li><b>Border radius</b> controls the rounded-corner amount for major panels, table-of-contents tiles, buttons, and card-like elements in the exported website. Use values such as <code>0</code>, <code>6px</code>, <code>10px</code>, or <code>18px</code>.</li>
-          <li><b>Panel shadow CSS</b> is the actual CSS box-shadow value used for exported website panels and cards. Edit it directly when you want more or less shadow than the default generated value.</li>
+          <li><b>Border radius</b> controls the rounded-corner amount for major panels, table-of-contents tiles, buttons, and card-like elements in the generated website. Use values such as <code>0</code>, <code>6px</code>, <code>10px</code>, or <code>18px</code>.</li>
+          <li><b>Panel shadow CSS</b> is the actual CSS box-shadow value used for generated website panels and cards. Edit it directly when you want more or less shadow than the default generated value.</li>
         </ul>
 
-        <p><b>Colors tab</b></p>
+        <h3>Colors tab</h3>
         <ul>
-          <li><b>Page background CSS/color</b> controls the exported website page background. It can be a simple color such as <code>#e5efe3</code> or a fuller CSS background value such as a gradient.</li>
+          <li><b>Page background CSS/color</b> controls the generated website page background. It can be a simple color such as <code>#e5efe3</code> or a fuller CSS background value such as a gradient.</li>
           <li><b>Panel color</b> controls the background color of the table of contents, tune panels, and other card-like sections.</li>
-          <li><b>Text color</b> controls the main readable text color for the exported website.</li>
+          <li><b>Text color</b> controls the main readable text color for the generated website.</li>
           <li><b>Muted text color</b> controls secondary text such as subtitles, help text, tune metadata, footer text, and quieter descriptive text.</li>
-          <li><b>Primary color</b> controls the main theme accent used for the header emphasis, tune titles, table-of-contents badges, important buttons, and primary links.</li>
+          <li><b>Primary color</b> controls the main theme accent used for header emphasis, tune titles, table-of-contents badges, important buttons, and primary links.</li>
           <li><b>Secondary color</b> controls supporting accents such as border highlights, badge outlines, hover effects, and secondary decorative emphasis.</li>
           <li><b>Accent color</b> controls additional decorative highlights such as header graphics and some theme-specific emphasis effects.</li>
           <li><b>Line/border color</b> controls borders and dividing lines around table-of-contents tiles, tune panels, and other boxed areas.</li>
         </ul>
 
-        <p><b>Saved theme fields and custom CSS</b></p>
+        <h3>Sample Image Color</h3>
+        <p>
+          Click <b>Sample Image Color</b> and open a local PNG or JPEG image. The image appears in a temporary sampler panel.
+          Click any pixel in the image to capture its color. The sampled color is shown as a hex value that can be selected,
+          copied, and pasted into any color field.
+        </p>
+        <div class="instructions-note">
+          The image is used only in your browser for color sampling. It is not embedded in the saved theme file.
+        </div>
+
+        <h3>Advanced CSS</h3>
+        <p>
+          The advanced CSS field is for theme-specific finishing touches that are not covered by the basic controls.
+          Built-in themes may include generated advanced CSS. When creating a new theme, keep advanced CSS as small and
+          targeted as possible.
+        </p>
         <ul>
           <li>The normal exported theme fields include values such as <code>font</code>, <code>bg</code>, <code>panel</code>, <code>ink</code>, <code>muted</code>, <code>primary</code>, <code>secondary</code>, <code>accent</code>, <code>line</code>, <code>hero</code>, <code>radius</code>, <code>shadow</code>, and <code>ornament</code>.</li>
-          <li>The saved theme may also include <code>customCss</code>. This field is important: it carries advanced CSS plus any generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics after the theme is pasted into the main Website Builder.</li>
-          <li>The saved theme may include Theme Builder-only helper fields such as <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code>. Leave them in place. They are harmless in the main Website Builder and useful if the saved theme file is loaded back into this developer tool later.</li>
+          <li>The saved theme may also include <code>customCss</code>. This field carries advanced CSS plus any generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics after the theme is imported into or pasted into the main abcjs-eskin Website Builder.</li>
+          <li>The saved theme may include Theme Builder-only helper fields such as <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code>. Leave them in place. They are harmless in the main abcjs-eskin Website Builder and useful if the saved theme file is loaded back into this tool later.</li>
         </ul>
 
-        <h3>Adding a saved theme to the Website Builder source code</h3>
+        <h3>Using the exported theme in the abcjs-eskin Website Builder</h3>
+        <ol>
+          <li>Click <b>Save Theme File</b> in this tool.</li>
+          <li>Open the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Builder</a></b>.</li>
+          <li>Open <b>Website Settings</b>, go to the <b>Manage Settings</b> tab, click <b>Import Custom Theme</b>, and open the saved custom theme file.</li>
+          <li>Select <b>Custom</b> as the visual style on the <b>Style &amp; Display</b> tab and click <b>Apply</b> to use the custom theme.</li>
+        </ol>
+
+        <h3>Adding a saved theme to the abcjs-eskin Website Builder source code</h3>
         <p>
-          A theme file saved by this tool is intentionally formatted so it can be copied into
-          the main abcjs-eskin Website Builder source code with minimal editing. The saved file
-          contains the theme object only; you choose the built-in theme id when you paste it into
-          the source.
+          A theme file saved by this tool is intentionally formatted so it can be copied into the main abcjs-eskin Website Builder source code with minimal editing. The saved file contains the theme object only; you choose the built-in theme id when you paste it into the source.
         </p>
         <ol>
-          <li>In this developer tool, finish the theme and click <b>Save Theme File</b>.</li>
+          <li>In this tool, finish the theme and click <b>Save Theme File</b>.</li>
           <li>Open the saved theme file in a plain text editor. It should contain a JavaScript object literal beginning with <code>{</code> and ending with <code>}</code>.</li>
           <li>Choose a new internal theme id for the main tool, such as <code>swedish</code>, <code>french</code>, or <code>mynewtheme</code>. Use a simple lowercase id with no spaces.</li>
           <li>Open the main abcjs-eskin Website Builder HTML source file.</li>
@@ -5397,93 +3189,22 @@ K:Edor
           <li>Paste the saved theme object into the <code>themes</code> object using the same id you added to <code>THEME_OPTIONS</code>. For example:<br/><code>mynewtheme: { ...saved theme object contents... },</code></li>
           <li>If the saved theme file already begins with <code>{</code>, keep that object intact and add only the id label before it. For example, paste it as <code>mynewtheme: </code> followed by the complete saved object.</li>
           <li>Check commas carefully. The previous built-in theme entry must end with a comma, and the new pasted theme entry should also end with a comma unless it is the last entry in the <code>themes</code> object.</li>
-          <li>If the saved theme includes a <code>customCss</code> template string, paste it unchanged, including the backticks. Do not convert it to quoted text. This field may contain optional advanced CSS and/or the generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics in the main Website Builder. Leave the <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code> fields in place if present; they are harmless in the main Website Builder and preserve exact Theme Builder state if the file is loaded again later.</li>
-          <li>Save the main Website Builder source and reload it in the browser. The new display name should appear in the <b>Music genre visual theme</b> list.</li>
+          <li>If the saved theme includes a <code>customCss</code> template string, paste it unchanged, including the backticks. Do not convert it to quoted text. This field may contain optional advanced CSS and/or the generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics in the main abcjs-eskin Website Builder. Leave the <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code> fields in place if present; they are harmless in the main Website Builder and preserve exact Theme Builder state if the file is loaded again later.</li>
+          <li>Save the main abcjs-eskin Website Builder source and reload it in the browser. The new display name should appear in the <b>Music genre visual theme</b> list.</li>
         </ol>
         <div class="instructions-note">
           The id in <code>THEME_OPTIONS</code> and the property name in the <code>themes</code> object must match exactly. The display name can contain spaces and punctuation; the internal id should stay short, simple, and JavaScript-safe.
         </div>
-
-        <h3>Notes</h3>
-        <ul>
-          <li>The exported website requires internet access to load the linked abcjs-eskin-portable
-              JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>
-          <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>
-          <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter and to create optional ABC Transcription Tools tune links. The generated website stores those links directly in the HTML.</li>
-          <li>Very large tune collections can produce large HTML files and may take longer to render.</li>
-          <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>
-          <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>
-          <li>On other platforms, saving continues to use the browser's normal file-download behavior.</li>
-          <li>The visual styles affect the page presentation; they do not alter the tune data.</li>
-          <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>
-          <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>
-        </ul>
-
-        <hr style="margin-top:20px;">
-          <h3 style="text-align: center;">Tip Jars</h3>
-          <div style="text-align: center;margin-bottom:20px;">
-            <p class="instructions-title"> This tool was created by</p>
-            <p class="instructions-title"> <a href="https://michaeleskin.com" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">Michael Eskin</a></p>
-            <div style="margin-top:10px;">
-              If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.
-            </div>
-            <div style="margin-top:10px;">
-              <b>PayPal</b><br/>
-              <a href="https://paypal.me/MichaelEskin" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">https://paypal.me/MichaelEskin</a>
-            </div>
-            <div style="margin-top:10px;">
-              <b>Venmo</b><br/>
-              @MichaelEskin
-            </div>
-          </div>
-          <hr>
-          <h3 style="text-align: center;">Source Code on GitHub</h3>
-          <div style="text-align: center;margin-bottom:20px;">
-            The source code for this tool is available on GitHub<br/>
-             <div style="margin-top:10px;">
-              <a href="https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder" target="_blank" rel="noopener noreferrer">abcjs-eskin Website Theme Builder on GitHub</a>
-            </div>
-          </div>
-          <hr>
       </div>
     </div>
-        `;
+`;
 
-    await DayPilot.Modal.alert(instructionsHtml, {
-      width: Math.min(900, Math.max(560, window.innerWidth - 36)),
-      height: Math.min(820, Math.max(500, window.innerHeight - 36)),
-      okText: "Close"
+    DayPilot.Modal.alert(instructionsHtml, {
+      title: "Theme Builder Instructions",
+      okText: "OK",
+      width: Math.min(860, Math.max(520, window.innerWidth - 50)),
+      top: 50
     });
-  }
-
-  function ensureHtmlExtension(filename) {
-    let safeName = String(filename || "").trim();
-    if (!safeName) safeName = slugify(state.settings.title, "abc-music-site") + ".html";
-    safeName = safeName.replace(/[\/:*?"<>|]+/g, "-");
-    if (!/\.html?$/i.test(safeName)) safeName += ".html";
-    return safeName;
-  }
-
-  async function promptFilename() {
-    const defaultName = ensureHtmlExtension(
-      sessionWebsiteFilename || slugify(state.settings.title, "abc-music-site") + ".html"
-    );
-    const result = await DayPilot.Modal.form(
-      [{ name: "Website filename", id: "filename", type: "text" }],
-      { filename: defaultName },
-      { top: 150},
-      { title: "Save Standalone Website", width: 470, okText: "Save", cancelText: "Cancel" }
-    );
-
-    if (result.canceled) return null;
-
-    const filename = ensureHtmlExtension(result.result.filename || defaultName);
-    sessionWebsiteFilename = filename;
-    return filename;
-  }
-
-  function safeScriptText(value) {
-    return String(value).replace(/<\/script/gi, "<\\/script");
   }
 
   function themeCss(theme) {
@@ -7088,935 +4809,9 @@ K:Edor
     };
   }
 
-  function isChecked(value) {
-    return value === true || value === "true" || value === 1 || value === "1";
-  }
-
-  function normalizeMidiValue(value) {
-    return String(value) === "mute" ? "mute" : String(Math.max(0, Number(value) || 0));
-  }
-
-  function removeInjectedSoundDirectives(value) {
-    return String(value || "")
-      .replace(/^\s*%(?:abcjs_)?soundfont\s+.*(?:\n|$)/gim, "")
-      .replace(/^\s*%%MIDI\s+(?:program|bassprog|bassvol|chordprog|chordvol)\s+.*(?:\n|$)/gim, "")
-      .split("\n")
-      .map(line => line.replace(/\s+$/g, ""))
-      .filter(line => line.trim() !== "")
-      .join("\n");
-  }
-
-  function removeStaffSepDirectives(value) {
-    return String(value || "")
-      .replace(/^[ \t]*%%staffsep[ \t]+.*(?:\n|$)/gim, "")
-      .trim();
-  }
-
-  function isTablatureOnlyDisplayMode(displayMode) {
-    return [
-      "mandolinOnly",
-      "bouzoukiOnly",
-      "guitarOnly",
-      "dadgadGuitarOnly"
-    ].includes(String(displayMode || ""));
-  }
-
-  function addDirectiveAfterXField(abc, directive) {
-    const normalized = String(abc || "").trim();
-    if (!directive || !normalized) return normalized;
-
-    const escapedDirective = directive.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const directiveRegex = new RegExp("^\\s*" + escapedDirective + "\\s*$", "mi");
-
-    if (directiveRegex.test(normalized)) return normalized;
-
-    return normalized.replace(
-      /^(X\s*:\s*.*)$/mi,
-      `$1\n${directive}`
-    );
-  }
-
-  function prepareABCTranscriptionToolsShareAbc(abc, settings) {
-    const prepared = prepareTuneAbc(abc, "", settings);
-
-    if (isTablatureOnlyDisplayMode(settings && settings.displayMode)) {
-      return addDirectiveAfterXField(prepared, "%tablature_only");
-    }
-
-    return prepared;
-  }
-
-  function prepareTuneAbc(abc, fileHeader, settings) {
-    const injectSounds = isChecked(settings.injectSoundSettings);
-    const displayMode = String(settings.displayMode || "notation");
-    const hasReverbDirective = /^[ \t]*%reverb\b/im.test(
-      `${String(fileHeader || "")}\n${String(abc || "")}`
-    );
-
-    const staffSepDirective =
-      displayMode === "mandolinOnly" || displayMode === "bouzoukiOnly"
-        ? "%%staffsep 80"
-        : displayMode === "guitarOnly" || displayMode === "dadgadGuitarOnly"
-          ? "%%staffsep 100"
-          : "";
-
-    let cleanedAbc = injectSounds
-      ? removeInjectedSoundDirectives(abc)
-      : String(abc || "").trim();
-
-    let cleanedHeader = injectSounds
-      ? removeInjectedSoundDirectives(fileHeader)
-      : String(fileHeader || "")
-          .split("\n")
-          .map(line => line.replace(/\s+$/g, ""))
-          .filter(line => line.trim() !== "")
-          .join("\n");
-
-    if (staffSepDirective) {
-      cleanedAbc = removeStaffSepDirectives(cleanedAbc);
-      cleanedHeader = removeStaffSepDirectives(cleanedHeader);
-    }
-
-    const soundDirectives = injectSounds ? [
-      `%soundfont ${settings.soundfont}`,
-      `%%MIDI program ${normalizeMidiValue(settings.melodyProgram)}`,
-      `%%MIDI bassprog ${normalizeMidiValue(settings.bassProgram)}`,
-      `%%MIDI bassvol ${Math.max(0, Math.min(127, Number(settings.bassVolume) || 0))}`,
-      `%%MIDI chordprog ${normalizeMidiValue(settings.chordProgram)}`,
-      `%%MIDI chordvol ${Math.max(0, Math.min(127, Number(settings.chordVolume) || 0))}`
-    ] : [];
-
-    const reverbDirectives = hasReverbDirective
-      ? []
-      : ["%reverb chamber 0.95 0.05"];
-
-    const additions = [
-      ...(cleanedHeader ? cleanedHeader.split("\n") : []),
-      ...(staffSepDirective ? [staffSepDirective] : []),
-      ...soundDirectives,
-      ...reverbDirectives
-    ];
-
-    if (!additions.length) return cleanedAbc;
-
-    return cleanedAbc.replace(
-      /^(X\s*:\s*.*)$/mi,
-      `$1\n${additions.join("\n")}`
-    );
-  }
-
-  function generateSite() {
-    const s = state.settings;
-    const t = themeCss(s.theme);
-    const controllerTextColor = readableTextForBackground(t.primary);
-    const controllerSliderColor = mixHexColors(t.primary, "#ffffff", 0.18);
-    const title = escapeHtml(s.title);
-    const subtitle = escapeHtmlAllowLinksAndBreaks(s.subtitle);
-    const subtitleMarkup = subtitle.trim()
-      ? `<p class="hero-copy">${subtitle}</p>`
-      : "";
-    const headerOrnamentMarkup = t.includeHeaderOrnaments
-      ? `<span class="hero-title-ornament left" aria-hidden="true">${escapeHtml(t.ornament || "•")}</span>` +
-        `<span class="hero-title-ornament right" aria-hidden="true">${escapeHtml(t.ornament || "•")}</span>`
-      : "";
-    const heroClasses = "hero" + (t.includeHeaderGraphics ? " has-header-graphics" : "");
-    const footer = escapeHtmlAllowLinksAndBreaks(s.footer);
-    const collectionIntro = escapeHtmlAllowLinksAndBreaks(s.collectionIntro);
-    const includeTuneHeading =
-      s.includeTuneHeading === true || s.includeTuneHeading === "true" || s.includeTuneHeading === 1;
-    const includeCollectionIntro =
-      s.includeCollectionIntro === true || s.includeCollectionIntro === "true" || s.includeCollectionIntro === 1;
-    const collectionIntroMarkup = includeCollectionIntro && collectionIntro.trim()
-      ? `<section class="collection-intro page-width"><p>${collectionIntro}</p></section>`
-      : "";
-    const tuneTextBefore = escapeHtmlAllowLinksAndBreaks(s.tuneTextBefore);
-    const tuneTextAfter = escapeHtmlAllowLinksAndBreaks(s.tuneTextAfter);
-    const includeTuneTextBefore =
-      s.includeTuneTextBefore === true || s.includeTuneTextBefore === "true" || s.includeTuneTextBefore === 1;
-    const includeTuneTextAfter =
-      s.includeTuneTextAfter === true || s.includeTuneTextAfter === "true" || s.includeTuneTextAfter === 1;
-    const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
-    const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
-    const showTuneNumbers = s.tuneNumbers !== "hide";
-    const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
-    const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
-    const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
-      ? " has-top-decoration"
-      : "";
-
-    const usedIds = new Set();
-    const tunes = state.tunes.map((tune, index) => {
-      let key = slugify(tune.title, "tune-" + (index + 1));
-      const base = key;
-      let suffix = 2;
-      while (usedIds.has(key)) key = `${base}-${suffix++}`;
-      usedIds.add(key);
-      const exportedAbc = prepareTuneAbc(tune.abc, tune.fileHeader, s);
-      const abcToolsAbc = prepareABCTranscriptionToolsShareAbc(tune.abc, s);
-      const abcToolsURL = buildABCTranscriptionToolsTuneURL(
-        abcToolsAbc,
-        abcToolsFormat,
-        abcToolsLinkMode
-      );
-
-      const abcToolsButtonText = abcToolsURL
-        ? abcToolsLinkButtonText(abcToolsLinkMode)
-        : "";
-
-      return { ...tune, key, number: index + 1, exportedAbc, abcToolsURL, abcToolsButtonText };
-    });
-
-    const toc = tunes.map(tune =>
-      `<a href="#tune-${tune.key}">${showTuneNumbers ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.title)}</a>`
-    ).join("\n        ");
-
-    const playerAbove = s.playerPosition === "above";
-
-    const articles = tunes.map(tune => {
-      const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
-      const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
-          <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
-      return `
-      <article class="score-panel${tune.abcToolsURL ? " has-abc-tools-link" : " toc-only-actions"}${showTuneNumbers ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
-        ${showTuneNumbers ? `<div class="chapter-label">${tune.number}</div>` : ""}
-        <div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
-          ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
-          ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
-          <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
-        </div>
-        ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
-        ${includeTuneTextBefore && tuneTextBefore.trim()
-          ? `<div class="prose tune-text-before"><p>${tuneTextBefore}</p></div>`
-          : ""}
-        ${playerAbove ? audio : ""}
-        <div class="notation-wrap">
-          <div id="${tune.key}-paper" class="paper" aria-label="${escapeHtml(tune.title)} notation"></div>
-        </div>
-        ${playerAbove ? "" : audio}
-        ${includeTuneTextAfter && tuneTextAfter.trim()
-          ? `<div class="afterword tune-text-after"><p>${tuneTextAfter}</p></div>`
-          : ""}
-      </article>`;
-    }).join('\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n');
-
-    const abcBlocks = tunes.map(tune =>
-      `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
-    ).join("\n\n  ");
-
-    const displayMode = JSON.stringify(s.displayMode);
-    const cursorColors = {
-      green: "#00f000",
-      blue: "#008cff",
-      red: "#ff2020"
-    };
-    const cursorColor = JSON.stringify(cursorColors[s.cursorColor] || cursorColors.green);
-    const customThemeCss = t.customCss || "";
-
-    return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${title}</title>
-
-  <link rel="stylesheet" href="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-audio.css">
-
-  <style>
-    :root {
-      --bg: ${t.bg};
-      --panel: ${t.panel};
-      --ink: ${t.ink};
-      --muted: ${t.muted};
-      --primary: ${t.primary};
-      --secondary: ${t.secondary};
-      --accent: ${t.accent};
-      --line: ${t.line};
-      --radius: ${t.radius};
-      --shadow: ${t.shadow};
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: auto; }
-    body { margin:0; color:var(--ink); background:var(--bg); font:17px/1.65 ${t.font}; }
-    .page-width { width:min(${bodyWidth}px, calc(100% - 34px)); margin:0 auto; }
-    .hero { position:relative; overflow:hidden; padding:44px 0 38px; color:#fff; background:${t.hero}; text-align:center; border-bottom:6px solid var(--accent); }
-    .hero.has-header-graphics::before {
-      content:"";
-      position:absolute;
-      left:clamp(90px,16vw,330px);
-      top:clamp(10px,2.6vw,28px);
-      width:clamp(92px,5.6vw,116px);
-      height:clamp(92px,5.6vw,116px);
-      border-radius:50%;
-      background:var(--accent);
-      opacity:.34;
-      pointer-events:none;
-    }
-    .hero .page-width { position:relative; z-index:1; }
-    h1 { margin:0; font-size:clamp(1.8rem,4.2vw,3.5rem); line-height:1.08; }
-    .hero-title-wrap { display:inline-block; }
-    .hero-title-ornament {
-      position:absolute;
-      z-index:1;
-      top:50%;
-      transform:translateY(-50%);
-      color:var(--accent);
-      font-size:clamp(62px,5.2vw,94px);
-      line-height:1;
-      opacity:.55;
-      pointer-events:none;
-    }
-    .hero-title-ornament.left { left:clamp(34px,8.5vw,190px); }
-    .hero-title-ornament.right { right:clamp(34px,8.5vw,190px); }
-    .hero-copy { max-width:780px; margin:10px auto 0; font-size:1.25rem; }
-    .hero-copy a,
-    .site-footer a {
-      color:var(--accent);
-      font-weight:700;
-      text-decoration-thickness:.09em;
-      text-underline-offset:.16em;
-    }
-    .collection-intro a,
-    .prose a,
-    .afterword a {
-      color:var(--secondary);
-      font-weight:700;
-      text-decoration-thickness:.09em;
-      text-underline-offset:.16em;
-    }
-    .hero-copy a:hover,
-    .hero-copy a:focus-visible,
-    .site-footer a:hover,
-    .site-footer a:focus-visible,
-    .collection-intro a:hover,
-    .collection-intro a:focus-visible,
-    .prose a:hover,
-    .prose a:focus-visible,
-    .afterword a:hover,
-    .afterword a:focus-visible {
-      opacity:.78;
-      outline:none;
-    }
-    .ornament { margin-top:16px; color:var(--accent); font-size:2rem; }
-    .collection-intro { margin:34px auto 0; padding:22px 28px; color:var(--muted); background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
-    .collection-intro p { max-width:82ch; margin:0 auto; text-align:center; }
-    .table-of-contents { margin:38px auto; padding:28px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); text-align:center; }
-    .table-of-contents h2 { margin:0 0 20px; font-size:clamp(1.7rem,4vw,2.6rem); }
-    .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
-    .toc-links a { display:flex; align-items:center; gap:10px; min-height:54px; padding:10px 13px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); text-decoration:none; text-align:left; }
-    .toc-links a:hover,.toc-links a:focus-visible { color:#fff; background:var(--primary); outline:none; }
-    .toc-links span,.chapter-label { display:grid; place-items:center; color:#fff; background:var(--primary); border:2px solid var(--accent); border-radius:50%; font-weight:800; }
-    .toc-links span { flex:0 0 34px; height:34px; }
-    main { padding-bottom:64px; }
-    .score-panel { position:relative; padding:38px 34px 30px; background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
-    .chapter-label { width:50px; height:50px; margin:0 auto 12px; }
-    .tune-header { position:relative; }
-    .tune-header h2 { margin:0; padding:0 155px; font-size:clamp(1.5rem,3.7vw,2.5rem); text-align:center; line-height:1.15; }
-    .back-to-toc { position:absolute; top:50%; right:0; transform:translateY(-50%); padding:7px 10px; color:#fff; background:var(--primary); border:1px solid var(--accent); text-decoration:none; font-size:.8rem; font-weight:800; }
-    .abc-tools-link { left:0; right:auto; }
-    .score-panel.has-abc-tools-link .tune-header h2 { padding-left:330px; padding-right:330px; }
-    @media (min-width:761px) and (max-width:1200px) {
-      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) {
-        padding-top:58px;
-      }
-      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) h2 {
-        padding-left:0;
-        padding-right:0;
-      }
-      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) .back-to-toc {
-        top:0;
-        transform:none;
-      }
-      .score-panel.has-abc-tools-link .tune-header:not(.no-tune-heading) .abc-tools-link {
-        top:0;
-      }
-    }
-    .tune-header.no-tune-heading { min-height:34px; }
-    .tune-header.no-tune-heading .back-to-toc { top:0; transform:none; }
-    .tune-meta { margin:10px 0 0; color:var(--secondary); font-weight:750; text-align:center; }
-    .prose,.afterword { max-width:82ch; margin:18px auto; color:var(--muted); }
-    .tune-text-before,.tune-text-after { text-align:center; }
-    .notation-wrap {
-      width:${width}%;
-      margin:16px auto 0;
-    }
-    .paper {
-      width:100% !important;
-      min-height:220px;
-      margin:0;
-      padding:18px 12px;
-      overflow-x:auto;
-      overflow-y:visible;
-      color:#111;
-      background:#fff;
-      border:1px solid var(--line);
-    }
-    .paper svg {
-      display:block;
-      max-width:100%;
-      height:auto;
-      overflow:visible;
-    }
-    .paper:focus-visible { outline:3px solid var(--secondary); outline-offset:3px; }
-    .abcjs-cursor {
-      stroke-width:12px;
-      stroke-opacity:.25;
-      transform:translate(7px, 0);
-      pointer-events:none;
-    }
-    .audio-controls { width:${width}%; margin:22px auto 0; }
-    .status { width:${width}%; min-height:1.35em; margin:8px auto 0; color:var(--muted); text-align:center; font-size:.9rem; }
-    .status.error { color:#a00000; font-weight:700; }
-    .section-divider { padding:28px 0; color:var(--secondary); text-align:center; font-size:1.8rem; }
-    .site-footer { padding:34px 0; color:#fff; background:var(--primary); border-top:5px solid var(--accent); text-align:center; }
-    .abcjs-inline-audio {
-      color:${controllerTextColor};
-      background:var(--primary) !important;
-    }
-    .abcjs-inline-audio button,
-    .abcjs-inline-audio .abcjs-btn,
-    .abcjs-inline-audio .abcjs-midi-clock,
-    .abcjs-inline-audio .abcjs-tempo-wrapper,
-    .abcjs-inline-audio .abcjs-midi-current-tempo-wrapper,
-    .abcjs-inline-audio .abcjs-midi-current-tempo {
-      color:${controllerTextColor} !important;
-    }
-    .abcjs-inline-audio .abcjs-midi-tempo { color:#000 !important; }
-    .abcjs-inline-audio .abcjs-midi-progress-background {
-      background-color:${controllerSliderColor} !important;
-    }
-    @media (max-width:760px) {
-      .score-panel { padding:30px 14px 24px; }
-      .tune-header h2 { padding:0; margin-bottom:48px; }
-      .back-to-toc { top:auto; right:50%; bottom:-40px; transform:translateX(50%); white-space:nowrap; }
-      .abc-tools-link { left:0; right:auto; transform:none; }
-      .tune-header.no-tune-heading { min-height:44px; }
-      .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
-      .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
-      .notation-wrap,.audio-controls,.status { width:100%; }
-    }
-    ${customThemeCss}
-    .abc-tools-link {
-      left:0;
-      right:auto;
-    }
-    @media (max-width:760px) {
-      .score-panel.has-abc-tools-link .tune-header {
-        display:flex;
-        flex-direction:column;
-        align-items:stretch;
-        gap:8px;
-        min-height:0;
-        margin-bottom:14px;
-      }
-
-      .score-panel.has-abc-tools-link .tune-header h2 {
-        order:3;
-        padding-left:0;
-        padding-right:0;
-        margin-top:8px;
-        margin-bottom:0;
-      }
-
-      .score-panel.has-abc-tools-link .tune-header .abc-tools-link,
-      .score-panel.has-abc-tools-link .tune-header .back-to-toc {
-        position:static;
-        display:block;
-        width:100%;
-        max-width:100%;
-        text-align:center;
-        white-space:normal;
-        transform:none;
-      }
-
-      .score-panel.has-abc-tools-link .tune-header .abc-tools-link {
-        order:1;
-      }
-
-      .score-panel.has-abc-tools-link .tune-header .back-to-toc[data-toc-link='true'] {
-        order:2;
-      }
-
-      .score-panel.toc-only-actions .tune-header {
-        display:flex;
-        flex-direction:column;
-        align-items:stretch;
-        gap:8px;
-        min-height:0;
-        margin-bottom:14px;
-      }
-
-      .score-panel.toc-only-actions .tune-header h2 {
-        order:2;
-        padding-left:0;
-        padding-right:0;
-        margin-top:8px;
-        margin-bottom:0;
-      }
-
-      .score-panel.toc-only-actions .tune-header .back-to-toc[data-toc-link='true'] {
-        position:static;
-        order:1;
-        display:block;
-        width:100%;
-        max-width:100%;
-        text-align:center;
-        white-space:normal;
-        transform:none;
-      }
-    }
-    .score-panel.no-tune-number .tune-header.no-tune-heading {
-      min-height:30px;
-      margin-top:-16px;
-      margin-bottom:2px;
-    }
-    .score-panel.no-tune-number .tune-header.no-tune-heading .back-to-toc {
-      top:-2px;
-      right:0;
-      transform:none;
-    }
-    .score-panel.no-tune-number .tune-header.no-tune-heading .abc-tools-link {
-      top:-2px;
-      left:0;
-      right:auto;
-      transform:none;
-    }
-    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading {
-      margin-top:-4px;
-    }
-    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .back-to-toc {
-      top:0;
-    }
-    .score-panel.no-tune-number.has-top-decoration .tune-header.no-tune-heading .abc-tools-link {
-      top:0;
-    }
-  </style>
-</head>
-<body>
-  <header class="${heroClasses}">
-    ${headerOrnamentMarkup}
-    <div class="page-width">
-      <h1><span class="hero-title-wrap"><span>${title}</span></span></h1>
-      ${subtitleMarkup}
-    </div>
-  </header>
-
-  ${collectionIntroMarkup}
-
-  <nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
-    <h2 id="toc-title">Table of Contents</h2>
-    <div class="toc-links">
-        ${toc}
-    </div>
-  </nav>
-
-  <main class="page-width">
-    ${articles}
-  </main>
-
-  <footer class="site-footer">
-    <div class="page-width">
-      <div class="ornament" aria-hidden="true">${t.ornament}</div>
-      <p>${footer}</p>
-    </div>
-  </footer>
-
-  ${abcBlocks}
-
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js"><\/script>
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js"><\/script>
-
-  <script>
-  (() => {
-    "use strict";
-
-    const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
-      key: panel.dataset.key,
-      abcElementId: panel.dataset.key + "-abc"
-    }));
-
-    const controllers = new Map();
-    const displayMode = ${displayMode};
-    const cursorColor = ${cursorColor};
-
-    function getRenderParams() {
-      const params = {
-        responsive: "resize",
-        expandToWidest: true,
-        selectTypes: false
-      };
-
-      if (displayMode === "mandolinNotation" || displayMode === "mandolinOnly") {
-        params.tablatureOnly = displayMode === "mandolinOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "violin",
-          label: "Mandolin",
-          tuning: ["G,", "D", "A", "e"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (displayMode === "bouzoukiNotation" || displayMode === "bouzoukiOnly") {
-        params.tablatureOnly = displayMode === "bouzoukiOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "violin",
-          label: "GDAD Bouzouki",
-          tuning: ["G,", "D", "A", "d"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (displayMode === "guitarNotation" || displayMode === "guitarOnly") {
-        params.tablatureOnly = displayMode === "guitarOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "guitar",
-          label: "Guitar",
-          tuning: ["E,", "A,", "D", "G", "B", "e"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (displayMode === "dadgadGuitarNotation" || displayMode === "dadgadGuitarOnly") {
-        params.tablatureOnly = displayMode === "dadgadGuitarOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "guitar",
-          label: "DADGAD Guitar",
-          tuning: ["D,", "A,", "D", "G", "A", "d"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      }
-
-      return params;
-    }
-
-    const playerOptions = {
-      displayLoop: true,
-      displayRestart: true,
-      displayPlay: true,
-      displayProgress: true,
-      displayWarp: true
-    };
-
-    const synthOptions = { program: 0, chordsOff: false };
-
-    function hideAllPlayCursors() {
-      document.querySelectorAll(".abcjs-cursor").forEach(cursor => {
-        cursor.style.display = "none";
-      });
-    }
-
-    function stopAllPlayback() {
-      controllers.forEach(controller => {
-        if (controller && typeof controller.pause === "function") controller.pause();
-      });
-      hideAllPlayCursors();
-    }
-
-    function stopOtherPlayback(activeKey) {
-      controllers.forEach((controller, key) => {
-        if (key !== activeKey && controller && typeof controller.pause === "function") {
-          controller.pause();
-        }
-      });
-      hideAllPlayCursors();
-    }
-
-    function togglePlayback(controller) {
-      if (!controller) return Promise.resolve();
-      return Promise.resolve(controller.play()).catch(console.error);
-    }
-
-    function installNavigation() {
-      document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
-        link.addEventListener("click", event => {
-          event.preventDefault();
-          stopAllPlayback();
-
-          const target = document.getElementById("table-of-contents");
-          if (!target) return;
-
-          target.scrollIntoView({ behavior: "auto", block: "start" });
-          history.replaceState(null, "", "#table-of-contents");
-        });
-      });
-
-      document.querySelectorAll(".toc-links a").forEach(link => {
-        link.addEventListener("click", event => {
-          event.preventDefault();
-          stopAllPlayback();
-          const target = document.querySelector(link.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({ behavior: "auto", block: "start" });
-            history.replaceState(null, "", link.getAttribute("href"));
-          }
-        });
-      });
-    }
-
-    function keepCursorVisible(cursor, paper) {
-      const cursorRect = cursor.getBoundingClientRect();
-      const viewportTop = 72;
-      const viewportBottom = window.innerHeight - 82;
-
-      if (cursorRect.top < viewportTop) {
-        window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
-      } else if (cursorRect.bottom > viewportBottom) {
-        window.scrollBy({ top: cursorRect.bottom - viewportBottom + 18, behavior: "smooth" });
-      }
-
-      const paperRect = paper.getBoundingClientRect();
-      const margin = 44;
-      const visibleLeft = Math.max(paperRect.left, 0) + margin;
-      const visibleRight = Math.min(paperRect.right, window.innerWidth) - margin;
-
-      if (cursorRect.left < visibleLeft) {
-        paper.scrollBy({ left: cursorRect.left - visibleLeft - 24, behavior: "smooth" });
-      } else if (cursorRect.right > visibleRight) {
-        paper.scrollBy({ left: cursorRect.right - visibleRight + 24, behavior: "smooth" });
-      }
-    }
-
-    function createCursorControl(paperId, workKey) {
-      let cursor = null;
-      const paper = document.getElementById(paperId);
-
-      return {
-        onStart() {
-          stopOtherPlayback(workKey);
-          const svg = document.querySelector("#" + paperId + " svg");
-          if (!svg) return;
-          svg.querySelectorAll(".abcjs-cursor").forEach(item => item.remove());
-          cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          cursor.setAttribute("class", "abcjs-cursor");
-          cursor.setAttribute("stroke", cursorColor);
-          svg.appendChild(cursor);
-        },
-        onEvent(event) {
-          if (!cursor || !event || event.left == null) return;
-          cursor.style.display = "";
-          cursor.setAttribute("x1", String(event.left - 2));
-          cursor.setAttribute("x2", String(event.left - 2));
-          cursor.setAttribute("y1", String(event.top));
-          cursor.setAttribute("y2", String(event.top + event.height));
-          if (paper) keepCursorVisible(cursor, paper);
-        },
-        onFinished() {
-          if (cursor) cursor.remove();
-          cursor = null;
-        }
-      };
-    }
-
-    function getEmbeddedAbc(id) {
-      const element = document.getElementById(id);
-      if (!element) throw new Error("Embedded ABC not found: " + id);
-      return element.textContent.trim();
-    }
-
-    async function prepareWork(work) {
-      const paperId = work.key + "-paper";
-      const audioId = work.key + "-audio";
-      const status = document.getElementById(work.key + "-status");
-
-      try {
-        status.textContent = "Rendering notation and preparing audio…";
-        const rendered = ABCJS.renderAbc(paperId, getEmbeddedAbc(work.abcElementId), getRenderParams());
-        if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
-
-        const controller = new ABCJS.synth.SynthController();
-        controller.load("#" + audioId, createCursorControl(paperId, work.key), playerOptions);
-        await controller.setTune(rendered[0], false, synthOptions);
-        controllers.set(work.key, controller);
-
-        const paper = document.getElementById(paperId);
-        paper.tabIndex = 0;
-        paper.title = "Click the notation to pause or resume playing";
-        paper.addEventListener("click", () => void togglePlayback(controller));
-        paper.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            void togglePlayback(controller);
-          }
-        });
-
-        status.textContent = "Click the notation to pause or resume playing";
-      } catch (error) {
-        console.error(error);
-        status.classList.add("error");
-        status.textContent = error && error.message ? error.message : String(error);
-      }
-    }
-
-    async function initialize() {
-      if (!window.ABCJS || !ABCJS.eskinConfig) throw new Error("abcjs-eskin-portable did not load.");
-      ABCJS.eskinConfig.setIrishRolls(true);
-      ABCJS.eskinConfig.setCustomGMSounds(true);
-      ABCJS.eskinConfig.setPlayerDefaults(100, false);
-      installNavigation();
-      for (const work of works) await prepareWork(work);
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      initialize().catch(error => {
-        console.error(error);
-        document.querySelectorAll(".status").forEach(element => {
-          element.classList.add("error");
-          element.textContent = error && error.message ? error.message : String(error);
-        });
-      });
-    });
-  })();
-  <\/script>
-</body>
-</html>`;
-  }
-
-  function downloadText(filename, text) {
-    const blob = new Blob([text], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-
-  async function shareTextFile(filename, text) {
-    const file = new File(
-      [text],
-      filename,
-      { type: "text/html;charset=utf-8" }
-    );
-    const shareData = {
-      files: [file]
-    };
-
-    if (
-      typeof navigator.share !== "function" ||
-      typeof navigator.canShare !== "function" ||
-      !navigator.canShare(shareData)
-    ) {
-      return false;
-    }
-
-    await navigator.share(shareData);
-    return true;
-  }
-
-  async function saveSite() {
-    if (!state.tunes.length) return;
-
-    try {
-      const filename = await promptFilename();
-      if (!filename) return;
-
-      const site = generateSite();
-
-      if (isIOSDevice()) {
-        try {
-          const shared = await shareTextFile(filename, site);
-          if (shared) {
-            setStatus(`Shared ${filename}.`);
-            return;
-          }
-        } catch (error) {
-          if (error && error.name === "AbortError") {
-            setStatus("Website sharing canceled.");
-            return;
-          }
-          console.warn("Unable to use the iOS share sheet; using the browser download fallback.", error);
-        }
-      }
-
-      downloadText(filename, site);
-      setStatus(`Saved ${filename}.`);
-    } catch (error) {
-      console.error(error);
-      setStatus(error && error.message ? error.message : String(error), true);
-    }
-  }
-
-  function clearAll() {
-    state.files = [];
-    state.tunes = [];
-    fileInput.value = "";
-    renderState();
-    setStatus("Loaded files cleared.");
-  }
-
-  function loadDefaultTunes() {
-    try {
-      const tuneCount = appendAbcTextSource(
-        DEFAULT_TUNES_ABC,
-        "Default tunes",
-        DEFAULT_TUNES_ABC.length
-      );
-
-      renderState();
-      setStatus(
-        `Loaded ${tuneCount} Default tunes. ` +
-        "Use Open ABC Files to add more tunes, or Clear to remove the default collection."
-      );
-    } catch (error) {
-      console.error(error);
-      renderState();
-      setStatus(error && error.message ? error.message : String(error), true);
-    }
-  }
-
-  function loadInitialShareLinkTunes() {
-    const shareLinkABC = getDeflatedABCFromURL();
-
-    if (!shareLinkABC.found) {
-      loadDefaultTunes();
-      return;
-    }
-
-    if (shareLinkABC.error) {
-      renderState();
-      setStatus(
-        "Could not decode ABC tunes from the def= share-link parameter: " +
-        (shareLinkABC.error.message || String(shareLinkABC.error)),
-        true
-      );
-      return;
-    }
-
-    try {
-      const tuneCount = appendAbcTextSource(
-        shareLinkABC.abc,
-        "Imported from share link",
-        String(shareLinkABC.abc || "").length
-      );
-
-      renderState();
-      setStatus(
-        `Loaded ${tuneCount} tune${tuneCount === 1 ? "" : "s"} from the share link. ` +
-        "Use Open ABC Files to add more tunes."
-      );
-    } catch (error) {
-      console.error(error);
-      renderState();
-      setStatus(error && error.message ? error.message : String(error), true);
-    }
-  }
-
-  fileInput.addEventListener("change", event => {
-    readFiles(event.target.files).catch(error => {
-      console.error(error);
-      setStatus(error && error.message ? error.message : String(error), true);
-    });
+  window.addEventListener("DOMContentLoaded", () => {
+    void openThemeBuilder();
   });
-
-  settingsButton.addEventListener("click", () => void openSettings());
-  instructionsButton.addEventListener("click", () => void openInstructions());
-  saveButton.addEventListener("click", () => void saveSite());
-  clearButton.addEventListener("click", clearAll);
-
-  loadInitialShareLinkTunes();
 })();
 </script>
 </body>
