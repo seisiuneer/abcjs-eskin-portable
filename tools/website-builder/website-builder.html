@@ -2045,6 +2045,101 @@
     return records.length;
   }
 
+  function trustedABCTranscriptionToolsMessage(event) {
+    const expectedSources = [];
+
+    if (window.opener) expectedSources.push(window.opener);
+    if (window.parent && window.parent !== window) expectedSources.push(window.parent);
+
+    if (expectedSources.length && !expectedSources.includes(event.source)) {
+      return false;
+    }
+
+    if (window.location.protocol === "file:") {
+      return true;
+    }
+
+    return event.origin === window.location.origin ||
+      event.origin === "https://michaeleskin.com";
+  }
+
+  function acknowledgeABCTranscriptionToolsLoad(event, messageId, tuneCount) {
+    if (!event.source || typeof event.source.postMessage !== "function") return;
+
+    try {
+      event.source.postMessage({
+        type: "abcjsEskinWebsiteBuilderABCLoaded",
+        messageId,
+        tuneCount
+      }, event.origin && event.origin !== "null" ? event.origin : "*");
+    } catch (error) {
+      console.warn("Unable to acknowledge ABC Transcription Tools load message.", error);
+    }
+  }
+
+  function loadABCFromABCTranscriptionTools(data, event) {
+    const abcText = typeof data.abc === "string" ? data.abc : "";
+    const sourceName = String(data.sourceName || "ABC Transcription Tools").trim() ||
+      "ABC Transcription Tools";
+
+    if (!abcText.trim()) {
+      setStatus("ABC Transcription Tools did not send any ABC text.", true);
+      return;
+    }
+
+    try {
+      if (data.replaceExisting !== false) {
+        state.files = [];
+        state.tunes = [];
+        fileInput.value = "";
+      }
+
+      const tuneCount = appendAbcTextSource(abcText, sourceName, abcText.length);
+
+      renderState();
+      setStatus(
+        `Loaded ${tuneCount} tune${tuneCount === 1 ? "" : "s"} from ABC Transcription Tools.`
+      );
+      acknowledgeABCTranscriptionToolsLoad(event, data.messageId || "", tuneCount);
+    } catch (error) {
+      console.error(error);
+      renderState();
+      setStatus(error && error.message ? error.message : String(error), true);
+    }
+  }
+
+  function handleABCTranscriptionToolsMessage(event) {
+    if (!trustedABCTranscriptionToolsMessage(event)) return;
+
+    const data = event.data || {};
+    if (data.type !== "abcjsEskinWebsiteBuilderLoadABC") return;
+
+    loadABCFromABCTranscriptionTools(data, event);
+  }
+
+  function notifyABCTranscriptionToolsReady() {
+    const message = { type: "abcjsEskinWebsiteBuilderReady" };
+    const targets = [];
+
+    if (window.opener) targets.push(window.opener);
+    if (window.parent && window.parent !== window) targets.push(window.parent);
+
+    targets.forEach(target => {
+      try {
+        target.postMessage(message, "*");
+      } catch (error) {
+        console.warn("Unable to notify ABC Transcription Tools that the builder is ready.", error);
+      }
+    });
+  }
+
+  function startABCTranscriptionToolsHandshake() {
+    window.addEventListener("message", handleABCTranscriptionToolsMessage);
+    [0, 250, 750, 1500].forEach(delay => {
+      setTimeout(notifyABCTranscriptionToolsReady, delay);
+    });
+  }
+
   async function readFiles(fileList) {
     const incoming = Array.from(fileList || []);
     if (!incoming.length) return;
@@ -6111,6 +6206,7 @@
   saveButton.addEventListener("click", () => void saveSite());
   clearButton.addEventListener("click", clearAll);
 
+  startABCTranscriptionToolsHandshake();
   loadInitialShareLinkTunes();
 })();
 </script>
