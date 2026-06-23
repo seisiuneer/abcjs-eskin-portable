@@ -863,6 +863,11 @@
     { id: "fullscreen", name: "Add Open in Full Screen buttons" }
   ];
 
+  const TITLE_ARTICLE_REVERSE_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "postfixToPrefix", name: "Kesh, The -> The Kesh" }
+  ];
+
   const HIDE_SHOW_OPTIONS = [
     { id: "hide", name: "Hide" },
     { id: "show", name: "Show" }
@@ -1550,7 +1555,8 @@
     bodyWidth: "1180",
     tuneNumbers: "show",
     includeSectionHeaderNumbers: "hide",
-    abcToolsLinks: "disabled"
+    abcToolsLinks: "disabled",
+    titleArticleReverser: "postfixToPrefix"
   };
 
   function loadSavedSettings() {
@@ -1819,6 +1825,68 @@
     const text = String(title || "").trim();
     if (!isSectionHeaderTitle(text)) return text;
     return text.replace(/^\*\s*/, "").trim() || "Section";
+  }
+
+  const TITLE_POSTFIX_ARTICLE_MAP = {
+    ", The": "The",
+    ", the": "The",
+    ", A": "A",
+    ", a": "A",
+    ", Da": "Da",
+    ", La": "La",
+    ", Le": "Le",
+    ", Les": "Les",
+    ", Ye": "Ye",
+    ", An": "An",
+    ", an": "an",
+    ", Der": "Der",
+    ", Die": "Die",
+    ", Das": "Das",
+    ", Ein": "Ein",
+    ", Eine": "Eine"
+  };
+
+
+  function extractTitleNumber(title) {
+    const match = /^(\d+)\./.exec(String(title || ""));
+    return match ? match[1] : null;
+  }
+
+  function reversePostfixTitleArticle(title) {
+    let text = String(title || "");
+
+    for (const [suffix, prefix] of Object.entries(TITLE_POSTFIX_ARTICLE_MAP)) {
+      if (text.endsWith(suffix)) {
+        const titleNumber = extractTitleNumber(text);
+
+        if (titleNumber) {
+          text = text.replace(titleNumber + ".", "").trim();
+        }
+
+        const base = text.slice(0, -suffix.length);
+        let result = `${prefix} ${base}`;
+
+        if (titleNumber) result = `${titleNumber}. ${result}`;
+
+        return result;
+      }
+    }
+
+    return text;
+  }
+
+
+  function titleForWebsiteDisplay(title, isSectionHeader, articleMode) {
+    if (isSectionHeader) return title;
+
+    switch (String(articleMode || "disabled")) {
+      case "postfixToPrefix":
+        return reversePostfixTitleArticle(title);
+
+      case "disabled":
+      default:
+        return title;
+    }
   }
 
   function splitAbcRecords(text, filename) {
@@ -2172,9 +2240,10 @@
 
     state.tunes.forEach((tune, index) => {
       const li = document.createElement("li");
+      const title = titleForWebsiteDisplay(tune.title, tune.isSectionHeader, state.settings.titleArticleReverser);
       const detail = [tune.isSectionHeader ? "Section Header" : "", tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
       li.innerHTML =
-        `<span><strong>${index + 1}. ${escapeHtml(tune.title)}</strong>` +
+        `<span><strong>${index + 1}. ${escapeHtml(title)}</strong>` +
         (detail ? `<br><small>${escapeHtml(detail)}</small>` : "") +
         `</span>`;
       tuneList.appendChild(li);
@@ -2433,7 +2502,7 @@
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
         "includeTableOfContents", "showTuneDividers", "tuneNumbers",
-        "includeSectionHeaderNumbers", "abcToolsLinks"
+        "includeSectionHeaderNumbers", "abcToolsLinks", "titleArticleReverser"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -2465,7 +2534,7 @@
       });
     });
 
-    if (moved < 27) return false;
+    if (moved < 28) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -2592,7 +2661,8 @@
       includeTableOfContents: optionIds(HIDE_SHOW_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
-      abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS)
+      abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
+      titleArticleReverser: optionIds(TITLE_ARTICLE_REVERSE_OPTIONS)
     };
 
     Object.keys(source).forEach(key => {
@@ -3134,6 +3204,12 @@
         id: "abcToolsLinks",
         type: "select",
         options: ABC_TOOLS_LINK_OPTIONS
+      },
+      {
+        name: "Automatically Reverse Title Articles",
+        id: "titleArticleReverser",
+        type: "select",
+        options: TITLE_ARTICLE_REVERSE_OPTIONS
       }
     ];
 
@@ -3235,6 +3311,7 @@
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
             <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. The share link uses processed per-tune ABC matching the generated website player sound and display directives, but without shared file-header text. For tablature-only display formats, the share-link ABC also includes <code>%tablature_only</code> immediately below the <code>X:</code> field so ABC Transcription Tools opens the tune in the matching tablature-only view. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>
+            <li><b>Automatically Reverse Title Articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles. The default is <b>Kesh, The -&gt; The Kesh</b>. <b>Disabled</b> leaves titles exactly as loaded. The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website. The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
           </ul>
 
           <p><b>Playback &amp; Sounds</b></p>
@@ -5186,6 +5263,7 @@
     const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
     const includeTableOfContents = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) !== "hide";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
+    const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
     const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
       ? " has-top-decoration"
@@ -5194,6 +5272,7 @@
     const usedIds = new Set();
     let visibleNumber = 0;
     const tunes = state.tunes.map((tune, index) => {
+      const displayTitle = titleForWebsiteDisplay(tune.title, tune.isSectionHeader, titleArticleMode);
       let key = slugify(tune.title, "tune-" + (index + 1));
       const base = key;
       let suffix = 2;
@@ -5214,11 +5293,11 @@
 
       const number = shouldShowNumber(tune) ? ++visibleNumber : "";
 
-      return { ...tune, key, number, exportedAbc, abcToolsURL, abcToolsButtonText };
+      return { ...tune, key, displayTitle, number, exportedAbc, abcToolsURL, abcToolsButtonText };
     });
 
     const toc = tunes.map(tune =>
-      `<a href="#tune-${tune.key}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.title)}</a>`
+      `<a href="#tune-${tune.key}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`
     ).join("\n        ");
 
     const tocMarkup = includeTableOfContents
@@ -5256,7 +5335,7 @@
             ${sectionHeaderNumberMarkup}
             ${sectionHeaderTocMarkup}
           </div>
-          <div class="section-header-title">${escapeHtml(tune.title)}</div>
+          <div class="section-header-title">${escapeHtml(tune.displayTitle)}</div>
         </div>
       </article>`;
       }
@@ -5274,7 +5353,7 @@
       const tuneHeaderMarkup = hasTuneHeader
         ? `<div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
           ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
-          ${includeTuneHeading ? `<h2>${escapeHtml(tune.title)}</h2>` : ""}
+          ${includeTuneHeading ? `<h2>${escapeHtml(tune.displayTitle)}</h2>` : ""}
           ${includeTableOfContents ? `<a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>` : ""}
         </div>`
         : "";
