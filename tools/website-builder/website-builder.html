@@ -5365,6 +5365,10 @@
         </div>`
       : "";
 
+    const workingBannerMarkup = includeInstrumentSelector
+      ? `<div id="instrument-working-banner" class="instrument-working-banner" role="status" aria-live="polite" aria-atomic="true" hidden>Working...</div>`
+      : "";
+
     const articles = tunes.map(tune => {
       const showThisNumber = shouldShowNumber(tune);
 
@@ -5686,6 +5690,29 @@
       outline:2px solid var(--accent);
       outline-offset:2px;
     }
+    .instrument-working-banner {
+      position:fixed;
+      top:calc(env(safe-area-inset-top, 0px) + 24px);
+      left:50%;
+      z-index:10000;
+      transform:translateX(-50%);
+      width:max-content;
+      max-width:calc(100vw - 34px);
+      padding:8px 16px;
+      color:var(--ink);
+      background:color-mix(in srgb,var(--panel) 92%,white);
+      border:1px solid var(--line);
+      border-radius:999px;
+      box-shadow:0 8px 22px rgba(0,0,0,.18);
+      font-weight:800;
+      font-size:1rem;
+      letter-spacing:.01em;
+      text-align:center;
+      pointer-events:none;
+    }
+    .instrument-working-banner[hidden] {
+      display:none;
+    }
     .hero.has-site-instrument-selector {
       padding-bottom:24px;
     }
@@ -5943,6 +5970,8 @@
       ${instrumentSelectorMarkup}
     </div>
   </header>
+
+  ${workingBannerMarkup}
 
   ${collectionIntroMarkup}
 
@@ -6543,11 +6572,29 @@
       });
     }
 
+    function setInstrumentWorkingBannerVisible(visible) {
+      const banner = document.getElementById("instrument-working-banner");
+      if (!banner) return;
+      banner.hidden = !visible;
+    }
+
+    function waitForWorkingBannerPaint() {
+      return new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+    }
+
     async function renderAllWorks(choiceId) {
       const selector = document.getElementById("site-instrument-selector");
       const activeChoiceId = validInstrumentChoiceId(choiceId);
+      const showWorkingBanner = instrumentSelectorEnabled && works.length > 0;
 
       if (selector) selector.disabled = true;
+      if (showWorkingBanner) {
+        setInstrumentWorkingBannerVisible(true);
+        await waitForWorkingBannerPaint();
+      }
+
       stopAllPlayback();
       updateABCTranscriptionToolsLinks(activeChoiceId);
 
@@ -6555,6 +6602,7 @@
         for (const work of works) await prepareWork(work, activeChoiceId);
       } finally {
         if (selector) selector.disabled = false;
+        if (showWorkingBanner) setInstrumentWorkingBannerVisible(false);
       }
     }
 
