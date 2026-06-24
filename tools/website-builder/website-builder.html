@@ -873,11 +873,6 @@
     { id: "show", name: "Show" }
   ];
 
-  const DISABLED_ENABLED_OPTIONS = [
-    { id: "disabled", name: "Disabled" },
-    { id: "enabled", name: "Enabled" }
-  ];
-
   const SOUNDFONT_OPTIONS = [
   {
     "id": "fluid",
@@ -1984,35 +1979,6 @@
     return bytes;
   }
 
-  function bytesToBase64URL(bytes) {
-    const chunkSize = 0x8000;
-    let binary = "";
-
-    for (let index = 0; index < bytes.length; index += chunkSize) {
-      const chunk = bytes.subarray(index, index + chunkSize);
-      binary += String.fromCharCode.apply(null, chunk);
-    }
-
-    return btoa(binary)
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/g, "");
-  }
-
-  function compressABCDeflateForShareLink(abcText) {
-    if (typeof pako === "undefined") {
-      throw new Error("pako is not loaded. Include pako before using deflate share links.");
-    }
-
-    if (typeof TextEncoder === "undefined") {
-      throw new Error("TextEncoder is not available in this browser.");
-    }
-
-    const utf8Bytes = new TextEncoder().encode(abcText || "");
-    const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
-    return bytesToBase64URL(deflatedBytes);
-  }
-
   function abcToolsFormatForDisplayMode(displayMode) {
     switch (String(displayMode || "notation")) {
       case "whistleNotation":
@@ -2038,51 +2004,6 @@
       default:
         return "noten";
     }
-  }
-
-  function instrumentSelectorShareChoices(defaultProgram, defaultDisplayMode) {
-    const displayMode = String(defaultDisplayMode || "notation");
-    return {
-      pianoNotation: { displayMode, program: normalizeMidiValue(defaultProgram), transpose: isGuitarDisplayMode(displayMode) ? "-12" : "", format: abcToolsFormatForDisplayMode(displayMode) },
-      mandolin: { displayMode: "mandolinNotation", program: "141", format: "mandolin" },
-      tenorBanjo: { displayMode: "mandolinNotation", program: "105", format: "mandolin" },
-      gdadBouzouki: { displayMode: "bouzoukiNotation", program: "140", format: "gdad" },
-      standardGuitar: { displayMode: "guitarNotation", program: "24", transpose: "-12", format: "guitare" },
-      dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12", format: "guitard" },
-      tinWhistle: { displayMode: "whistleNotation", program: "78", format: "whistle" },
-      irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
-      accordion: { displayMode: "notation", program: "21", format: "noten" },
-      concertina: { displayMode: "notation", program: "133", format: "noten" },
-      hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }
-    };
-  }
-
-  function settingsForInstrumentSelectorShareChoice(settings, choice) {
-    return {
-      ...settings,
-      displayMode: choice.displayMode || "notation",
-      injectSoundSettings: true,
-      melodyProgram: choice.program,
-      melodyTranspose: choice.transpose || ""
-    };
-  }
-
-  function buildABCTranscriptionToolsTuneURL(abcText, format, linkMode) {
-    if (!abcText || !abcText.length) return "";
-    if (!["player", "editor", "fullscreen"].includes(linkMode)) return "";
-
-    const params = new URLSearchParams();
-    params.set("def", compressABCDeflateForShareLink(abcText));
-    params.set("format", format || "noten");
-
-    if (linkMode === "player") {
-      params.set("play", "1");
-    } else if (linkMode === "editor") {
-      params.set("editor", "1");
-    }
-
-    const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
-    return url.length <= 8100 ? url : "";
   }
 
   function abcToolsLinkButtonText(linkMode) {
@@ -3406,7 +3327,7 @@
             <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
-            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. If a generated tune link would be longer than 8100 characters, the button is omitted for that tune.</li>
+            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in ABC Transcription Tools.</li>
             <li><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default. When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values. The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering. The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, or Hammered Dulcimer for all tunes. Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback. The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
             <li><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation. The default is <b>Hide</b>, which hides the stringed-instrument tablature name labels. Set it to <b>Show</b> to show the labels. This applies both to the main <b>Notation / tablature display</b> setting and to stringed-instrument choices made with the exported website's <b>Display / Instrument</b> selector.</li>
             <li><b>Automatically reverse title articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles. The default is <b>Kesh, The -&gt; The Kesh</b>. <b>Disabled</b> leaves titles exactly as loaded. The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website. The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
@@ -3537,7 +3458,7 @@
             <li>The exported website requires internet access to load the linked abcjs-eskin-portable
                 JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>
             <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>
-            <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter and to create optional ABC Transcription Tools tune links. The generated website stores those links directly in the HTML. When the generated website has a Display/Instrument selector, it stores a set of prebuilt ABC Transcription Tools links for each selector choice and switches each tune button to the matching link when the visitor changes the selector.</li>
+            <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter. When optional ABC Transcription Tools tune links are enabled, the generated website loads <code>pako.min.js</code> and creates the matching share link when the visitor clicks a tune's ABC Transcription Tools button. If the generated website has a Display / Instrument selector, the link is created from the currently selected display and instrument choice, including the matching format, MIDI program, volume, and octave-transpose settings.</li>
             <li>Very large tune collections can produce large HTML files and may take longer to render.</li>
             <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>
             <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>
@@ -5258,7 +5179,7 @@
     const normalized = String(abc || "").trim();
     if (!directive || !normalized) return normalized;
 
-    const escapedDirective = directive.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const escapedDirective = directive.replace(/[.*+?^\${}()|[\]\\]/g, "\\$&");
     const directiveRegex = new RegExp("^\\s*" + escapedDirective + "\\s*$", "mi");
 
     if (directiveRegex.test(normalized)) return normalized;
@@ -5267,16 +5188,6 @@
       /^(X\s*:\s*.*)$/mi,
       `$1\n${directive}`
     );
-  }
-
-  function prepareABCTranscriptionToolsShareAbc(abc, settings) {
-    const prepared = prepareTuneAbc(abc, "", settings);
-
-    if (isTablatureOnlyDisplayMode(settings && settings.displayMode)) {
-      return addDirectiveAfterXField(prepared, "%tablature_only");
-    }
-
-    return prepared;
   }
 
   function prepareTuneAbc(abc, fileHeader, settings) {
@@ -5383,20 +5294,7 @@
     const selectorDefaultProgram = normalizeMidiValue(s.melodyProgram);
     const selectorDefaultInstrumentName = genericInstrumentNameForProgram(s.melodyProgram);
     const selectorDefaultTranspose = isGuitarDisplayMode(s.displayMode) ? "-12" : "";
-    const selectorShareChoices = instrumentSelectorShareChoices(selectorDefaultProgram, s.displayMode);
-    const selectorDefaultChoiceId = "pianoNotation";
 
-    function buildABCTranscriptionToolsTuneURLForSelectorChoice(tune, choiceId, choice) {
-      if (!tune || tune.isSectionHeader || !choice) return "";
-
-      const choiceSettings = settingsForInstrumentSelectorShareChoice(s, choice);
-
-      return buildABCTranscriptionToolsTuneURL(
-        prepareABCTranscriptionToolsShareAbc(tune.abc, choiceSettings),
-        choice.format || "noten",
-        abcToolsLinkMode
-      );
-    }
     const scorePanelDecorationClass = (t.customCss || "").includes(".score-panel::before")
       ? " has-top-decoration"
       : "";
@@ -5411,29 +5309,9 @@
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
       usedIds.add(key);
       const exportedAbc = tune.isSectionHeader ? "" : prepareTuneAbc(tune.abc, tune.fileHeader, s);
-      const abcToolsURLsByChoice = {};
-
-      if (!tune.isSectionHeader && includeInstrumentSelector) {
-        Object.entries(selectorShareChoices).forEach(([choiceId, choice]) => {
-          abcToolsURLsByChoice[choiceId] = buildABCTranscriptionToolsTuneURLForSelectorChoice(
-            tune,
-            choiceId,
-            choice
-          );
-        });
-      }
-
-      const abcToolsURL = tune.isSectionHeader
-        ? ""
-        : includeInstrumentSelector
-          ? (abcToolsURLsByChoice[selectorDefaultChoiceId] || "")
-          : buildABCTranscriptionToolsTuneURL(
-              prepareABCTranscriptionToolsShareAbc(tune.abc, s),
-              abcToolsFormat,
-              abcToolsLinkMode
-            );
-
-      const abcToolsButtonText = abcToolsURL
+      const hasABCTranscriptionToolsLink = !tune.isSectionHeader && abcToolsLinkMode !== "disabled";
+      const abcToolsURL = hasABCTranscriptionToolsLink ? "#" : "";
+      const abcToolsButtonText = hasABCTranscriptionToolsLink
         ? abcToolsLinkButtonText(abcToolsLinkMode)
         : "";
 
@@ -5446,8 +5324,7 @@
         number,
         exportedAbc,
         abcToolsURL,
-        abcToolsButtonText,
-        abcToolsURLsByChoice
+        abcToolsButtonText
       };
     });
 
@@ -5526,7 +5403,7 @@
       const numberOnlyWithActionsClass = showThisNumber && !includeTuneHeading && hasTuneHeader ? " number-only-with-actions" : "";
       const tuneHeaderMarkup = hasTuneHeader
         ? `<div class="tune-header${includeTuneHeading ? "" : " no-tune-heading"}">
-          ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" data-work-key="${escapeHtml(tune.key)}" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
+          ${tune.abcToolsURL ? `<a class="back-to-toc abc-tools-link" data-work-key="${escapeHtml(tune.key)}" data-display-mode="${escapeHtml(s.displayMode)}" data-tablature-only="${isTablatureOnlyDisplayMode(s.displayMode) ? "true" : "false"}" href="${escapeHtml(tune.abcToolsURL)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tune.abcToolsButtonText)}</a>` : ""}
           ${includeTuneHeading ? `<h2>${escapeHtml(tune.displayTitle)}</h2>` : ""}
           ${includeTableOfContents ? `<a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>` : ""}
         </div>`
@@ -6086,8 +5963,7 @@
 
   <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js"><\/script>
   <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js"><\/script>
-
-  <script>
+  ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/pako.min.js"><\/script>\n  ' : ''}<script>
   (() => {
     "use strict";
 
@@ -6100,10 +5976,8 @@
     const defaultDisplayMode = ${displayMode};
     const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
     const instrumentSelectorStorageKey = ${JSON.stringify(instrumentSelectorStorageKey)};
-    const abcToolsLinksByChoice = ${JSON.stringify(Object.fromEntries(Object.keys(selectorShareChoices).map(choiceId => [
-      choiceId,
-      Object.fromEntries(tunes.map(tune => [tune.key, tune.abcToolsURLsByChoice ? tune.abcToolsURLsByChoice[choiceId] || "" : ""]))
-    ])))};
+    const abcToolsLinkMode = ${JSON.stringify(abcToolsLinkMode)};
+    const defaultABCToolsFormat = ${JSON.stringify(abcToolsFormat)};
     const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
     const cursorColor = ${cursorColor};
     const defaultSoundSettings = {
@@ -6115,17 +5989,17 @@
       chordVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.chordVolume) || 0))))}
     };
     const instrumentChoices = {
-      pianoNotation: { displayMode: defaultDisplayMode, program: ${JSON.stringify(selectorDefaultProgram)}, transpose: ${JSON.stringify(selectorDefaultTranspose)} },
-      mandolin: { displayMode: "mandolinNotation", program: "141" },
-      tenorBanjo: { displayMode: "mandolinNotation", program: "105" },
-      gdadBouzouki: { displayMode: "bouzoukiNotation", program: "140" },
-      standardGuitar: { displayMode: "guitarNotation", program: "24", transpose: "-12" },
-      dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12" },
-      tinWhistle: { displayMode: "whistleNotation", program: "78" },
-      irishFlute: { displayMode: "whistleNotation", program: "73" },
-      accordion: { displayMode: "notation", program: "21" },
-      concertina: { displayMode: "notation", program: "133" },
-      hammeredDulcimer: { displayMode: "notation", program: "15" }
+      pianoNotation: { displayMode: defaultDisplayMode, program: ${JSON.stringify(selectorDefaultProgram)}, transpose: ${JSON.stringify(selectorDefaultTranspose)}, format: defaultABCToolsFormat },
+      mandolin: { displayMode: "mandolinNotation", program: "141", format: "mandolin" },
+      tenorBanjo: { displayMode: "mandolinNotation", program: "105", format: "mandolin" },
+      gdadBouzouki: { displayMode: "bouzoukiNotation", program: "140", format: "gdad" },
+      standardGuitar: { displayMode: "guitarNotation", program: "24", transpose: "-12", format: "guitare" },
+      dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12", format: "guitard" },
+      tinWhistle: { displayMode: "whistleNotation", program: "78", format: "whistle" },
+      irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
+      accordion: { displayMode: "notation", program: "21", format: "noten" },
+      concertina: { displayMode: "notation", program: "133", format: "noten" },
+      hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }
     };
 
     function stringedTablatureLabel(name) {
@@ -6232,6 +6106,130 @@
       return Promise.resolve(controller.play()).catch(console.error);
     }
 
+    function isTablatureOnlyDisplayMode(mode) {
+      return mode === "mandolinOnly" ||
+        mode === "bouzoukiOnly" ||
+        mode === "guitarOnly" ||
+        mode === "dadgadGuitarOnly";
+    }
+
+    function escapeForRegExpText(text) {
+      const specials = "^$.*+?()[]{}|\\\\";
+      return String(text || "")
+        .split("")
+        .map(ch => specials.indexOf(ch) >= 0 ? "\\\\" + ch : ch)
+        .join("");
+    }
+
+    function addDirectiveAfterXField(abc, directive) {
+      const normalized = String(abc || "").trim();
+      if (!directive || !normalized) return normalized;
+
+      const escapedDirective = escapeForRegExpText(directive);
+      const directiveRegex = new RegExp("^\\\\s*" + escapedDirective + "\\\\s*$", "mi");
+      if (directiveRegex.test(normalized)) return normalized;
+
+      const xFieldRegex = new RegExp("^(X\\\\s*:\\\\s*.*)$", "mi");
+      return normalized.replace(
+        xFieldRegex,
+        "$1\\n" + directive
+      );
+    }
+
+    function bytesToBase64URL(bytes) {
+      const chunkSize = 0x8000;
+      let binary = "";
+
+      for (let index = 0; index < bytes.length; index += chunkSize) {
+        const chunk = bytes.subarray(index, index + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+
+      return btoa(binary)
+        .split("+").join("-")
+        .split("/").join("_")
+        .replace(/=+$/g, "");
+    }
+
+    function compressABCDeflateForShareLink(abcText) {
+      if (typeof pako === "undefined") {
+        throw new Error("pako.min.js did not load; the ABC Transcription Tools link could not be created.");
+      }
+
+      if (typeof TextEncoder === "undefined") {
+        throw new Error("TextEncoder is not available in this browser.");
+      }
+
+      const utf8Bytes = new TextEncoder().encode(abcText || "");
+      const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
+      return bytesToBase64URL(deflatedBytes);
+    }
+
+    function abcForABCTranscriptionTools(work, choice, link) {
+      const linkDisplayMode = link && link.dataset ? link.dataset.displayMode : "";
+      const linkRequestsTablatureOnly = !!(link && link.dataset && link.dataset.tablatureOnly === "true");
+      const activeDisplayMode = choice ? choice.displayMode : (linkDisplayMode || defaultDisplayMode);
+      const abc = abcForInstrumentChoice(work, choice);
+
+      if (linkRequestsTablatureOnly || isTablatureOnlyDisplayMode(activeDisplayMode)) {
+        return addDirectiveAfterXField(abc, "%tablature_only");
+      }
+
+      return abc;
+    }
+
+    function buildABCTranscriptionToolsURL(abcText, format) {
+      if (!abcText || !abcText.length) return "";
+      if (!["player", "editor", "fullscreen"].includes(abcToolsLinkMode)) return "";
+
+      const params = new URLSearchParams();
+      params.set("def", compressABCDeflateForShareLink(abcText));
+      params.set("format", format || "noten");
+
+      if (abcToolsLinkMode === "player") {
+        params.set("play", "1");
+      } else if (abcToolsLinkMode === "editor") {
+        params.set("editor", "1");
+      }
+
+      const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
+      return url.length <= 8100 ? url : "";
+    }
+
+    function activeABCTranscriptionToolsChoice() {
+      if (!instrumentSelectorEnabled) return null;
+
+      const selector = document.getElementById("site-instrument-selector");
+      const choiceId = validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
+      return instrumentChoices[choiceId] || instrumentChoices.pianoNotation;
+    }
+
+    function openABCTranscriptionToolsLink(link) {
+      stopAllPlayback();
+
+      try {
+        const workKey = link && link.dataset ? link.dataset.workKey : "";
+        const work = works.find(item => item.key === workKey);
+        if (!work) throw new Error("Tune data was not found for this link.");
+
+        const choice = activeABCTranscriptionToolsChoice();
+        const format = choice ? choice.format : defaultABCToolsFormat;
+        const abc = abcForABCTranscriptionTools(work, choice, link);
+        const url = buildABCTranscriptionToolsURL(abc, format);
+
+        if (!url) {
+          alert("This tune is too large to open in ABC Transcription Tools as a share link.");
+          return;
+        }
+
+        link.href = url;
+        window.open(url, "_blank", "noopener,noreferrer");
+      } catch (error) {
+        console.error(error);
+        alert(error && error.message ? error.message : String(error));
+      }
+    }
+
     function installNavigation() {
       document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
         link.addEventListener("click", event => {
@@ -6259,8 +6257,9 @@
       });
 
       document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
-        link.addEventListener("click", () => {
-          stopAllPlayback();
+        link.addEventListener("click", event => {
+          event.preventDefault();
+          openABCTranscriptionToolsLink(link);
         });
       });
     }
@@ -6537,23 +6536,10 @@
     }
 
     function updateABCTranscriptionToolsLinks(choiceId) {
-      if (!instrumentSelectorEnabled) return;
-
-      const activeChoiceId = validInstrumentChoiceId(choiceId);
-      const linksForChoice = abcToolsLinksByChoice[activeChoiceId] || {};
-
       document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
-        const url = linksForChoice[link.dataset.workKey] || "";
-
-        if (url) {
-          link.href = url;
-          link.hidden = false;
-          link.removeAttribute("aria-disabled");
-        } else {
-          link.removeAttribute("href");
-          link.hidden = true;
-          link.setAttribute("aria-disabled", "true");
-        }
+        link.href = "#";
+        link.hidden = false;
+        link.removeAttribute("aria-disabled");
       });
     }
 
