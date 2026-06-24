@@ -3506,9 +3506,13 @@
             <li>Find <code>const instrumentChoices = {</code> and add or remove the matching entry with the same unique name.</li>
           </ol>
           <p>For example, an option and matching entry must use the same id:</p>
-          <pre><code>&lt;option value=&quot;fiddle&quot;&gt;Fiddle&lt;/option&gt;
+          <pre><code>&lt;option value=&quot;fiddle&quot;&gt;Fiddle&lt;/option&gt;<br/>
 
-fiddle: { displayMode: &quot;notation&quot;, program: &quot;110&quot;, format: &quot;noten&quot; }</code></pre>
+fiddle: {
+  displayMode: &quot;notation&quot;,
+  program: &quot;110&quot;,
+  format: &quot;noten&quot;
+}</code></pre>
 
           <p><b>Changing the instrument sound</b></p>
           <p>
@@ -3546,6 +3550,81 @@ fiddle: { displayMode: &quot;notation&quot;, program: &quot;110&quot;, format: &
             <li>Guitar formats use <code>guitare</code> for standard guitar and <code>guitard</code> for DADGAD.</li>
             <li>Tin whistle style entries use <code>whistle</code>.</li>
             <li>GDAD bouzouki entries use <code>gdad</code>.</li>
+          </ul>
+
+          <p><b>Changing injected soundfont and MIDI accompaniment settings</b></p>
+          <p>
+            When <b>Inject soundfont and MIDI settings</b> is enabled, the exported website includes ABC sound
+            directives for the selected soundfont, melody instrument, bass instrument, bass volume, chord
+            instrument, and chord volume. Websites with the <b>Display / Instrument</b> selector handle these
+            values differently from websites without the selector.
+          </p>
+
+          <p><b>Exported websites with the Display / Instrument selector</b></p>
+          <p>
+            In a selector-enabled exported website, search for <code>const defaultSoundSettings = {</code>.
+            This block controls the shared sound settings used whenever a visitor changes the selector:
+          </p>
+          <pre><code>const defaultSoundSettings = {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;injectSounds: true,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;soundfont: &quot;fatboy&quot;,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;bassProgram: &quot;0&quot;,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;bassVolume: &quot;64&quot;,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;chordProgram: &quot;0&quot;,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;chordVolume: &quot;64&quot;<br/>
+};</code></pre>
+          <p>Available soundfont names:</p>
+          <ul>
+            <li><code>fluid</code> — Fluid</li>
+            <li><code>musyng</code> — Musyng Kite</li>
+            <li><code>fatboy</code> — FatBoy</li>
+            <li><code>canvas</code> — Canvas</li>
+            <li><code>mscore</code> — MScore</li>
+            <li><code>arachno</code> — Arachno</li>
+            <li><code>fluidhq</code> — FluidHQ</li>
+          </ul>
+          <ul>
+            <li>Change <code>soundfont</code> to select the soundfont used by the generated website. Use one of the soundfont names listed above.</li>
+            <li>Change <code>bassProgram</code> to set the injected <code>%%MIDI bassprog</code> value for all selector choices.</li>
+            <li>Change <code>bassVolume</code> to set the injected <code>%%MIDI bassvol</code> value. Use a value from <code>0</code> to <code>127</code>.</li>
+            <li>Change <code>chordProgram</code> to set the injected <code>%%MIDI chordprog</code> value for all selector choices.</li>
+            <li>Change <code>chordVolume</code> to set the injected <code>%%MIDI chordvol</code> value. Use a value from <code>0</code> to <code>127</code>.</li>
+            <li>Use General MIDI program numbers, or the abcjs-eskin portable program numbers shown in this tool's instrument list. Use <code>&quot;mute&quot;</code> when you want to mute a bass or chord part.</li>
+          </ul>
+          <p>
+            In selector-enabled websites, the melody instrument is controlled separately for each selector entry.
+            Search for <code>const instrumentChoices = {</code> and edit the <code>program</code> value in the
+            desired entry:
+          </p>
+          <pre><code>mandolin: { displayMode: &quot;mandolinNotation&quot;, program: &quot;141&quot;, format: &quot;mandolin&quot; }</code></pre>
+          <ul>
+            <li>Change <code>program: &quot;141&quot;</code> to another instrument program to change the melody sound for that selector choice.</li>
+            <li>For guitar-family selector choices, keep <code>transpose: &quot;-12&quot;</code> if the playback should sound one octave lower.</li>
+            <li>If you add a new selector entry, set its <code>program</code> value there as well.</li>
+          </ul>
+
+          <p><b>Exported websites without the Display / Instrument selector</b></p>
+          <p>
+            In an exported website without the selector, the injected sound settings are written directly into
+            each embedded ABC tune. Search for <code>%soundfont</code> or for a tune block such as
+            <code>&lt;script type=&quot;text/plain&quot; id=&quot;...-abc&quot;&gt;</code>, then edit the sound directives near
+            the top of each tune:
+          </p>
+          <ul>
+            <li><code>X:1</code></li>
+            <li><code>%soundfont fatboy</code></li>
+            <li><code>%%MIDI program 0</code></li>
+            <li><code>%%MIDI bassprog 0</code></li>
+            <li><code>%%MIDI bassvol 64</code></li>
+            <li><code>%%MIDI chordprog 0</code></li>
+            <li><code>%%MIDI chordvol 64</code></li>
+          </ul>
+          <ul>
+            <li>Change <code>%soundfont fatboy</code> to one of the available soundfont names listed above.</li>
+            <li>Change <code>%%MIDI program</code> to set the melody instrument.</li>
+            <li>Change <code>%%MIDI bassprog</code> and <code>%%MIDI chordprog</code> to set the bass and chord instruments.</li>
+            <li>Change <code>%%MIDI bassvol</code> and <code>%%MIDI chordvol</code> to set the bass and chord volumes from <code>0</code> to <code>127</code>.</li>
+            <li>For generated guitar and DADGAD guitar sites, keep the injected <code>%%MIDI transpose -12</code> line when you want playback to sound in the expected guitar octave.</li>
           </ul>
 
           <hr style="margin-top:20px;">
