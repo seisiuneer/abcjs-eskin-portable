@@ -3267,7 +3267,25 @@
       <div class="instructions-modal-content">
         <h2>Instructions</h2>
         <div class="instructions-scroll-area">
-          <h3>Overview</h3>
+          <div class="instructions-note" style="margin-top:0;">
+            <b>Table of Contents</b>
+            <ol style="margin-bottom:0;">
+              <li><a href="#instructions-overview">Overview</a></li>
+              <li><a href="#instructions-open-files">Open ABC files</a></li>
+              <li><a href="#instructions-configure">Configure the website</a></li>
+              <li><a href="#instructions-saved-settings">Saved settings</a></li>
+              <li><a href="#instructions-build-save">Build and save the website</a></li>
+              <li><a href="#instructions-generated-site">Using the generated website</a></li>
+              <li><a href="#instructions-clear">Clearing the current collection</a></li>
+              <li><a href="#instructions-abctools">ABC Transcription Tools compatibility</a></li>
+              <li><a href="#instructions-launching">Launching from other ABC tools</a></li>
+              <li><a href="#instructions-notes">Notes</a></li>
+              <li><a href="#instructions-developer-customization">Developer Customization</a></li>
+              <li><a href="#instructions-source-code">Source Code on GitHub</a></li>
+            </ol>
+          </div>
+
+          <h3 id="instructions-overview">Overview</h3>
           <p>
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
@@ -3276,7 +3294,7 @@
             ornaments between tunes, and links back to the table of contents.
           </p>
 
-          <h3>1. Open ABC files</h3>
+          <h3 id="instructions-open-files">1. Open ABC files</h3>
           <ol>
             <li>Click <b>Open ABC Files</b>.</li>
             <li>Select one or more <code>.abc</code> or text files.</li>
@@ -3290,7 +3308,7 @@
             file. 
           </div>
 
-          <h3>2. Configure the website</h3>
+          <h3 id="instructions-configure">2. Configure the website</h3>
           <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>
 
           <p><b>Text &amp; Content</b></p>
@@ -3376,13 +3394,13 @@
             Custom themes are intended for advanced/developer use. Contact the developer if you need help creating or refining a custom theme.
           </div>
 
-          <h3>3. Saved settings</h3>
+          <h3 id="instructions-saved-settings">3. Saved settings</h3>
           <p>
             Website settings are stored in this browser using <code>localStorage</code> when
             <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
           </p>
 
-          <h3>4. Build and save the website</h3>
+          <h3 id="instructions-build-save">4. Build and save the website</h3>
           <ol>
             <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>
             <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only.</li>
@@ -3408,7 +3426,7 @@
             website so the page can be moved or uploaded as a single HTML document.
           </div>
 
-          <h3>5. Using the generated website</h3>
+          <h3 id="instructions-generated-site">5. Using the generated website</h3>
           <ul>
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
@@ -3418,13 +3436,13 @@
             <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
           </ul>
 
-          <h3>6. Clearing the current collection</h3>
+          <h3 id="instructions-clear">6. Clearing the current collection</h3>
           <p>
             Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.
             This does not erase saved website settings.
           </p>
 
-          <h3>7. ABC Transcription Tools compatibility</h3>
+          <h3 id="instructions-abctools">7. ABC Transcription Tools compatibility</h3>
           <p>
             The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,
             but neither the portable library nor this Website Builder includes every feature of the full
@@ -3437,7 +3455,7 @@
             application interprets the part structure and controls the playback sequence.
           </p>
 
-          <h3>Launching from other ABC tools</h3>
+          <h3 id="instructions-launching">Launching from other ABC tools</h3>
           <p>
             This Website Builder can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
             For example, ABC Transcription Tools can send the complete current ABC editor contents, and thesession.org Power Tools
@@ -3453,7 +3471,7 @@
             After the transfer, you can still use <b>Open ABC Files</b> to add additional ABC files to the collection before building the website.
           </div>
 
-          <h3>Notes</h3>
+          <h3 id="instructions-notes">Notes</h3>
           <ul>
             <li>The exported website requires internet access to load the linked abcjs-eskin-portable
                 JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>
@@ -3466,6 +3484,68 @@
             <li>The visual styles affect the page presentation; they do not alter the tune data.</li>
             <li>Use <code>&lt;br/&gt;</code>, <code>&lt;br /&gt;</code>, or <code>&lt;br&gt;</code> in any entered website text field except the title to force a line break in the displayed text.</li>
             <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>
+          </ul>
+
+          <h3 id="instructions-developer-customization">Developer Customization</h3>
+          <p>
+            Generated websites that include the <b>Display / Instrument</b> selector can be customized directly
+            by editing the exported HTML file. These edits are intended for developers who are comfortable making
+            small JavaScript changes in the generated page after it has been exported.
+          </p>
+          <div class="instructions-note">
+            These customizations are made in the exported website HTML, not in this Website Builder tool.
+            Open the exported <code>.html</code> file in a text editor and search for
+            <code>const instrumentChoices = {</code> and <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.
+          </div>
+
+          <p><b>Adding or removing instruments from the selector</b></p>
+          <ol>
+            <li>Find the selector markup containing <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.</li>
+            <li>Each instrument shown to visitors is one <code>&lt;option&gt;</code> line. To remove an instrument, delete its option line.</li>
+            <li>To add an instrument, add a new option with a unique <code>value</code>.</li>
+            <li>Find <code>const instrumentChoices = {</code> and add or remove the matching entry with the same unique name.</li>
+          </ol>
+          <p>For example, an option and matching entry must use the same id:</p>
+          <pre><code>&lt;option value=&quot;fiddle&quot;&gt;Fiddle&lt;/option&gt;
+
+fiddle: { displayMode: &quot;notation&quot;, program: &quot;110&quot;, format: &quot;noten&quot; }</code></pre>
+
+          <p><b>Changing the instrument sound</b></p>
+          <p>
+            In <code>const instrumentChoices = {</code>, change the <code>program</code> value for the instrument.
+            Program numbers are General MIDI program numbers, with the additional abcjs-eskin portable instruments
+            available in this tool's instrument list. For example, to make Tenor Banjo use the Mandolin sound,
+            change its program from <code>&quot;105&quot;</code> to <code>&quot;141&quot;</code>:
+          </p>
+          <pre><code>tenorBanjo: { displayMode: &quot;mandolinNotation&quot;, program: &quot;141&quot;, format: &quot;mandolin&quot; }</code></pre>
+          <p>
+            Guitar-family entries can also include <code>transpose: &quot;-12&quot;</code> so playback sounds an octave lower.
+            Leave <code>transpose</code> out when no octave shift is wanted.
+          </p>
+
+          <p><b>Changing tablature style or showing notation only</b></p>
+          <p>
+            In each <code>instrumentChoices</code> entry, the <code>displayMode</code> value controls how the tune is redrawn.
+            You can change that value to any display mode supported by the generated website:
+          </p>
+          <ul>
+            <li><code>notation</code> — standard notation only.</li>
+            <li><code>mandolinNotation</code> or <code>mandolinOnly</code> — mandolin tablature with or without notation.</li>
+            <li><code>bouzoukiNotation</code> or <code>bouzoukiOnly</code> — GDAD bouzouki tablature with or without notation.</li>
+            <li><code>guitarNotation</code> or <code>guitarOnly</code> — standard guitar tablature with or without notation.</li>
+            <li><code>dadgadGuitarNotation</code> or <code>dadgadGuitarOnly</code> — DADGAD guitar tablature with or without notation.</li>
+            <li><code>whistleNotation</code> — tin whistle style tablature with notation.</li>
+          </ul>
+          <p>
+            For example, to keep the Mandolin sound but show notation only, change the Mandolin entry to:
+          </p>
+          <pre><code>mandolin: { displayMode: &quot;notation&quot;, program: &quot;141&quot;, format: &quot;noten&quot; }</code></pre>
+          <ul>
+            <li>To make the Mandolin entry open in ABC Transcription Tools using mandolin tablature formatting, keep <code>format: &quot;mandolin&quot;</code>.</li>
+            <li>If the entry shows notation only, use <code>format: &quot;noten&quot;</code>.</li>
+            <li>Guitar formats use <code>guitare</code> for standard guitar and <code>guitard</code> for DADGAD.</li>
+            <li>Tin whistle style entries use <code>whistle</code>.</li>
+            <li>GDAD bouzouki entries use <code>gdad</code>.</li>
           </ul>
 
           <hr style="margin-top:20px;">
@@ -3486,7 +3566,7 @@
             </div>
           </div>
           <hr>
-          <h3 style="text-align: center;">Source Code on GitHub</h3>
+          <h3 id="instructions-source-code" style="text-align: center;">Source Code on GitHub</h3>
           <div style="text-align: center;margin-bottom:20px;">
             The source code for this tool is available on GitHub<br/>
              <div style="margin-top:10px;">
