@@ -597,6 +597,7 @@
       color: #fff;
       background: var(--green);
       font-weight: 750;
+      text-align: center;
       cursor: pointer;
       box-shadow: 0 2px 0 rgba(0,0,0,.14);
     }
@@ -785,7 +786,7 @@
       <input id="abc-files" type="file" accept=".abc,.txt,text/plain" multiple>
       <button id="settings-button" class="button secondary" type="button">Website Settings</button>
       <button id="save-button" class="button" type="button" disabled>Build and Save Website</button>
-      <button id="clear-button" class="button danger" type="button" disabled>Clear</button>
+      <button id="clear-button" class="button danger" type="button" disabled>Clear Loaded Tunes</button>
       <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
     </div>
 
@@ -818,7 +819,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.0";
+  const WEBSITE_BUILDER_VERSION = "1.0.1";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3529,7 +3530,7 @@
 
           <h3 id="instructions-clear">6. Clearing the current collection</h3>
           <p>
-            Click <b>Clear</b> to remove all currently loaded files and tunes from the builder.
+            Click <b>Clear Loaded Tunes</b> to remove all currently loaded files and tunes from the builder.
             This does not erase saved website settings.
           </p>
 
