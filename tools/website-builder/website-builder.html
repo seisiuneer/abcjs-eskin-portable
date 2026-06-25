@@ -819,7 +819,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.0.1";
+  const WEBSITE_BUILDER_VERSION = "1.0.2";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1966,6 +1966,45 @@
     }
   }
 
+  const PDF_TUNEBOOK_FEATURES_START_MARKER = "% Start of PDF Tunebook Features";
+  const PDF_TUNEBOOK_FEATURES_END_MARKER = "% End of PDF Tunebook Features";
+  const PDF_TUNEBOOK_FEATURES_ALLOWED_HEADER_DIRECTIVE_REGEX = /^(?:%add_all_playback_links|%add_all_playback_volumes|%pageheader|%pagefooter|%urlpageheader|%urlpagefooter)(?:\s|$)/;
+
+  function cleanFileHeaderForTuneInjection(headerText) {
+    const cleanedLines = [];
+    let insidePdfTunebookFeatures = false;
+
+    String(headerText || "")
+      .split("\n")
+      .map(line => line.replace(/\s+$/g, ""))
+      .forEach(line => {
+        const leftTrimmedLine = line.trimStart();
+
+        if (leftTrimmedLine.startsWith(PDF_TUNEBOOK_FEATURES_START_MARKER)) {
+          insidePdfTunebookFeatures = true;
+          return;
+        }
+
+        if (leftTrimmedLine.startsWith(PDF_TUNEBOOK_FEATURES_END_MARKER)) {
+          insidePdfTunebookFeatures = false;
+          return;
+        }
+
+        if (insidePdfTunebookFeatures) {
+          if (PDF_TUNEBOOK_FEATURES_ALLOWED_HEADER_DIRECTIVE_REGEX.test(leftTrimmedLine)) {
+            cleanedLines.push(leftTrimmedLine);
+          }
+          return;
+        }
+
+        cleanedLines.push(line);
+      });
+
+    return cleanedLines
+      .filter(line => line.trim() !== "")
+      .join("\n");
+  }
+
   function splitAbcRecords(text, filename) {
     const normalized = String(text || "").replace(/\r\n?/g, "\n");
     const starts = [];
@@ -1977,12 +2016,7 @@
       throw new Error(`${filename} does not contain an X: tune record.`);
     }
 
-    const fileHeader = normalized
-      .slice(0, starts[0])
-      .split("\n")
-      .map(line => line.replace(/\s+$/g, ""))
-      .filter(line => line.trim() !== "")
-      .join("\n");
+    const fileHeader = cleanFileHeaderForTuneInjection(normalized.slice(0, starts[0]));
 
     return starts.map((start, index) => {
       const end = index + 1 < starts.length ? starts[index + 1] : normalized.length;
@@ -3549,6 +3583,29 @@
           </p>
           <p>Tunes with multiple parts using <b><code>P:</code></b> tags that also have a <b><code>%play_flatten_parts</code></b> annotation will
             play following the indicated parts order in the <b>ABC Transcription Tools</b> player if an optional <b>ABC Transcription Tools</b> button is present on the tune and clicked. Such tunes will show <b>Open in ABC Transcription Tools for correct P: parts order playback</b> below the tune on the website.</p>
+          <p>
+            If the ABC file header contains a <b>PDF Tunebook Features</b> block beginning with
+            <code>% Start of PDF Tunebook Features</code> and ending with
+            <code>% End of PDF Tunebook Features</code>, most of that block is intended only for PDF export
+            from <b>ABC Transcription Tools</b> and is not copied into each tune in the exported website.
+            The start and end marker lines are also removed.
+          </p>
+          <p>
+            Six compatible annotations from that block are kept because they can still be useful when a tune
+            is opened back in <b>ABC Transcription Tools</b> for PDF export from an optional per-tune button:
+          </p>
+          <ul>
+            <li><code>%pageheader</code> specifies plain page-header text for PDFs exported from <b>ABC Transcription Tools</b>.</li>
+            <li><code>%pagefooter</code> specifies plain page-footer text for PDFs exported from <b>ABC Transcription Tools</b>.</li>
+            <li><code>%urlpageheader</code> specifies a PDF page-header hyperlink and its displayed text.</li>
+            <li><code>%urlpagefooter</code> specifies a PDF page-footer hyperlink and its displayed text.</li>
+            <li><code>%add_all_playback_links</code> allows tune titles in PDFs exported from <b>ABC Transcription Tools</b> to be clickable playback links.</li>
+            <li><code>%add_all_playback_volumes</code> supplies the playback volume values used with those clickable PDF tune-title links.</li>
+          </ul>
+          <p>
+            Other PDF-only annotations in that block, such as table-of-contents, index, QR-code, PDF-quality,
+            and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
+          </p>
           <h3 id="instructions-launching">Launching from other ABC tools</h3>
           <p>
             This <b>Website Builder</b> can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
