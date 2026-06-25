@@ -164,7 +164,9 @@
     .website-settings-manage-panel {
       min-height: 500px;
       display: grid;
-      place-items: center;
+      grid-template-rows: auto minmax(120px, 1fr);
+      justify-items: center;
+      align-items: start;
       text-align: center;
     }
 
@@ -187,6 +189,14 @@
       max-width: 52ch;
       margin: 0 auto 22px;
       color: #675454;
+    }
+
+    .website-settings-version {
+      align-self: center;
+      color: var(--muted);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .02em;
     }
 
     .website-settings-manage-action {
@@ -807,6 +817,8 @@
 <script>
 (() => {
   "use strict";
+
+  const WEBSITE_BUILDER_VERSION = "1.0";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3165,6 +3177,7 @@
                       '<button id="website-settings-reset-action" class="website-settings-manage-action danger" type="button">Reset all Settings</button>' +
                     '</div>' +
                   '</div>' +
+                  '<div class="website-settings-version">Version ' + WEBSITE_BUILDER_VERSION + '</div>' +
                 '</div>' +
               '</section>' +
             '</div>' +
@@ -5603,9 +5616,7 @@ fiddle: {
         </div>`
       : "";
 
-    const workingBannerMarkup = includeInstrumentSelector
-      ? `<div id="instrument-working-banner" class="instrument-working-banner" role="status" aria-live="polite" aria-atomic="true" hidden>Working...</div>`
-      : "";
+    const workingBannerMarkup = `<div id="instrument-working-banner" class="instrument-working-banner" role="status" aria-live="polite" aria-atomic="true" hidden>Working...</div>`;
 
     const articles = tunes.map(tune => {
       const showThisNumber = shouldShowNumber(tune);
@@ -6825,7 +6836,7 @@ fiddle: {
     async function renderAllWorks(choiceId) {
       const selector = document.getElementById("site-instrument-selector");
       const activeChoiceId = validInstrumentChoiceId(choiceId);
-      const showWorkingBanner = instrumentSelectorEnabled && works.length > 0;
+      const showWorkingBanner = works.length > 0;
 
       if (selector) selector.disabled = true;
       if (showWorkingBanner) {
