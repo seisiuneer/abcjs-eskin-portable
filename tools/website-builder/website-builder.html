@@ -606,6 +606,15 @@
 
     .panel h2 { margin: 0 0 8px; font-size: 1.35rem; }
 
+    #loaded-tunes-panel.desktop-drop-enabled {
+      transition: border-color .16s ease, background-color .16s ease;
+    }
+
+    #loaded-tunes-panel.desktop-drop-enabled.drop-target-active {
+      border-color: #5f8fb3;
+      background: #e4f3ff;
+    }
+
     .summary {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -770,7 +779,7 @@
       <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
     </div>
 
-    <section class="panel">
+    <section id="loaded-tunes-panel" class="panel">
       <h2>Loaded Tunes</h2>
 
       <div class="summary">
@@ -1718,11 +1727,20 @@
   const saveButton = document.getElementById("save-button");
   const clearButton = document.getElementById("clear-button");
   const instructionsButton = document.getElementById("instructions-button");
+  const loadedTunesPanel = document.getElementById("loaded-tunes-panel");
   const status = document.getElementById("status");
 
   function isIOSDevice() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  function isAndroidDevice() {
+    return /Android/i.test(navigator.userAgent || "");
+  }
+
+  function isDesktopFileDropEnabled() {
+    return !isIOSDevice() && !isAndroidDevice() && !!window.File && !!window.FileReader;
   }
 
   if (isIOSDevice()) {
@@ -2223,6 +2241,65 @@
     renderState();
     setStatus(`Loaded ${newTuneCount} tune${newTuneCount === 1 ? "" : "s"}.`);
     fileInput.value = "";
+  }
+
+  function fileIsSupportedDropType(file) {
+    return /\.(abc|txt)$/i.test((file && file.name) || "");
+  }
+
+  function droppedFilesFromEvent(event) {
+    return Array.from((event.dataTransfer && event.dataTransfer.files) || [])
+      .filter(fileIsSupportedDropType);
+  }
+
+  function setupDesktopFileDrop() {
+    if (!loadedTunesPanel || !isDesktopFileDropEnabled()) return;
+
+    let dragDepth = 0;
+
+    const clearDropHighlight = () => {
+      dragDepth = 0;
+      loadedTunesPanel.classList.remove("drop-target-active");
+    };
+
+    loadedTunesPanel.classList.add("desktop-drop-enabled");
+
+    loadedTunesPanel.addEventListener("dragenter", event => {
+      event.preventDefault();
+      dragDepth += 1;
+      loadedTunesPanel.classList.add("drop-target-active");
+    });
+
+    loadedTunesPanel.addEventListener("dragover", event => {
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    });
+
+    loadedTunesPanel.addEventListener("dragleave", event => {
+      event.preventDefault();
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) {
+        loadedTunesPanel.classList.remove("drop-target-active");
+      }
+    });
+
+    loadedTunesPanel.addEventListener("drop", event => {
+      event.preventDefault();
+      clearDropHighlight();
+
+      const droppedFiles = droppedFilesFromEvent(event);
+      if (!droppedFiles.length) {
+        setStatus("Drop one or more .abc or .txt files to add tunes.", true);
+        return;
+      }
+
+      readFiles(droppedFiles).catch(error => {
+        console.error(error);
+        setStatus(error && error.message ? error.message : String(error), true);
+      });
+    });
+
+    window.addEventListener("blur", clearDropHighlight);
   }
 
   function renderState() {
@@ -3298,6 +3375,7 @@
           <ol>
             <li>Click <b>Open ABC Files</b>.</li>
             <li>Select one or more <code>.abc</code> or text files.</li>
+            <li>On desktop computers, you can also drag and drop one or more <code>.abc</code> or <code>.txt</code> files onto the <b>Loaded Tunes</b> box to add them to the current collection.</li>
             <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>
             <li>The loaded file and tune lists show what will be included in the exported website.</li>
           </ol>
@@ -6937,6 +7015,8 @@ fiddle: {
   instructionsButton.addEventListener("click", () => void openInstructions());
   saveButton.addEventListener("click", () => void saveSite());
   clearButton.addEventListener("click", clearAll);
+
+  setupDesktopFileDrop();
 
   startABCTranscriptionToolsHandshake();
   loadInitialShareLinkTunes();
