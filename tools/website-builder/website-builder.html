@@ -3531,6 +3531,7 @@
           <h3 id="instructions-clear">6. Clearing the current collection</h3>
           <p>
             Click <b>Clear Loaded Tunes</b> to remove all currently loaded files and tunes from the builder.
+            You will be asked to confirm the operation. 
             This does not erase saved website settings.
           </p>
 
@@ -6980,7 +6981,51 @@ fiddle: {
     }
   }
 
-  function clearAll() {
+  function lowerClearLoadedTunesConfirmationDialog() {
+    let attempts = 0;
+    const confirmationText =
+      "Clear all loaded files and tunes from the builder? This cannot be undone.";
+
+    const positionDialog = () => {
+      attempts += 1;
+
+      const candidates = Array.from(document.querySelectorAll(
+        ".modal_default_main, .modal_flat_main, .dpmodal, [class*='modal_'][class*='_main']"
+      ));
+
+      const dialog = candidates.reverse().find(element =>
+        element.textContent && element.textContent.includes(confirmationText)
+      );
+
+      if (dialog) {
+        dialog.style.transform = "translateY(150px)";
+        return;
+      }
+
+      if (attempts < 40) {
+        setTimeout(positionDialog, 20);
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(positionDialog));
+  }
+
+  async function clearAll() {
+    const confirmationPromise = DayPilot.Modal.confirm(
+      "Clear all loaded files and tunes from the builder? This cannot be undone.",
+      {
+        title: "Clear Loaded Tunes",
+        okText: "Clear",
+        cancelText: "Cancel",
+        top: 150
+      }
+    );
+
+    lowerClearLoadedTunesConfirmationDialog();
+    const confirmation = await confirmationPromise;
+
+    if (confirmation.canceled) return;
+
     state.files = [];
     state.tunes = [];
     fileInput.value = "";
