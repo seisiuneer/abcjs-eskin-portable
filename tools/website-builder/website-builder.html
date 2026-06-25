@@ -3546,7 +3546,7 @@
             application interprets the part structure and controls the playback sequence.
           </p>
           <p>Tunes with multiple parts using <b><code>P:</code></b> tags that also have a <b><code>%play_flatten_parts</code></b> annotation will
-            play following the indicated parts order in the <b>ABC Transcription Tools</b> player if an optional <b>ABC Transcription Tools</b> button is present on the tune and clicked.</p>
+            play following the indicated parts order in the <b>ABC Transcription Tools</b> player if an optional <b>ABC Transcription Tools</b> button is present on the tune and clicked. Such tunes will show <b>Open in ABC Transcription Tools for correct P: parts order playback</b> below the tune on the website.</p>
           <h3 id="instructions-launching">Launching from other ABC tools</h3>
           <p>
             This <b>Website Builder</b> can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
@@ -5561,6 +5561,7 @@ fiddle: {
       usedIds.add(key);
       const exportedAbc = tune.isSectionHeader ? "" : prepareTuneAbc(tune.abc, tune.fileHeader, s);
       const hasABCTranscriptionToolsLink = !tune.isSectionHeader && abcToolsLinkMode !== "disabled";
+      const hasFlattenPartsPlaybackNotice = hasABCTranscriptionToolsLink && /(?:^|\n)\s*%play_flatten_parts\s*(?:\n|$)/i.test(tune.abc || "");
       const abcToolsURL = hasABCTranscriptionToolsLink ? "#" : "";
       const abcToolsButtonText = hasABCTranscriptionToolsLink
         ? abcToolsLinkButtonText(abcToolsLinkMode)
@@ -5575,7 +5576,8 @@ fiddle: {
         number,
         exportedAbc,
         abcToolsURL,
-        abcToolsButtonText
+        abcToolsButtonText,
+        hasFlattenPartsPlaybackNotice
       };
     });
 
@@ -5646,7 +5648,8 @@ fiddle: {
 
       const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
       const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
-          <p id="${tune.key}-status" class="status" aria-live="polite"></p>`;
+          <p id="${tune.key}-status" class="status" aria-live="polite"></p>
+          ${tune.hasFlattenPartsPlaybackNotice ? `<p id="${tune.key}-flatten-parts-note" class="flatten-parts-playback-note" hidden>Open in ABC Transcription Tools for correct P: parts order playback.</p>` : ""}`;
       const articleActionClass =
         (tune.abcToolsURL ? " has-abc-tools-link" : (includeTableOfContents ? " toc-only-actions" : "")) +
         (includeTableOfContents ? " has-toc-link" : " no-toc-link") +
@@ -5896,6 +5899,7 @@ fiddle: {
     .audio-controls { width:${width}%; margin:22px auto 0; }
     .status { width:${width}%; min-height:1.35em; margin:8px auto 0; color:var(--muted); text-align:center; font-size:.9rem; }
     .status.error { color:#a00000; font-weight:700; }
+    .flatten-parts-playback-note { width:${width}%; margin:4px auto 0; color:var(--muted); text-align:center; font-size:.9rem; font-weight:700; }
     .site-instrument-selector {
       width:min(520px, calc(100% - 34px));
       margin:18px auto 0;
@@ -5991,7 +5995,7 @@ fiddle: {
       .tune-header.no-tune-heading { min-height:44px; }
       .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
       .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
-      .notation-wrap,.audio-controls,.status { width:100%; }
+      .notation-wrap,.audio-controls,.status,.flatten-parts-playback-note { width:100%; }
       .site-instrument-selector {
         flex-direction:column;
         align-items:stretch;
@@ -6728,6 +6732,7 @@ fiddle: {
       const paperId = work.key + "-paper";
       const audioId = work.key + "-audio";
       const status = document.getElementById(work.key + "-status");
+      const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
       const paper = document.getElementById(paperId);
       const audioElement = document.getElementById(audioId);
       const choice = choiceId ? instrumentChoices[choiceId] : null;
@@ -6746,6 +6751,7 @@ fiddle: {
           paper.onkeydown = null;
         }
         if (audioElement) audioElement.innerHTML = "";
+        if (flattenPartsNote) flattenPartsNote.hidden = true;
         if (status) {
           status.classList.remove("error");
           status.textContent = "Rendering notation and preparing audio…";
@@ -6780,8 +6786,10 @@ fiddle: {
         }
 
         if (status) status.textContent = "Click the notation to pause or resume playing";
+        if (flattenPartsNote) flattenPartsNote.hidden = false;
       } catch (error) {
         console.error(error);
+        if (flattenPartsNote) flattenPartsNote.hidden = true;
         if (status) {
           status.classList.add("error");
           status.textContent = error && error.message ? error.message : String(error);
