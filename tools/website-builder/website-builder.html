@@ -895,6 +895,12 @@
     { id: "show", name: "Show" }
   ];
 
+  const TABLE_OF_CONTENTS_OPTIONS = [
+    { id: "show", name: "Show" },
+    { id: "showSearch", name: "Show (include search bar)" },
+    { id: "hide", name: "Hide" }
+  ];
+
   const SOUNDFONT_OPTIONS = [
   {
     "id": "fluid",
@@ -2391,7 +2397,7 @@
       `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
       `Player ${state.settings.playerPosition} notation · ` +
       `Notation ${state.settings.notationWidth}% of page body · ` +
-      `${state.settings.includeTableOfContents === "hide" ? "Table of contents hidden" : "Table of contents shown"} · ` +
+      `${state.settings.includeTableOfContents === "hide" ? "Table of contents hidden" : state.settings.includeTableOfContents === "showSearch" ? "Table of contents shown with search bar" : "Table of contents shown"} · ` +
       `${state.settings.showTuneDividers === "hide" ? "Decorative tune ornaments hidden" : "Decorative tune ornaments shown"} · ` +
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
@@ -2786,7 +2792,7 @@
       notationWidth: new Set(["50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]),
       bodyWidth: new Set(["700", "800", "900", "1000", "1100", "1180", "1280", "1400", "1600"]),
       showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
-      includeTableOfContents: optionIds(HIDE_SHOW_OPTIONS),
+      includeTableOfContents: optionIds(TABLE_OF_CONTENTS_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
@@ -3308,7 +3314,7 @@
         name: "Include table of contents",
         id: "includeTableOfContents",
         type: "select",
-        options: HIDE_SHOW_OPTIONS
+        options: TABLE_OF_CONTENTS_OPTIONS
       },
       {
         name: "Show decorative ornament between tunes",
@@ -3467,7 +3473,7 @@
             <li><b>Notation width relative to page body</b> controls how much of the page width is used
                 by both the notation and its player.</li>
             <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
-            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. If set to <b>Hide</b>, the <b>Table of Contents</b> buttons in tune and section-header panels are also omitted.</li>
+            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. Select <b>Show (include search bar)</b> to add a search box directly below the <b>Table of Contents</b> heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search. If set to <b>Hide</b>, the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels are omitted.</li>
             <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
@@ -5595,7 +5601,9 @@ fiddle: {
     const showSectionHeaderNumbers = String(s.includeSectionHeaderNumbers || DEFAULT_SETTINGS.includeSectionHeaderNumbers) !== "hide";
     const shouldShowNumber = tune => tune.isSectionHeader ? showSectionHeaderNumbers : showTuneNumbers;
     const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
-    const includeTableOfContents = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) !== "hide";
+    const tableOfContentsMode = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents);
+    const includeTableOfContents = tableOfContentsMode !== "hide";
+    const includeTableOfContentsSearch = tableOfContentsMode === "showSearch";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
@@ -5641,12 +5649,21 @@ fiddle: {
     });
 
     const toc = tunes.map(tune =>
-      `<a href="#tune-${tune.key}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`
+      `<a href="#tune-${tune.key}" data-toc-entry="true" data-toc-title="${escapeHtml(tune.displayTitle.toLowerCase())}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`
     ).join("\n        ");
+
+    const tocSearchMarkup = includeTableOfContentsSearch
+      ? `<div class="toc-search" role="search">
+      <label class="visually-hidden" for="toc-search-input">Search table of contents</label>
+      <input id="toc-search-input" type="search" autocomplete="off" placeholder="Search tunes..." aria-label="Search table of contents">
+      <button id="toc-search-clear" type="button" aria-label="Clear table of contents search" hidden>×</button>
+    </div>`
+      : "";
 
     const tocMarkup = includeTableOfContents
       ? `<nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
     <h2 id="toc-title">Table of Contents</h2>
+    ${tocSearchMarkup}
     <div class="toc-links">
         ${toc}
     </div>
@@ -5890,8 +5907,15 @@ fiddle: {
       transform:none;
       white-space:nowrap;
     }
+    .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .toc-search { position:relative; width:100%; margin:-4px 0 18px; }
+    .toc-search input { width:100%; min-height:48px; padding:10px 44px 10px 14px; color:var(--ink); background:color-mix(in srgb,var(--panel) 90%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); font:inherit; box-shadow:inset 0 1px 2px rgba(0,0,0,.08); }
+    .toc-search input:focus { outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:2px; }
+    .toc-search button { position:absolute; top:50%; right:9px; width:30px; height:30px; transform:translateY(-50%); display:grid; place-items:center; padding:0; color:var(--muted); background:transparent; border:0; border-radius:50%; font:inherit; font-size:1.35rem; line-height:1; cursor:pointer; }
+    .toc-search button:hover, .toc-search button:focus-visible { color:#fff; background:var(--primary); outline:none; }
     .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
     .toc-links a { display:flex; align-items:center; gap:10px; min-height:54px; padding:10px 13px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); text-decoration:none; text-align:left; }
+    .toc-links a[hidden] { display:none; }
     .toc-links a:hover,.toc-links a:focus-visible { color:#fff; background:var(--primary); outline:none; }
     .toc-links span,.chapter-label { display:grid; place-items:center; color:#fff; background:var(--primary); border:2px solid var(--accent); border-radius:50%; font-weight:800; }
     .toc-links span { flex:0 0 34px; height:34px; }
@@ -6571,7 +6595,37 @@ fiddle: {
       }
     }
 
+    function installTableOfContentsSearch() {
+      const input = document.getElementById("toc-search-input");
+      const clearButton = document.getElementById("toc-search-clear");
+      if (!input || !clearButton) return;
+
+      const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
+
+      function applyFilter() {
+        const query = input.value.trim().toLowerCase();
+        entries.forEach(link => {
+          const title = (link.dataset.tocTitle || link.textContent || "").toLowerCase();
+          const shouldHide = !!query && title.indexOf(query) === -1;
+          link.hidden = shouldHide;
+          link.style.display = shouldHide ? "none" : "";
+        });
+        clearButton.hidden = !query;
+      }
+
+      input.addEventListener("input", applyFilter);
+      clearButton.addEventListener("click", () => {
+        input.value = "";
+        applyFilter();
+        input.focus();
+      });
+
+      applyFilter();
+    }
+
     function installNavigation() {
+      installTableOfContentsSearch();
+
       document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
         link.addEventListener("click", event => {
           event.preventDefault();
