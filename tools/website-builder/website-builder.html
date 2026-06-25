@@ -3644,24 +3644,17 @@
           </ul>
 
           <h3 id="instructions-developer-customization">Developer Customization</h3>
-          <p>
-            Generated websites that include the <b>Display / Instrument</b> selector can be customized directly
-            by editing the exported HTML file. These edits are intended for developers who are comfortable making
-            small JavaScript changes in the generated page after it has been exported.
-          </p>
-          <div class="instructions-note">
-            These customizations are made in the exported website HTML, not in this Website Builder tool.
-            Open the exported <code>.html</code> file in a text editor and search for
-            <code>const instrumentChoices = {</code> and <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.
-          </div>
-
+ 
           <p><b>Making the title maximum font size smaller</b></p>
           <p>If the title font size is too large, in the generated website .html file, locate the following CSS for the <code>h1</code> tag:</p>
           <p><code>h1 { margin:0; font-size:clamp(1.8rem,4.2vw,3.5rem); line-height:1.08; }</code></p>
           <p>It may be slightly different in your specific website.</p>
           <p>Change that last number in the <code>clamp</code> from <code>3.5rem</code> to a smaller size, like <code>2.6rem</code> and save the file.</p>
-
-          <p><b>Adding or removing instruments from the selector</b></p>
+          <p><b>Adding or removing instruments from the Display / Instrument selector</b></p>
+          <div class="instructions-note">
+            Open the exported <code>.html</code> file in a text editor and search for
+            <code>const instrumentChoices = {</code> and <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.
+          </div>
           <ol>
             <li>Find the selector markup containing <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.</li>
             <li>Each instrument shown to visitors is one <code>&lt;option&gt;</code> line. To remove an instrument, delete its option line.</li>
