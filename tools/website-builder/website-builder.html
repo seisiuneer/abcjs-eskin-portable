@@ -3366,7 +3366,7 @@
           <p>
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
-            the abcjs-eskin-portable library. The generated site can include a display/instrument selector, table of contents,
+            the <code>abcjs-eskin-portable</code> JavaScript library. The generated site can include a display/instrument selector, table of contents,
             individual tune sections, T:* style section headers, playback controls, cursor tracking, autoscroll, decorative 
             ornaments between tunes, and links back to the table of contents.
           </p>
@@ -3411,9 +3411,9 @@
                 standard Guitar, or DADGAD Guitar tablature, standalone versions of each stringed instrument tablature type, and Standard notation with Tin Whistle (D) fingering tablature.</li>
             <li>GDAD Bouzouki tablature uses the four-course tuning G-D-A-D.</li>
             <li>DADGAD Guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>
-            <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add <code>%%MIDI transpose -12</code> to the generated ABC so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and it is also used when those display modes are opened from the generated website in ABC Transcription Tools.</li>
+            <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add <code>%%MIDI transpose -12</code> to the generated ABC so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and it is also used when those display modes are opened from the generated website in the <b>ABC Transcription Tools</b>.</li>
             <li>Standalone Mandolin and GDAD Bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard Guitar and DADGAD Guitar tablature automatically add <code>%%staffsep 100</code>.</li>
-            <li>Tin Whistle tablature renders a D whistle fingering line below the Standard notation using the same approach as ABC Transcription Tools.</li>
+            <li>Tin Whistle tablature renders a D whistle fingering line below the Standard notation using the same approach as the <b>ABC Transcription Tools</b>.</li>
             <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>
             <li><b>Player controller position</b> places the controls above or below the notation.</li>
             <li><b>Notation width relative to page body</b> controls how much of the page width is used
@@ -3423,7 +3423,7 @@
             <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
-            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the ABC Transcription Tools Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in ABC Transcription Tools.</li>
+            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the <b>ABC Transcription Tools</b> Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in the <b>ABC Transcription Tools</b>.</li>
             <li><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default. When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values. The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering. The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, or Hammered Dulcimer for all tunes. Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback. The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
             <li><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation. The default is <b>Hide</b>, which hides the stringed-instrument tablature name labels. Set it to <b>Show</b> to show the labels. This applies both to the main <b>Notation / tablature display</b> setting and to stringed-instrument choices made with the exported website's <b>Display / Instrument</b> selector.</li>
             <li><b>Automatically reverse title articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles. The default is <b>Kesh, The -&gt; The Kesh</b>. <b>Disabled</b> leaves titles exactly as loaded. The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website. The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
@@ -3434,7 +3434,7 @@
             <li>Enabled <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
                 directives in every tune with the selected values. This is also enabled automatically in the exported website whenever <b>Display/Instrument selector dropdown</b> is set to <b>Show</b>.</li>
             <li>Select the soundfont and the melody, bass, and chord instruments. When the Display/Instrument selector is shown, the selector's first choice uses the selected melody instrument and injects that same MIDI program for playback.</li>
-            <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add %%MIDI transpose -12 so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and is also used when those display modes are opened from the generated website in the ABC Transcription Tools.</li>
+            <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add %%MIDI transpose -12 so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and is also used when those display modes are opened from the generated website in the <b>ABC Transcription Tools</b>.</li>
             <li>Select bass and chord volumes from 0 through 127.</li>
             <li>Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>
           </ul>
@@ -3490,7 +3490,7 @@
             <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
             <li>An optional table of contents linking to every tune.</li>
             <li>An optional Table of Contents button for every tune that returns to the top of the table of contents when the table of contents is included.</li>
-            <li>Optional ABC Transcription Tools link buttons for each tune.</li>
+            <li>Optional <b>ABC Transcription Tools</b> link buttons for each tune.</li>
             <li>An optional global Display/Instrument selector dropdown.</li>
             <li>T:* style section headers if present.</li>
             <li>Optional decorative ornaments between tune sections.</li>
@@ -3520,23 +3520,24 @@
             This does not erase saved website settings.
           </p>
 
-          <h3 id="instructions-abctools">7. ABC Transcription Tools compatibility</h3>
+          <h3 id="instructions-abctools">7. <b>ABC Transcription Tools</b> compatibility</h3>
           <p>
             The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,
             but neither the portable library nor this Website Builder includes every feature of the full
-            ABC Transcription Tools application.
+            <b>ABC Transcription Tools</b> application.
           </p>
           <p>
-            Some of the more complex ABC Transcription Tools features are implemented by application code
+            Some of the more complex <b>ABC Transcription Tools</b> features are implemented by application code
             outside the abcjs library. Those features are not automatically available in exported websites.
-            This includes <b><code>P:</code> tag based parts playback</b>, where the ABC Transcription Tools
+            This includes <b><code>P:</code> tag based parts playback</b>, where the <b>ABC Transcription Tools</b>
             application interprets the part structure and controls the playback sequence.
           </p>
-
+          <p>Tunes with multiple parts using <b><code>P:</code></b> tags that also have a <b><code>%play_flatten_parts</code></b> annotation will
+            play following the indicated parts order in the <b>ABC Transcription Tools</b> player if an optional <b>ABC Transcription Tools</b> button is present on the tune and clicked.</p>
           <h3 id="instructions-launching">Launching from other ABC tools</h3>
           <p>
-            This Website Builder can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
-            For example, ABC Transcription Tools can send the complete current ABC editor contents, and thesession.org Power Tools
+            This <b>Website Builder</b> can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
+            For example, <b>ABC Transcription Tools</b> can send the complete current ABC editor contents, and <b>thesession.org Power Tools</b>
             can send its generated ABC tune settings directly to the Website Builder.
           </p>
           <ul>
@@ -3554,7 +3555,7 @@
             <li>The exported website requires internet access to load the linked abcjs-eskin-portable
                 JavaScript library and related CSS files unless those files are later hosted locally and the links are changed.</li>
             <li>Playback requires internet connectivity to read the instrument notes from the remote soundfont repositories.</li>
-            <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter. When optional ABC Transcription Tools tune links are enabled, the generated website loads <code>pako.min.js</code> and creates the matching share link when the visitor clicks a tune's ABC Transcription Tools button. If the generated website has a Display / Instrument selector, the link is created from the currently selected display and instrument choice, including the matching format, MIDI program, volume, and octave-transpose settings.</li>
+            <li>The builder uses the included pako deflate library to load ABC tunes from a <code>def=</code> share-link parameter. When optional <b>ABC Transcription Tools</b> tune links are enabled, the generated website loads <code>pako.min.js</code> and creates the matching share link when the visitor clicks a tune's <b>ABC Transcription Tools</b> button. If the generated website has a <b>Display / Instrument</b> selector, the link is created from the currently selected display and instrument choice, including the matching format, MIDI program, volume, and octave-transpose settings.</li>
             <li>Very large tune collections can produce large HTML files and may take longer to render.</li>
             <li>ABC syntax or playback problems in a source tune will also appear in the exported site.</li>
             <li>On iPhone and iPad, <b>Build and Save Website</b> opens the iOS share sheet with the generated HTML file. Choose <b>Save to Files</b>, AirDrop, Mail, or another available destination. If file sharing is unavailable, the tool falls back to the normal browser download method.</li>
@@ -3623,7 +3624,7 @@ fiddle: {
           </p>
           <pre><code>mandolin: { displayMode: &quot;notation&quot;, program: &quot;141&quot;, format: &quot;noten&quot; }</code></pre>
           <ul>
-            <li>To make the Mandolin entry open in ABC Transcription Tools using mandolin tablature formatting, keep <code>format: &quot;mandolin&quot;</code>.</li>
+            <li>To make the Mandolin entry open in the <b>ABC Transcription Tools</b> using mandolin tablature formatting, keep <code>format: &quot;mandolin&quot;</code>.</li>
             <li>If the entry shows notation only, use <code>format: &quot;noten&quot;</code>.</li>
             <li>Guitar formats use <code>guitare</code> for standard guitar and <code>guitard</code> for DADGAD.</li>
             <li>Tin whistle style entries use <code>whistle</code>.</li>
