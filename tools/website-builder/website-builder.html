@@ -819,7 +819,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.0.2";
+  const WEBSITE_BUILDER_VERSION = "1.0.3";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -6730,11 +6730,16 @@ fiddle: {
       return element.textContent.trim();
     }
 
-    function removeRuntimeInjectedDirectives(value) {
-      return String(value || "")
+    function removeRuntimeInjectedDirectives(value, removeStaffSep) {
+      let cleaned = String(value || "")
         .replace(/^\\s*%(?:abcjs_)?soundfont\\s+.*(?:\\n|$)/gim, "")
-        .replace(/^\\s*%%MIDI\\s+(?:program|bassprog|bassvol|chordprog|chordvol|transpose)\\s+.*(?:\\n|$)/gim, "")
-        .replace(/^[ \\t]*%%staffsep[ \\t]+.*(?:\\n|$)/gim, "")
+        .replace(/^\\s*%%MIDI\\s+(?:program|bassprog|bassvol|chordprog|chordvol|transpose)\\s+.*(?:\\n|$)/gim, "");
+
+      if (removeStaffSep) {
+        cleaned = cleaned.replace(/^[ \\t]*%%staffsep[ \\t]+.*(?:\\n|$)/gim, "");
+      }
+
+      return cleaned
         .split("\\n")
         .map(line => line.replace(/\\s+$/g, ""))
         .filter(line => line.trim() !== "")
@@ -6782,7 +6787,7 @@ fiddle: {
       }
 
       return insertRuntimeDirectivesAfterXField(
-        removeRuntimeInjectedDirectives(originalAbc),
+        removeRuntimeInjectedDirectives(originalAbc, Boolean(staffSepDirective)),
         directives
       );
     }
