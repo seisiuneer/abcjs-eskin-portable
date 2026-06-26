@@ -5919,6 +5919,15 @@ fiddle: {
     const instrumentSelectorMarkup = includeInstrumentSelector
       ? `<div class="site-instrument-selector">
           <label for="site-instrument-selector">Display / Instrument:</label>
+          <!--
+            Display / Instrument selector customization:
+            Each visible choice is one <option> line below.
+            To remove an instrument, delete its <option> line and also delete
+            the matching entry with the same value in the JavaScript
+            instrumentChoices object.
+            To add an instrument, add a new <option value="uniqueId">Label</option>
+            line here and add a matching uniqueId entry in instrumentChoices.
+          -->
           <select id="site-instrument-selector" class="instrument-selector" aria-label="Select display style and melody instrument for all tunes">
             <option value="pianoNotation">${escapeHtml(selectorDefaultInstrumentName)}</option>
             <option value="mandolin">Mandolin</option>
@@ -6777,6 +6786,16 @@ fiddle: {
     const defaultABCToolsFormat = ${JSON.stringify(abcToolsFormat)};
     const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
     const cursorColor = ${cursorColor};
+    /*
+      JavaScript default sound settings customization:
+      These are the default sound settings exported from the Website Builder.
+      They are used before a visitor changes the Display / Instrument selector
+      and are also used for bass and chord playback when the selector changes
+      the melody instrument.
+      To change the default soundfont or bass/chord sound in the exported site,
+      edit these values. To change a selectable melody instrument, edit the
+      matching entry in instrumentChoices below.
+    */
     const defaultSoundSettings = {
       injectSounds: ${JSON.stringify(isChecked(s.injectSoundSettings) || includeInstrumentSelector)},
       soundfont: ${JSON.stringify(String(s.soundfont || DEFAULT_SETTINGS.soundfont))},
@@ -6785,6 +6804,17 @@ fiddle: {
       chordProgram: ${JSON.stringify(normalizeMidiValue(s.chordProgram))},
       chordVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.chordVolume) || 0))))}
     };
+    /*
+      Display / Instrument selector choices customization:
+      Keep each key in this object matched to an <option value="sameKey"> line
+      in the selector HTML above.
+      To remove an instrument, remove both the <option> line and its matching
+      instrumentChoices entry.
+      To add an instrument, add both a new <option> line and a matching entry here.
+      displayMode controls notation/tablature style, program controls the melody
+      MIDI program, transpose is optional, and format controls ABC Transcription
+      Tools link format.
+    */
     const instrumentChoices = {
       pianoNotation: { displayMode: defaultDisplayMode, program: ${JSON.stringify(selectorDefaultProgram)}, transpose: ${JSON.stringify(selectorDefaultTranspose)}, format: defaultABCToolsFormat },
       mandolin: { displayMode: "mandolinNotation", program: "141", format: "mandolin" },
