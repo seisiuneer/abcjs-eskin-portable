@@ -292,9 +292,7 @@
       gap: 14px;
     }
 
-    #website_settings_text_fields .website-settings-field-includeCollectionIntro,
-    #website_settings_text_fields .website-settings-field-includeTuneTextBefore,
-    #website_settings_text_fields .website-settings-field-includeTuneTextAfter {
+    #website_settings_text_fields .website-settings-field-includeCollectionIntro {
       margin-bottom: -7px !important;
     }
 
@@ -852,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.0.6";
+  const WEBSITE_BUILDER_VERSION = "1.1.0";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -921,6 +919,30 @@
   const TITLE_ARTICLE_REVERSE_OPTIONS = [
     { id: "disabled", name: "Disabled" },
     { id: "postfixToPrefix", name: "Kesh, The -> The Kesh" }
+  ];
+
+  const LARGE_COLLECTION_GROUPING_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "groupsOf100", name: "Groups of 100 tunes" },
+    { id: "alphabeticalTitle", name: "Alphabetical by title (groups of 100)" },
+    { id: "rhythmTag", name: "R: Rhythm tag (groups of 100)" },
+    { id: "rhythmTagAlphabetical", name: "R: Rhythm tag + alphabetical subgroups (groups of 100)" },
+    { id: "manualSectionHeaders", name: "Manual T: section headers (groups of 100)" }
+  ];
+
+  const LARGE_COLLECTION_BATCH_SIZE_OPTIONS = [
+    { id: "50", name: "50" },
+    { id: "100", name: "100" },
+    { id: "150", name: "150" },
+    { id: "200", name: "200" },
+    { id: "250", name: "250" },
+    { id: "300", name: "300" },
+    { id: "unlimited", name: "Unlimited" }
+  ];
+
+  const TUNE_ORDER_OPTIONS = [
+    { id: "preserve", name: "Keep original order" },
+    { id: "sortTitle", name: "Sort by title, ignoring leading articles" }
   ];
 
   const HIDE_SHOW_OPTIONS = [
@@ -1590,10 +1612,6 @@
     includeTuneHeading: false,
     includeCollectionIntro: false,
     collectionIntro: "This is text before all the tunes.",
-    includeTuneTextBefore: false,
-    tuneTextBefore: "This is text before each tune.",
-    includeTuneTextAfter: false,
-    tuneTextAfter: "This is text after each tune.",
     theme: "irish",
     displayMode: "notation",
     instrumentSelector: "show",
@@ -1614,8 +1632,52 @@
     tuneNumbers: "show",
     includeSectionHeaderNumbers: "hide",
     abcToolsLinks: "disabled",
-    titleArticleReverser: "postfixToPrefix"
+    titleArticleReverser: "postfixToPrefix",
+    largeCollectionGrouping: "disabled",
+    tuneOrder: "preserve",
+    largeCollectionGroupingBatchSize: "100"
   };
+
+  function largeCollectionBatchSizeLabel(batchSize) {
+    const value = String(batchSize || DEFAULT_SETTINGS.largeCollectionGroupingBatchSize || "100");
+    return value === "unlimited" ? "Unlimited" : value;
+  }
+
+  function largeCollectionBatchSizeLabelLower(batchSize) {
+    return largeCollectionBatchSizeLabel(batchSize).toLowerCase();
+  }
+
+  function largeCollectionBatchSizeValue(batchSize) {
+    const value = String(batchSize || DEFAULT_SETTINGS.largeCollectionGroupingBatchSize || "100");
+    if (value === "unlimited") return Number.POSITIVE_INFINITY;
+    const numeric = parseInt(value, 10);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : 100;
+  }
+
+  function largeCollectionGroupingOptionsForBatchSize(batchSize) {
+    const label = largeCollectionBatchSizeLabel(batchSize);
+    const labelLower = largeCollectionBatchSizeLabelLower(batchSize);
+    const alphabeticalLabel = label === "Unlimited"
+      ? "Alphabetical by title (unlimited group size)"
+      : `Alphabetical by title (groups of ${label})`;
+    const rhythmLabel = label === "Unlimited"
+      ? "R: Rhythm tag (unlimited group size)"
+      : `R: Rhythm tag (groups of ${label})`;
+    const rhythmAlphabeticalLabel = label === "Unlimited"
+      ? "R: Rhythm tag + alphabetical subgroups (unlimited group size)"
+      : `R: Rhythm tag + alphabetical subgroups (groups of ${label})`;
+    const manualLabel = label === "Unlimited"
+      ? "Manual T: section headers (unlimited group size)"
+      : `Manual T: section headers (groups of ${label})`;
+    return [
+      { id: "disabled", name: "Disabled" },
+      { id: "alphabeticalTitle", name: alphabeticalLabel },
+      { id: "groupsOf100", name: `Groups of ${labelLower} tunes` },
+      { id: "rhythmTag", name: rhythmLabel },
+      { id: "rhythmTagAlphabetical", name: rhythmAlphabeticalLabel },
+      { id: "manualSectionHeaders", name: manualLabel }
+    ];
+  }
 
   function instrumentSelectorRequiresSoundInjection(settings) {
     return String(
@@ -1628,6 +1690,21 @@
 
     if (instrumentSelectorRequiresSoundInjection(normalized)) {
       normalized.injectSoundSettings = true;
+    }
+
+    if (String(normalized.largeCollectionGrouping || "") === "rhythmTagHundred") {
+      normalized.largeCollectionGrouping = "rhythmTag";
+    }
+
+    if (!optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS).has(String(normalized.largeCollectionGroupingBatchSize || ""))) {
+      normalized.largeCollectionGroupingBatchSize = DEFAULT_SETTINGS.largeCollectionGroupingBatchSize;
+    }
+
+    const groupingMode = String(normalized.largeCollectionGrouping || "");
+    if (groupingMode === "alphabeticalTitle") {
+      normalized.tuneOrder = "sortTitle";
+    } else if (groupingMode === "manualSectionHeaders") {
+      normalized.tuneOrder = "preserve";
     }
 
     return normalized;
@@ -1961,6 +2038,13 @@
     ", Ein": "Ein",
     ", Eine": "Eine"
   };
+
+  const TITLE_ARTICLE_SORT_PREFIXES = Array.from(new Set(Object.values(TITLE_POSTFIX_ARTICLE_MAP)));
+  const TITLE_ARTICLE_SORT_SUFFIXES = Object.keys(TITLE_POSTFIX_ARTICLE_MAP);
+
+  function escapeRegExp(text) {
+    return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 
 
   function extractTitleNumber(title) {
@@ -2447,7 +2531,7 @@
 
       const droppedFiles = droppedFilesFromEvent(event);
       if (!droppedFiles.length) {
-        setStatus("Drop one or more .abc files, ABC .txt files, or website settings .txt files.", true);
+        setStatus("Drop one or more .abc files, ABC .txt files, or website settings .txt/.json files.", true);
         return;
       }
 
@@ -2504,15 +2588,15 @@
       `Notation ${state.settings.notationWidth}% of page body · ` +
       `${state.settings.includeTableOfContents === "hide" ? "Table of contents hidden" : state.settings.includeTableOfContents === "showSearch" ? "Table of contents shown with search bar" : "Table of contents shown"} · ` +
       `${state.settings.showTuneDividers === "hide" ? "Decorative tune ornaments hidden" : "Decorative tune ornaments shown"} · ` +
+      `${escapeHtml(optionName(largeCollectionGroupingOptionsForBatchSize(state.settings.largeCollectionGroupingBatchSize), state.settings.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping))} large tune collection grouping · ` +
+      `${escapeHtml(optionName(TUNE_ORDER_OPTIONS, state.settings.tuneOrder || DEFAULT_SETTINGS.tuneOrder))} · ` +
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
       `${state.settings.includeSectionHeaderNumbers === "hide" ? "Section header numbers hidden" : "Section header numbers shown"} · ` +
       `${state.settings.instrumentSelector === "show" ? "Display/Instrument selector shown" : "Display/Instrument selector hidden"} · ` +
       `${state.settings.showStringInstrumentTablatureNames === "show" ? "Stringed tablature names shown" : "Stringed tablature names hidden"} · ` +
       `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
-      `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"} · ` +
-      `${state.settings.includeTuneTextBefore ? "Text before each tune" : "No text before each tune"} · ` +
-      `${state.settings.includeTuneTextAfter ? "Text after tunes" : "No text after tunes"}`;
+      `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"}`;
   }
 
   function escapeHtml(value) {
@@ -2659,6 +2743,61 @@
     return true;
   }
 
+  function replaceSelectOptions(selectField, options) {
+    if (!selectField) return;
+    const currentValue = String(selectField.value || "");
+    selectField.innerHTML = "";
+    options.forEach(option => {
+      const element = document.createElement("option");
+      element.value = String(option.id);
+      element.textContent = String(option.name);
+      selectField.appendChild(element);
+    });
+    if (options.some(option => String(option.id) === currentValue)) {
+      selectField.value = currentValue;
+    }
+  }
+
+  function initializeLargeCollectionGroupingDialogControls() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    if (!modalRoot) return;
+
+    const groupingField = findWebsiteSettingsField(modalRoot, "largeCollectionGrouping");
+    const tuneOrderField = findWebsiteSettingsField(modalRoot, "tuneOrder");
+    const batchSizeField = findWebsiteSettingsField(modalRoot, "largeCollectionGroupingBatchSize");
+    if (!groupingField || !tuneOrderField || !batchSizeField || groupingField.dataset.largeCollectionControlGuard === "true") return;
+
+    const updateGroupingLabels = () => {
+      const optionsById = new Map(
+        largeCollectionGroupingOptionsForBatchSize(batchSizeField.value)
+          .map(option => [String(option.id), String(option.name)])
+      );
+      Array.from(groupingField.options).forEach(option => {
+        const label = optionsById.get(String(option.value));
+        if (label) option.textContent = label;
+      });
+    };
+
+    const enforceLargeCollectionTuneOrder = () => {
+      const groupingMode = String(groupingField.value || "");
+      if (groupingMode === "alphabeticalTitle") {
+        tuneOrderField.value = "sortTitle";
+      } else if (groupingMode === "manualSectionHeaders") {
+        tuneOrderField.value = "preserve";
+      }
+    };
+
+    batchSizeField.addEventListener("change", () => {
+      updateGroupingLabels();
+      enforceLargeCollectionTuneOrder();
+    });
+    groupingField.addEventListener("change", enforceLargeCollectionTuneOrder);
+    tuneOrderField.addEventListener("change", enforceLargeCollectionTuneOrder);
+    groupingField.dataset.largeCollectionControlGuard = "true";
+    updateGroupingLabels();
+    enforceLargeCollectionTuneOrder();
+  }
+
   function updateOpenSettingsCustomThemeOption() {
     const modalRoot = getOpenWebsiteSettingsModalRoot();
     if (!modalRoot) return;
@@ -2730,16 +2869,17 @@
       website_settings_text_fields: [
         "title", "subtitle", "footer",
         "includeTuneHeading",
-        "includeCollectionIntro", "collectionIntro",
-        "includeTuneTextBefore", "tuneTextBefore",
-        "includeTuneTextAfter", "tuneTextAfter"
+        "includeCollectionIntro", "collectionIntro"
       ],
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
         "includeTableOfContents", "showTuneDividers", "tuneNumbers",
-        "includeSectionHeaderNumbers", "abcToolsLinks", "instrumentSelector",
-        "showStringInstrumentTablatureNames", "titleArticleReverser"
+        "includeSectionHeaderNumbers",
+        "tuneOrder", "instrumentSelector",
+        "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
+        "abcToolsLinks", "showStringInstrumentTablatureNames",
+        "titleArticleReverser"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -2776,6 +2916,7 @@
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
     initializeWebsiteSettingsManageActions();
+    initializeLargeCollectionGroupingDialogControls();
     initializeCustomThemeSelectionGuard();
     updateOpenSettingsCustomThemeOption();
     return true;
@@ -2875,11 +3016,10 @@
     const settings = { ...DEFAULT_SETTINGS };
 
     const textFields = new Set([
-      "title", "subtitle", "footer", "collectionIntro", "tuneTextBefore", "tuneTextAfter"
+      "title", "subtitle", "footer", "collectionIntro"
     ]);
     const booleanFields = new Set([
-      "includeTuneHeading", "includeCollectionIntro", "includeTuneTextBefore",
-      "includeTuneTextAfter", "injectSoundSettings"
+      "includeTuneHeading", "includeCollectionIntro", "injectSoundSettings"
     ]);
     const allowedValues = {
       theme: optionIds(THEME_OPTIONS),
@@ -2901,7 +3041,10 @@
       tuneNumbers: new Set(["hide", "show"]),
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
-      titleArticleReverser: optionIds(TITLE_ARTICLE_REVERSE_OPTIONS)
+      titleArticleReverser: optionIds(TITLE_ARTICLE_REVERSE_OPTIONS),
+      largeCollectionGrouping: new Set([...optionIds(LARGE_COLLECTION_GROUPING_OPTIONS), "rhythmTagHundred"]),
+      tuneOrder: optionIds(TUNE_ORDER_OPTIONS),
+      largeCollectionGroupingBatchSize: optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS)
     };
 
     Object.keys(source).forEach(key => {
@@ -3348,28 +3491,6 @@
         type: "textarea",
         height: 46
       },
-      {
-        name: "Include text before each tune",
-        id: "includeTuneTextBefore",
-        type: "checkbox"
-      },
-      {
-        name: "Text before each tune",
-        id: "tuneTextBefore",
-        type: "textarea",
-        height: 44
-      },
-      {
-        name: "Include text after each tune",
-        id: "includeTuneTextAfter",
-        type: "checkbox"
-      },
-      {
-        name: "Text after each tune",
-        id: "tuneTextAfter",
-        type: "textarea",
-        height: 44
-      },
       { name: "Music genre visual theme", id: "theme", type: "select", options: themeOptionsForDisplay() },
       { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
       { name: "Playback cursor color", id: "cursorColor", type: "select", options: CURSOR_COLOR_OPTIONS },
@@ -3443,10 +3564,28 @@
         options: HIDE_SHOW_OPTIONS
       },
       {
+        name: "Tune order",
+        id: "tuneOrder",
+        type: "select",
+        options: TUNE_ORDER_OPTIONS
+      },
+      {
         name: "Display/Instrument selector dropdown",
         id: "instrumentSelector",
         type: "select",
         options: HIDE_SHOW_OPTIONS
+      },
+      {
+        name: "Large tune collection grouping",
+        id: "largeCollectionGrouping",
+        type: "select",
+        options: largeCollectionGroupingOptionsForBatchSize(state.settings.largeCollectionGroupingBatchSize)
+      },
+      {
+        name: "Large tune collection grouping batch size",
+        id: "largeCollectionGroupingBatchSize",
+        type: "select",
+        options: LARGE_COLLECTION_BATCH_SIZE_OPTIONS
       },
       {
         name: "Add ABC Transcription Tools link buttons to each tune",
@@ -3525,31 +3664,8 @@
               <li><a href="#instructions-abctools">ABC Transcription Tools compatibility</a></li>
               <li><a href="#instructions-launching">Launching from other ABC tools</a></li>
               <li><a href="#instructions-notes">Notes</a></li>
-              <li><a href="#instructions-developer-customization">Developer Customization</a>
-                <ol>
-                  <li><a href="#developer-customizing-generated-css">Customizing the generated website CSS</a></li>
-                  <li><a href="#developer-responsive-font-size-maximums">Changing responsive font-size maximums</a></li>
-                  <li><a href="#developer-theme-behavior">Built-in and custom theme behavior</a></li>
-                  <li><a href="#developer-css-variables">CSS variables</a></li>
-                  <li><a href="#developer-page-width">Page width</a></li>
-                  <li><a href="#developer-header-styling">Header styling</a></li>
-                  <li><a href="#developer-table-of-contents-styling">Table of Contents styling</a></li>
-                  <li><a href="#developer-card-spacing">Card spacing</a></li>
-                  <li><a href="#developer-section-header-styling">Section header styling</a></li>
-                  <li><a href="#developer-website-title">Website title</a></li>
-                  <li><a href="#developer-table-of-contents-title">Table of Contents title</a></li>
-                  <li><a href="#developer-section-header-title-font">T:* style section headers</a></li>
-                  <li><a href="#developer-tune-metadata-titles">Tune metadata titles</a></li>
-                  <li><a href="#developer-working-overlay-message">Working overlay message</a></li>
-                  <li><a href="#developer-print-css">Print CSS</a></li>
-                  <li><a href="#developer-display-instrument-selector-items">Adding or removing Display / Instrument selector items</a></li>
-                  <li><a href="#developer-changing-instrument-sound">Changing the instrument sound</a></li>
-                  <li><a href="#developer-changing-tablature-style">Changing tablature style or showing notation only</a></li>
-                  <li><a href="#developer-injected-soundfont-midi">Changing injected soundfont and MIDI accompaniment settings</a></li>
-                  <li><a href="#developer-selector-enabled-sound-settings">Selector-enabled sound settings</a></li>
-                  <li><a href="#developer-no-selector-sound-settings">Sound settings without the selector</a></li>
-                </ol>
-              </li>
+              <li><a href="#instructions-developer-customization">Developer Customization</a></li>
+              <li><a href="#instructions-tip-jars">Tip Jars</a></li>
               <li><a href="#instructions-source-code">Source Code on GitHub</a></li>
             </ol>
           </div>
@@ -3583,8 +3699,18 @@
           <h3 id="instructions-configure">2. Configure the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>Click <b>Website Settings</b>. The settings are divided into four tabs:</p>
+          <div class="instructions-note">
+            <b>Configure website topics</b>
+            <ol style="margin-bottom:0;">
+              <li><a href="#instructions-configure-text-content">Text &amp; Content</a></li>
+              <li><a href="#instructions-configure-style-display">Style &amp; Display</a></li>
+              <li><a href="#instructions-configure-playback-sounds">Playback &amp; Sounds</a></li>
+              <li><a href="#instructions-configure-manage-settings">Manage Settings</a></li>
+            </ol>
+          </div>
 
-          <p><b>Text &amp; Content</b></p>
+          <p id="instructions-configure-text-content"><b>Text &amp; Content</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Website title</b> appears in the main header of the exported site.</li>
             <li><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>
@@ -3594,39 +3720,124 @@
             <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>
             <li><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>
             <li><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>
-            <li><b>Text before each tune</b> adds the same centered text before every tune.</li>
-            <li><b>Text after each tune</b> adds the same centered text after every tune.</li>
-            <li>The matching checkbox for each text field must be enabled for optional text to appear.</li>
+            <li>The matching <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
           </ul>
 
-          <p><b>Style &amp; Display</b></p>
+          <p id="instructions-configure-style-display"><b>Style &amp; Display</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Music genre visual theme</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>
-            <li><b>Notation / tablature display</b> selects Standard notation; Standard notation with Mandolin, GDAD Bouzouki,
-                standard Guitar, or DADGAD Guitar tablature, standalone versions of each stringed instrument tablature type, and Standard notation with Tin Whistle (D) fingering tablature.</li>
+            <li><b>Notation / tablature display</b> selects the notation or tablature layout for the exported site.
+              <ul>
+                <li><b>Standard notation</b> displays ordinary music notation without tablature.</li>
+                <li><b>Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature with notation</b> display tablature together with Standard notation.</li>
+                <li><b>Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature without notation</b> display standalone stringed-instrument tablature.</li>
+                <li><b>Tin Whistle (D) tablature with notation</b> renders a D whistle fingering line below the Standard notation using the same approach as the <b>ABC Transcription Tools</b>.</li>
+              </ul>
+            </li>
             <li>GDAD Bouzouki tablature uses the four-course tuning G-D-A-D.</li>
             <li>DADGAD Guitar tablature uses the six-string tuning D-A-D-G-A-D instead of standard guitar E-A-D-G-B-E.</li>
             <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add <code>%%MIDI transpose -12</code> to the generated ABC so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and it is also used when those display modes are opened from the generated website in the <b>ABC Transcription Tools</b>.</li>
             <li>Standalone Mandolin and GDAD Bouzouki tablature automatically add <code>%%staffsep 80</code>. Standalone standard Guitar and DADGAD Guitar tablature automatically add <code>%%staffsep 100</code>.</li>
-            <li>Tin Whistle tablature renders a D whistle fingering line below the Standard notation using the same approach as the <b>ABC Transcription Tools</b>.</li>
-            <li><b>Playback cursor color</b> selects a bright green, blue, or red translucent block cursor. Green is the default.</li>
+            <li><b>Playback cursor color</b> selects the translucent block cursor color.
+              <ul>
+                <li><b>Green</b> is the default.</li>
+                <li><b>Blue</b> uses a bright blue cursor.</li>
+                <li><b>Red</b> uses a bright red cursor.</li>
+              </ul>
+            </li>
             <li><b>Player controller position</b> places the controls above or below the notation.</li>
-            <li><b>Notation width relative to page body</b> controls how much of the page width is used
-                by both the notation and its player.</li>
+            <li><b>Notation width relative to page body</b> controls how much of the page width is used by both the notation and its player.</li>
             <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
-            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents. The default is <b>Show</b>. Select <b>Show (include search bar)</b> to add a search box directly below the <b>Table of Contents</b> heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search. If set to <b>Hide</b>, the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels are omitted.</li>
-            <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections. The default is <b>Show</b>. If set to <b>Hide</b>, the tunes are separated by comfortable blank spacing instead.</li>
+            <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents.
+              <ul>
+                <li><b>Show</b> is the default and displays the table of contents.</li>
+                <li><b>Show (include search bar)</b> adds a search box directly below the <b>Table of Contents</b> heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li><b>Hide</b> omits the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
+              </ul>
+            </li>
+            <li><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections.
+              <ul>
+                <li><b>Show</b> is the default and displays the selected theme ornament.</li>
+                <li><b>Hide</b> separates tunes with comfortable blank spacing instead.</li>
+              </ul>
+            </li>
             <li><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
-            <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback. The default is <b>Hide</b>. When hidden, section headers do not show numbers and do not advance the numbering count. When shown, section headers are numbered using the same count as any other items currently configured to show numbers.</li>
-            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. The button text changes by mode: <b>Play in ABC Transcription Tools</b>, <b>Edit in ABC Transcription Tools</b>, or <b>Open in ABC Transcription Tools</b> for full-screen opening. The button opens the tune in the <b>ABC Transcription Tools</b> Player, ABC editor, or full-screen view where it can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options. If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in the <b>ABC Transcription Tools</b>.</li>
-            <li><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default. When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values. The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering. The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, or Hammered Dulcimer for all tunes. Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback. The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
-            <li><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation. The default is <b>Hide</b>, which hides the stringed-instrument tablature name labels. Set it to <b>Show</b> to show the labels. This applies both to the main <b>Notation / tablature display</b> setting and to stringed-instrument choices made with the exported website's <b>Display / Instrument</b> selector.</li>
-            <li><b>Automatically reverse title articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles. The default is <b>Kesh, The -&gt; The Kesh</b>. <b>Disabled</b> leaves titles exactly as loaded. The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website. The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
+            <li><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback.
+              <ul>
+                <li><b>Hide</b> is the default. Section headers do not show numbers and do not advance the numbering count.</li>
+                <li><b>Show</b> numbers section headers using the same count as any other items currently configured to show numbers.</li>
+              </ul>
+            </li>
+            <li><b>Tune order</b> controls the order used inside generated website groups.
+              <ul>
+                <li><b>Keep original order</b> is the default.</li>
+                <li><b>Sort by title, ignoring leading articles</b> sorts by title while ignoring the same known article set used by the title article reverser. This includes leading forms such as <code>The Kesh</code> and trailing forms such as <code>Kesh, The</code>, along with the other supported articles.</li>
+                <li>If <b>Large tune collection grouping</b> is set to <b>Alphabetical by title (groups of 100)</b>, or the equivalent label for another batch size, the builder forces <b>Tune order</b> to <b>Sort by title, ignoring leading articles</b>.</li>
+                <li>If <b>Large tune collection grouping</b> is set to <b>Manual T: section headers (groups of 100)</b>, or the equivalent label for another batch size, the builder forces <b>Tune order</b> to <b>Keep original order</b>.</li>
+              </ul>
+            </li>
+            <li><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
+              <ul>
+                <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
+                <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
+                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, or Hammered Dulcimer for all tunes.</li>
+                <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
+                <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
+              </ul>
+            </li>
+            <li><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections.
+              <ul>
+                <li><b>Disabled</b> is the default.</li>
+                <li><b>Alphabetical by title (groups of 100)</b> creates alphabetical title groups using the selected <b>Large tune collection grouping batch size</b> as a hard maximum for finite batch sizes. If one starting letter contains more tunes than the selected size, that single letter is split into explicit range subgroups such as <b>A · 1–50</b>, <b>A · 51–100</b>, and <b>A · 101–150</b>.</li>
+                <li><b>Groups of 100 tunes</b> breaks the ordinary tunes into simple sequential groups.</li>
+                <li><b>R: Rhythm tag (groups of 100)</b> creates rhythm groups and splits any rhythm group larger than the selected batch size into sequential subgroups without alphabetical sorting.</li>
+                <li><b>R: Rhythm tag + alphabetical subgroups (groups of 100)</b> creates rhythm groups and splits large rhythm groups into alphabetical subgroups. Automatic alphabetical splitting uses the selected batch size as a hard maximum for finite batch sizes; if one starting letter contains more tunes than the selected size inside a rhythm group, it is split into the same explicit range subgroups.</li>
+                <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
+                <li>When a dropdown label contains an explicit range, the table-of-contents numbers and tune-panel numbers in that selected section use that same range.</li>
+                <li>The exact labels for the batch-size grouping options update in the settings dialog when <b>Large tune collection grouping batch size</b> changes.</li>
+                <li>Automatic grouping options group ordinary tunes; use <b>Manual T: section headers</b> when you want existing <code>T:*</code> section-header tunes to define and appear as the groups.</li>
+                <li>If an <b>R: Rhythm tag</b> grouping option is selected and some ordinary tunes do not have <code>R:</code> tags, the builder warns before saving. If you continue, tunes without rhythm tags are placed in an <b>Other</b> rhythm group.</li>
+              </ul>
+            </li>
+            <li><b>Large tune collection grouping batch size</b> controls the target size used by large tune collection grouping modes that split tunes into batches.
+              <ul>
+                <li><b>100</b> is the default.</li>
+                <li>Choose <b>50</b>, <b>100</b>, <b>150</b>, <b>200</b>, <b>250</b>, <b>300</b>, or <b>Unlimited</b>.</li>
+                <li><b>Unlimited</b> disables batch splitting while still allowing the selected grouping mode to create its main groups.</li>
+              </ul>
+            </li>
+            <li><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title.
+              <ul>
+                <li><b>Play in ABC Transcription Tools</b> opens the tune in the Player.</li>
+                <li><b>Edit in ABC Transcription Tools</b> opens the tune in the ABC editor.</li>
+                <li><b>Open in ABC Transcription Tools</b> opens the tune in full-screen view.</li>
+                <li>The opened tune can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options.</li>
+                <li>If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in the <b>ABC Transcription Tools</b>.</li>
+              </ul>
+            </li>
+            <li><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation.
+              <ul>
+                <li><b>Hide</b> is the default and hides the stringed-instrument tablature name labels.</li>
+                <li><b>Show</b> displays the labels.</li>
+                <li>This applies both to the main <b>Notation / tablature display</b> setting and to stringed-instrument choices made with the exported website's <b>Display / Instrument</b> selector.</li>
+              </ul>
+            </li>
+            <li><b>Automatically reverse title articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles.
+              <ul>
+                <li><b>Kesh, The -&gt; The Kesh</b> is the default.</li>
+                <li><b>Disabled</b> leaves titles exactly as loaded.</li>
+                <li>The supported article set is also used when sorting titles for large tune collection grouping.</li>
+                <li>The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website.</li>
+                <li>The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
+              </ul>
+            </li>
           </ul>
 
-          <p><b>Playback &amp; Sounds</b></p>
+          <p id="instructions-configure-playback-sounds"><b>Playback &amp; Sounds</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
-            <li>Enabled <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
+            <li>Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
                 directives in every tune with the selected values. This is also enabled automatically in the exported website whenever <b>Display/Instrument selector dropdown</b> is set to <b>Show</b>.</li>
             <li>Select the soundfont and the melody, bass, and chord instruments. When the Display/Instrument selector is shown, the selector's first choice uses the selected melody instrument and injects that same MIDI program for playback.</li>
             <li>When soundfont and MIDI injection is enabled, Standard Guitar and DADGAD Guitar tablature add %%MIDI transpose -12 so playback sounds in the expected guitar octave. This applies to both notation-with-tablature and standalone tablature, and is also used when those display modes are opened from the generated website in the <b>ABC Transcription Tools</b>.</li>
@@ -3653,7 +3864,8 @@
             Disable injection to preserve each tune's original sound settings.
           </div>
 
-          <p><b>Manage Settings</b></p>
+          <p id="instructions-configure-manage-settings"><b>Manage Settings</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
@@ -3706,7 +3918,8 @@
           <ul>
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
-            <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render all tunes with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. The selected value is remembered for that generated website.</li>
+            <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. The selected value is remembered for that generated website.</li>
+            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered, and the table of contents is rebuilt for that group. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>Click the notation itself to pause or resume playback.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
             <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
@@ -3793,9 +4006,35 @@
 
           <h3 id="instructions-developer-customization">Developer Customization</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <div class="instructions-note">
+            <b>Developer Customization topics</b>
+            <ol style="margin-bottom:0;">
+              <li><a href="#developer-customizing-generated-css">Customizing the generated website CSS</a></li>
+              <li><a href="#developer-responsive-font-size-maximums">Changing responsive font-size maximums</a></li>
+              <li><a href="#developer-theme-behavior">Built-in and custom theme behavior</a></li>
+              <li><a href="#developer-css-variables">CSS variables</a></li>
+              <li><a href="#developer-page-width">Page width</a></li>
+              <li><a href="#developer-header-styling">Header styling</a></li>
+              <li><a href="#developer-table-of-contents-styling">Table of Contents styling</a></li>
+              <li><a href="#developer-card-spacing">Card spacing</a></li>
+              <li><a href="#developer-section-header-styling">Section header styling</a></li>
+              <li><a href="#developer-website-title">Website title</a></li>
+              <li><a href="#developer-table-of-contents-title">Table of Contents title</a></li>
+              <li><a href="#developer-section-header-title-font">T:* style section headers</a></li>
+              <li><a href="#developer-tune-metadata-titles">Tune metadata titles</a></li>
+              <li><a href="#developer-working-overlay-message">Working overlay message</a></li>
+              <li><a href="#developer-print-css">Print CSS</a></li>
+              <li><a href="#developer-display-instrument-selector-items">Adding or removing Display / Instrument selector items</a></li>
+              <li><a href="#developer-changing-instrument-sound">Changing the instrument sound</a></li>
+              <li><a href="#developer-changing-tablature-style">Changing tablature style or showing notation only</a></li>
+              <li><a href="#developer-injected-soundfont-midi">Changing injected soundfont and MIDI accompaniment settings</a></li>
+              <li><a href="#developer-selector-enabled-sound-settings">Selector-enabled sound settings</a></li>
+              <li><a href="#developer-no-selector-sound-settings">Sound settings without the selector</a></li>
+            </ol>
+          </div>
  
           <p id="developer-customizing-generated-css"><b>Customizing the generated website CSS</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>The generated website CSS includes self-documenting comments for the main developer customization points. In the exported <code>.html</code> file, search for these labels to find the safest places to edit:</p>
           <ul>
             <li><code>Theme customization:</code> main CSS variables for colors, rounded corners, and panel shadows.</li>
@@ -3808,83 +4047,83 @@
           </ul>
 
           <p id="developer-responsive-font-size-maximums"><b>Changing responsive font-size maximums in an exported website</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>The generated website CSS also includes self-documenting comments immediately before each responsive <code>font-size:clamp(...)</code> rule. In the exported <code>.html</code> file, search for <code>Font size customization:</code> to find the rules for the website title, Table of Contents title, T:* style section headers, tune metadata titles, and the centered <b>Working...</b> overlay message.</p>
           <p>For each rule, change the last value in <code>clamp()</code> to adjust the maximum font size. Use a smaller value to make the text smaller on wider screens, or a larger value to allow a larger maximum. The first value is the minimum size, and the middle value controls how the font scales responsively between the minimum and maximum. The current defaults use slightly smaller maximums so long titles fit better across built-in themes.</p>
           <p id="developer-theme-behavior"><b>Built-in and custom theme behavior</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>These font-size defaults are part of the generated website CSS template, not individual built-in theme definitions, so the smaller maximums apply to all built-in themes. They also apply to imported custom themes unless that custom theme includes Additional Custom CSS, preserved special CSS, or manually edited exported CSS that overrides these same selectors later in the stylesheet.</p>
 
           <p id="developer-css-variables"><b>CSS variables</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls broad theme colors, rounded corners, and panel shadows from one place:</p>
           <p><code>:root { --bg:...; --panel:...; --ink:...; --muted:...; --primary:...; --secondary:...; --accent:...; --line:...; --radius:...; --shadow:...; }</code></p>
           <p>Change these first when you want the whole exported website to use different colors, border colors, corner roundness, or a flatter/more shadowed card style.</p>
 
           <p id="developer-page-width"><b>Page width</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the maximum width of the exported website content:</p>
           <p><code>.page-width { width:min(1120px, calc(100% - 34px)); margin:0 auto; }</code></p>
           <p>Increase the pixel value for a wider page, decrease it for a narrower page. The generated value reflects the selected website width setting.</p>
 
           <p id="developer-header-styling"><b>Header styling</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the top banner background, vertical padding, alignment, and accent border:</p>
           <p><code>.hero { padding:44px 0 38px; color:#fff; background:...; text-align:center; border-bottom:6px solid var(--accent); }</code></p>
           <p>Adjust <code>padding</code> to make the header taller or shorter. Change <code>background</code> to customize the header color or gradient.</p>
 
           <p id="developer-table-of-contents-styling"><b>Table of Contents styling</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the TOC panel, optional search field, and tune-link grid:</p>
           <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
           <p>Change TOC <code>padding</code> for a roomier or more compact card. Change the <code>minmax(220px,1fr)</code> value in <code>.toc-links</code> to control how many TOC columns appear on wider screens.</p>
 
           <p id="developer-card-spacing"><b>Card spacing</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the spacing inside and between tune cards:</p>
           <p><code>.score-panel { padding:32px 34px 30px; ... }</code> and <code>.score-panel + .score-panel { margin-top:24px; }</code></p>
           <p>Increase <code>padding</code> for more whitespace around notation and controls; decrease it for a denser tune list. Mobile spacing is documented separately in the <code>@media (max-width:760px)</code> block.</p>
 
           <p id="developer-section-header-styling"><b>Section header styling</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls T:* section divider panel spacing, title size, side padding, and responsive stacking:</p>
           <p><code>.section-header-title</code>, <code>.section-header-panel</code>, <code>.section-header-panel .section-header-title</code>, and the <code>@media (max-width:900px)</code> section-header rules.</p>
           <p>The Table of Contents title and section headers use separate rules so they can be customized independently.</p>
 
           <p id="developer-website-title"><b>Website title</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the main title at the top of the exported website:</p>
           <p><code>h1 { margin:0; font-size:clamp(1.8rem,4.2vw,3.0rem); line-height:1.08; }</code></p>
           <p>For example, change <code>3.0rem</code> to <code>2.5rem</code> to make the website title smaller.</p>
 
           <p id="developer-table-of-contents-title"><b>Table of Contents title</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls only the <b>Table of Contents</b> heading above the tune links:</p>
           <p><code>.table-of-contents h2 { color:var(--ink); font-size:clamp(1.7rem,4vw,2.2rem); font-weight:800; line-height:1.1; margin:0 0 20px; }</code></p>
           <p>For example, change <code>2.2rem</code> to <code>1.9rem</code> to make the Table of Contents title smaller.</p>
 
           <p id="developer-section-header-title-font"><b>T:* style section headers</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls only section header titles created from T: tags whose trimmed text starts with <code>*</code>:</p>
           <p><code>.section-header-title { color:var(--ink); font-size:clamp(1.7rem,4vw,2.2rem); font-weight:800; line-height:1.1; margin:0; text-align:center; }</code></p>
 
           <p id="developer-tune-metadata-titles"><b>Tune metadata titles</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the tune title shown at the top of each tune panel:</p>
           <p><code>.tune-header h2 { margin:0; padding:0 155px; font-size:clamp(1.5rem,3.7vw,2.1rem); text-align:center; line-height:1.15; }</code></p>
           <p>For example, change <code>2.1rem</code> to <code>1.8rem</code> to make tune metadata titles smaller.</p>
 
           <p id="developer-working-overlay-message"><b>Working overlay message</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the centered <b>Working...</b> message shown while the exported website is changing display/instrument settings or preparing audio:</p>
           <p><code>font-size:clamp(1.15rem, 3vw, 1.55rem);</code></p>
 
           <p id="developer-print-css"><b>Print CSS</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>The generated CSS includes a documented <code>@media print</code> block for browser printing or saving to PDF. Use that block for print-only changes, such as hiding controls, removing shadows, changing print width, or improving page breaks, without changing the on-screen layout.</p>
 
           <p id="developer-display-instrument-selector-items"><b>Adding or removing instruments from the Display / Instrument selector</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <div class="instructions-note">
             Open the exported <code>.html</code> file in a text editor and search for
             <code>const instrumentChoices = {</code> and <code>&lt;select id=&quot;site-instrument-selector&quot;</code>.
@@ -3905,7 +4144,7 @@ fiddle: {
 }</code></pre>
 
           <p id="developer-changing-instrument-sound"><b>Changing the instrument sound</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>
             In <code>const instrumentChoices = {</code>, change the <code>program</code> value for the instrument.
             Program numbers are General MIDI program numbers, with the additional abcjs-eskin portable instruments
@@ -3919,7 +4158,7 @@ fiddle: {
           </p>
 
           <p id="developer-changing-tablature-style"><b>Changing tablature style or showing notation only</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>
             In each <code>instrumentChoices</code> entry, the <code>displayMode</code> value controls how the tune is redrawn.
             You can change that value to any display mode supported by the generated website:
@@ -3945,7 +4184,7 @@ fiddle: {
           </ul>
 
           <p id="developer-injected-soundfont-midi"><b>Changing injected soundfont and MIDI accompaniment settings</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>
             When <b>Inject soundfont and MIDI settings</b> is enabled, the exported website includes ABC sound
             directives for the selected soundfont, melody instrument, bass instrument, bass volume, chord
@@ -3954,7 +4193,7 @@ fiddle: {
           </p>
 
           <p id="developer-selector-enabled-sound-settings"><b>Exported websites with the Display / Instrument selector</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>
             In a selector-enabled exported website, search for <code>const defaultSoundSettings = {</code>.
             This block controls the shared sound settings used whenever a visitor changes the selector:
@@ -3998,7 +4237,7 @@ fiddle: {
           </ul>
 
           <p id="developer-no-selector-sound-settings"><b>Exported websites without the Display / Instrument selector</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>
             In an exported website without the selector, the injected sound settings are written directly into
             each embedded ABC tune. Search for <code>%soundfont</code> or for a tune block such as
@@ -4023,13 +4262,14 @@ fiddle: {
           </ul>
 
           <hr style="margin-top:20px;">
-          <h3 style="text-align: center;">Tip Jars</h3>
+          <h3 id="instructions-tip-jars">Tip Jars</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <div style="text-align: center;margin-bottom:20px;">
-            <p class="instructions-title"> This tool was created by</p>
-            <p class="instructions-title"> <a href="https://michaeleskin.com" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">Michael Eskin</a></p>
+          <div style="text-align:left;margin-bottom:20px;">
+            <p class="instructions-title">This tool was created by</p>
+            <p class="instructions-title"><a href="https://michaeleskin.com" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">Michael Eskin</a></p>
             <div style="margin-top:10px;">
-              If the tool has been useful to you, please consider supporting ongoing<br/>development by tossing a few bucks into one of my online tip jars.
+              If the tool has been useful to you, please consider supporting ongoing
+              development by tossing a few bucks into one of my online tip jars.
             </div>
             <div style="margin-top:10px;">
               <b>PayPal</b><br/>
@@ -4041,10 +4281,10 @@ fiddle: {
             </div>
           </div>
           <hr>
-          <h3 id="instructions-source-code" style="text-align: center;">Source Code on GitHub</h3>
+          <h3 id="instructions-source-code">Source Code on GitHub</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <div style="text-align: center;margin-bottom:20px;">
-            The source code for this tool is available on GitHub<br/>
+          <div style="text-align:left;margin-bottom:20px;">
+            The source code for this tool is available on GitHub.
              <div style="margin-top:10px;">
               <a href="https://github.com/seisiuneer/abcjs-eskin-portable/tree/main/tools/website-builder" target="_blank" rel="noopener noreferrer">abcjs-eskin Website Builder on GitHub</a>
             </div>
@@ -4211,13 +4451,6 @@ fiddle: {
       border:3px solid #252536;
       border-radius:4px 18px 4px 18px;
       box-shadow:inset 0 0 0 6px rgba(242,193,78,.18);
-    }
-.afterword {
-      color:#222a55;
-      background:color-mix(in srgb,#f2c14e 18%,white);
-      border:2px dashed #252536;
-      border-radius:14px;
-      font-style:italic;
     }
     .section-divider {
       display:grid;
@@ -4556,12 +4789,6 @@ fiddle: {
       border-radius:4px;
       box-shadow:inset 0 0 0 5px rgba(246,217,79,.22);
     }
-    .afterword {
-      border:3px dashed #111;
-      background:#fff7b6;
-      font-style:normal;
-      font-weight:700;
-    }
     .section-divider span {
       border:3px solid #111;
       box-shadow:3px 3px 0 #111;
@@ -4694,13 +4921,6 @@ fiddle: {
       border:2px dashed #6c7a80;
       border-radius:14px;
       box-shadow:inset 0 0 0 5px rgba(245,201,74,.14);
-    }
-.afterword {
-      color:#263238;
-      background:#fff3b8;
-      border:2px dashed #e05b4f;
-      border-radius:16px;
-      font-style:normal;
     }
     .section-divider {
       color:#3578b8;
@@ -5481,12 +5701,6 @@ fiddle: {
       border-radius:14px;
       box-shadow:inset 0 0 0 6px rgba(212,163,61,.14);
     }
-    .afterword {
-      color:#1b2e20;
-      background:#f2e5c1;
-      border:2px dashed #9a5a24;
-      border-radius:16px;
-    }
     .section-divider::before,
     .section-divider::after {
       content:"";
@@ -5810,6 +6024,329 @@ fiddle: {
     );
   }
 
+  function titleGroupingSortKey(title) {
+    let key = String(title || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/^[\s"'“”‘’([{]+/g, "");
+
+    for (const suffix of TITLE_ARTICLE_SORT_SUFFIXES) {
+      const suffixPattern = new RegExp(escapeRegExp(suffix) + "\\s*$", "i");
+      if (suffixPattern.test(key)) {
+        key = key.replace(suffixPattern, "").trim();
+        break;
+      }
+    }
+
+    for (const prefix of TITLE_ARTICLE_SORT_PREFIXES) {
+      const prefixPattern = new RegExp("^" + escapeRegExp(prefix) + "\\s+", "i");
+      if (prefixPattern.test(key)) {
+        key = key.replace(prefixPattern, "").trim();
+        break;
+      }
+    }
+
+    return key.trim().toLowerCase();
+  }
+
+  function titleGroupingLetter(title) {
+    const key = titleGroupingSortKey(title);
+    const first = key.charAt(0).toUpperCase();
+    return /^[A-Z]$/.test(first) ? first : "#";
+  }
+
+  function compareTitleEntries(a, b) {
+    const aKey = a.sortKey || titleGroupingSortKey(a.tune && a.tune.title);
+    const bKey = b.sortKey || titleGroupingSortKey(b.tune && b.tune.title);
+    return aKey.localeCompare(bKey) || a.originalIndex - b.originalIndex;
+  }
+
+  function orderedEntries(entries, orderMode) {
+    const copy = entries.slice();
+    if (String(orderMode || "preserve") === "sortTitle") {
+      copy.sort(compareTitleEntries);
+    } else {
+      copy.sort((a, b) => a.originalIndex - b.originalIndex);
+    }
+    return copy;
+  }
+
+  function groupLabelForLetterRange(firstLetter, lastLetter) {
+    if (!firstLetter && !lastLetter) return "Other";
+    if (firstLetter === lastLetter) return firstLetter;
+    return firstLetter + "-" + lastLetter;
+  }
+
+  function splitEntriesIntoAlphabeticalGroups(entries, targetSize, labelPrefix) {
+    const sorted = entries.slice().sort(compareTitleEntries);
+    const byLetter = [];
+    const letterMap = new Map();
+    const finiteTargetSize = Number.isFinite(targetSize) && targetSize > 0 ? Math.floor(targetSize) : Number.POSITIVE_INFINITY;
+
+    sorted.forEach(entry => {
+      const letter = titleGroupingLetter(entry.tune && entry.tune.title);
+      if (!letterMap.has(letter)) {
+        const bucket = { letter, entries: [] };
+        letterMap.set(letter, bucket);
+        byLetter.push(bucket);
+      }
+      letterMap.get(letter).entries.push(entry);
+    });
+
+    const groups = [];
+    let current = null;
+
+    function addNamedGroup(name, entriesForGroup, numberStart) {
+      if (!entriesForGroup || !entriesForGroup.length) return;
+      const group = {
+        name: (labelPrefix ? labelPrefix + " " : "") + name,
+        entries: entriesForGroup
+      };
+      if (Number.isFinite(numberStart) && numberStart > 1) group.numberStart = Math.floor(numberStart);
+      groups.push(group);
+    }
+
+    function flushCurrent() {
+      if (!current || !current.entries.length) return;
+      addNamedGroup(groupLabelForLetterRange(current.firstLetter, current.lastLetter), current.entries);
+      current = null;
+    }
+
+    byLetter.forEach(bucket => {
+      if (bucket.entries.length > finiteTargetSize) {
+        flushCurrent();
+        for (let index = 0; index < bucket.entries.length; index += finiteTargetSize) {
+          const chunk = bucket.entries.slice(index, index + finiteTargetSize);
+          const start = index + 1;
+          const end = index + chunk.length;
+          addNamedGroup(`${bucket.letter} · ${start}–${end}`, chunk, start);
+        }
+        return;
+      }
+
+      if (!current) current = { firstLetter: bucket.letter, lastLetter: bucket.letter, entries: [] };
+      if (current.entries.length > 0 && current.entries.length + bucket.entries.length > finiteTargetSize) {
+        flushCurrent();
+        current = { firstLetter: bucket.letter, lastLetter: bucket.letter, entries: [] };
+      }
+      current.lastLetter = bucket.letter;
+      current.entries.push(...bucket.entries);
+    });
+
+    flushCurrent();
+
+    return groups;
+  }
+
+  function splitEntriesIntoSequentialGroups(entries, targetSize, labelPrefix, orderMode) {
+    const ordered = orderedEntries(entries, orderMode || "preserve");
+    const groups = [];
+
+    for (let index = 0; index < ordered.length; index += targetSize) {
+      const chunk = ordered.slice(index, index + targetSize);
+      const start = index + 1;
+      const end = index + chunk.length;
+      const name = (labelPrefix ? labelPrefix + " " : "Tunes ") + start + "-" + end;
+      const group = { name, entries: chunk };
+      if (start > 1) group.numberStart = start;
+      groups.push(group);
+    }
+
+    return groups;
+  }
+
+  function splitManualSectionGroupIntoTuneCountGroups(group, targetSize) {
+    const sourceEntries = group && Array.isArray(group.entries) ? group.entries : [];
+    const totalTunes = sourceEntries.filter(entry => !(entry.tune && entry.tune.isSectionHeader)).length;
+
+    if (totalTunes <= targetSize) {
+      return [{ name: group && group.name ? group.name : "Tunes", entries: sourceEntries }];
+    }
+
+    const groups = [];
+    let currentEntries = [];
+    let currentTuneCount = 0;
+    let seenTunes = 0;
+    let startTuneNumber = 1;
+
+    sourceEntries.forEach(entry => {
+      const isSectionHeader = !!(entry.tune && entry.tune.isSectionHeader);
+
+      if (!isSectionHeader && currentTuneCount >= targetSize) {
+        groups.push({
+          name: (group.name || "Tunes") + " " + startTuneNumber + "-" + seenTunes,
+          entries: currentEntries
+        });
+        currentEntries = [];
+        currentTuneCount = 0;
+        startTuneNumber = seenTunes + 1;
+      }
+
+      currentEntries.push(entry);
+
+      if (!isSectionHeader) {
+        seenTunes += 1;
+        currentTuneCount += 1;
+      }
+    });
+
+    if (currentEntries.length) {
+      groups.push({
+        name: (group.name || "Tunes") + " " + startTuneNumber + "-" + seenTunes,
+        entries: currentEntries
+      });
+    }
+
+    return groups;
+  }
+
+  function normalizeRhythmGroupName(rhythm) {
+    let text = String(rhythm || "").trim();
+    if (!text) return "Other";
+    text = text.split(/[\/;,]/)[0].trim().replace(/\s+/g, " ");
+    if (!text) return "Other";
+    if (/^highland\s+schott?ish$/i.test(text) || /^highland\s+schottische$/i.test(text)) return "Highland Schottish";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  function makeGroupId(index) {
+    return "group-" + String(index + 1);
+  }
+
+  function buildLargeCollectionGroups(sourceTunes, groupingMode, orderMode, titleArticleMode, batchSizeMode) {
+    const mode = String(groupingMode || DEFAULT_SETTINGS.largeCollectionGrouping);
+    const order = String(orderMode || DEFAULT_SETTINGS.tuneOrder);
+    const targetSize = largeCollectionBatchSizeValue(batchSizeMode);
+    const entries = sourceTunes.map((tune, originalIndex) => ({
+      tune,
+      originalIndex,
+      sortKey: titleGroupingSortKey(tune.title),
+      rhythmGroup: normalizeRhythmGroupName(tune.rhythm)
+    }));
+
+    function groupTuneCount(group) {
+      const tuneCount = (group.entries || []).filter(entry => !(entry.tune && entry.tune.isSectionHeader)).length;
+      return tuneCount || (group.entries || []).length;
+    }
+
+    function finalize(rawGroups, groupOrderMode = order) {
+      const groups = rawGroups
+        .filter(group => group && group.entries && group.entries.length)
+        .map((group, index) => {
+          const finalizedGroup = {
+            id: makeGroupId(index),
+            name: group.name || "Tunes",
+            entries: orderedEntries(group.entries, groupOrderMode)
+          };
+          if (Number.isFinite(group.numberStart) && group.numberStart > 1) {
+            finalizedGroup.numberStart = Math.floor(group.numberStart);
+          }
+          return finalizedGroup;
+        });
+
+      if (!groups.length) groups.push({ id: makeGroupId(0), name: "Tunes", entries: [] });
+
+      const items = [];
+      groups.forEach(group => {
+        group.entries.forEach(entry => items.push({ ...entry, groupId: group.id, groupName: group.name }));
+      });
+
+      return {
+        enabled: mode !== "disabled",
+        groups: groups.map(group => ({ id: group.id, name: group.name, count: groupTuneCount(group), numberStart: group.numberStart || 1 })),
+        items
+      };
+    }
+
+    if (mode === "manualSectionHeaders") {
+      const groups = [];
+      let current = null;
+      entries.forEach(entry => {
+        if (entry.tune.isSectionHeader) {
+          current = { name: titleForWebsiteDisplay(entry.tune.title, true, titleArticleMode), entries: [entry] };
+          groups.push(current);
+        } else {
+          if (!current) {
+            current = { name: "Tunes", entries: [] };
+            groups.push(current);
+          }
+          current.entries.push(entry);
+        }
+      });
+
+      const splitGroups = [];
+      groups.forEach(group => {
+        splitManualSectionGroupIntoTuneCountGroups(group, targetSize).forEach(splitGroup => splitGroups.push(splitGroup));
+      });
+
+      return finalize(splitGroups, "preserve");
+    }
+
+    if (mode === "alphabeticalTitle") {
+      return finalize(splitEntriesIntoAlphabeticalGroups(entries.filter(entry => !entry.tune.isSectionHeader), targetSize, ""));
+    }
+
+    if (mode === "groupsOf100") {
+      return finalize(splitEntriesIntoSequentialGroups(entries.filter(entry => !entry.tune.isSectionHeader), targetSize, "", order), "preserve");
+    }
+
+    if (mode === "rhythmTag" || mode === "rhythmTagAlphabetical" || mode === "rhythmTagHundred") {
+      const rhythmMap = new Map();
+      entries.filter(entry => !entry.tune.isSectionHeader).forEach(entry => {
+        const name = entry.rhythmGroup || "Other";
+        if (!rhythmMap.has(name)) rhythmMap.set(name, []);
+        rhythmMap.get(name).push(entry);
+      });
+      const rhythmNames = Array.from(rhythmMap.keys()).sort((a, b) => {
+        if (a === "Other") return 1;
+        if (b === "Other") return -1;
+        return a.localeCompare(b);
+      });
+      const groups = [];
+      rhythmNames.forEach(name => {
+        const rhythmEntries = rhythmMap.get(name) || [];
+        if (mode === "rhythmTagAlphabetical" && rhythmEntries.length > targetSize) {
+          splitEntriesIntoAlphabeticalGroups(rhythmEntries, targetSize, name).forEach(group => groups.push(group));
+        } else if ((mode === "rhythmTag" || mode === "rhythmTagHundred") && rhythmEntries.length > targetSize) {
+          splitEntriesIntoSequentialGroups(rhythmEntries, targetSize, name, "preserve").forEach(group => groups.push(group));
+        } else {
+          groups.push({ name, entries: rhythmEntries });
+        }
+      });
+      return finalize(groups, mode === "rhythmTagAlphabetical" ? order : "preserve");
+    }
+
+    return finalize([{ name: "All Tunes", entries: orderedEntries(entries, order) }]);
+  }
+
+  function largeCollectionGroupingUsesRhythm(settings) {
+    const mode = String((settings && settings.largeCollectionGrouping) || DEFAULT_SETTINGS.largeCollectionGrouping);
+    return mode === "rhythmTag" || mode === "rhythmTagAlphabetical" || mode === "rhythmTagHundred";
+  }
+
+  function missingRhythmTagTunes(settings) {
+    if (!largeCollectionGroupingUsesRhythm(settings)) return [];
+    return state.tunes.filter(tune => !tune.isSectionHeader && !String(tune.rhythm || "").trim());
+  }
+
+  async function confirmBuildWithMissingRhythmTags(settings) {
+    const missing = missingRhythmTagTunes(settings);
+    if (!missing.length) return true;
+    const message = `${missing.length} tune${missing.length === 1 ? "" : "s"} do not have an R: Rhythm tag. ` +
+      "If you continue, those tunes will be placed in an Other rhythm category. Continue building the website?";
+    if (window.DayPilot && DayPilot.Modal) {
+      const result = await DayPilot.Modal.confirm(message, {
+        title: "Missing R: Rhythm Tags",
+        okText: "Continue",
+        cancelText: "Cancel",
+        top: 150
+      });
+      return !result.canceled;
+    }
+    return window.confirm(message);
+  }
+
   function generateSite() {
     const s = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
     const t = themeCss(s.theme);
@@ -5830,12 +6367,6 @@ fiddle: {
     const collectionIntroMarkup = hasCollectionIntro
       ? `<section class="collection-intro page-width"><p>${collectionIntro}</p></section>`
       : "";
-    const tuneTextBefore = escapeHtmlAllowLinksAndBreaks(s.tuneTextBefore);
-    const tuneTextAfter = escapeHtmlAllowLinksAndBreaks(s.tuneTextAfter);
-    const includeTuneTextBefore =
-      s.includeTuneTextBefore === true || s.includeTuneTextBefore === "true" || s.includeTuneTextBefore === 1;
-    const includeTuneTextAfter =
-      s.includeTuneTextAfter === true || s.includeTuneTextAfter === "true" || s.includeTuneTextAfter === 1;
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
@@ -5847,6 +6378,13 @@ fiddle: {
     const includeTableOfContentsSearch = tableOfContentsMode === "showSearch";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
+    const largeCollectionGroupingMode = String(s.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping);
+    const tuneOrderMode = String(s.tuneOrder || DEFAULT_SETTINGS.tuneOrder);
+    const largeCollectionBatchSizeMode = String(s.largeCollectionGroupingBatchSize || DEFAULT_SETTINGS.largeCollectionGroupingBatchSize);
+    const largeCollectionPlan = buildLargeCollectionGroups(state.tunes, largeCollectionGroupingMode, tuneOrderMode, titleArticleMode, largeCollectionBatchSizeMode);
+    const largeCollectionGroupingEnabled = largeCollectionPlan.enabled;
+    const tuneGroups = largeCollectionPlan.groups;
+    const firstTuneGroupId = tuneGroups.length ? tuneGroups[0].id : "group-1";
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
     const includeInstrumentSelector = String(s.instrumentSelector || DEFAULT_SETTINGS.instrumentSelector) === "show";
     const showStringInstrumentTablatureNames = String(s.showStringInstrumentTablatureNames || DEFAULT_SETTINGS.showStringInstrumentTablatureNames) === "show";
@@ -5859,10 +6397,14 @@ fiddle: {
       : "";
 
     const usedIds = new Set();
-    let visibleNumber = 0;
-    const tunes = state.tunes.map((tune, index) => {
+    const visibleNumberByGroup = new Map();
+    const visibleNumberStartByGroup = new Map(tuneGroups.map(group => [group.id, group.numberStart || 1]));
+    let visibleNumberGlobal = 0;
+    const numbersContinueAcrossGroups = largeCollectionGroupingMode === "groupsOf100";
+    const tunes = largeCollectionPlan.items.map(entry => {
+      const tune = entry.tune;
       const displayTitle = titleForWebsiteDisplay(tune.title, tune.isSectionHeader, titleArticleMode);
-      let key = slugify(tune.title, "tune-" + (index + 1));
+      let key = slugify(tune.title, "tune-" + (entry.originalIndex + 1));
       const base = key;
       let suffix = 2;
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
@@ -5875,7 +6417,18 @@ fiddle: {
         ? abcToolsLinkButtonText(abcToolsLinkMode)
         : "";
 
-      const number = shouldShowNumber(tune) ? ++visibleNumber : "";
+      let number = "";
+      if (shouldShowNumber(tune)) {
+        if (numbersContinueAcrossGroups) {
+          visibleNumberGlobal += 1;
+          number = visibleNumberGlobal;
+        } else {
+          const current = visibleNumberByGroup.get(entry.groupId) || 0;
+          const start = visibleNumberStartByGroup.get(entry.groupId) || 1;
+          number = start + current;
+          visibleNumberByGroup.set(entry.groupId, current + 1);
+        }
+      }
 
       return {
         ...tune,
@@ -5885,13 +6438,16 @@ fiddle: {
         exportedAbc,
         abcToolsURL,
         abcToolsButtonText,
-        hasFlattenPartsPlaybackNotice
+        hasFlattenPartsPlaybackNotice,
+        groupId: entry.groupId,
+        groupName: entry.groupName
       };
     });
 
-    const toc = tunes.map(tune =>
-      `<a href="#tune-${tune.key}" data-toc-entry="true" data-toc-title="${escapeHtml(tune.displayTitle.toLowerCase())}"${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`
-    ).join("\n        ");
+    const toc = tunes.map(tune => {
+      const hiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
+      return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle.toLowerCase())}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
+    }).join("\n        ");
 
     const tocSearchMarkup = includeTableOfContentsSearch
       ? `<div class="toc-search" role="search">
@@ -5912,12 +6468,10 @@ fiddle: {
       : "";
 
     const playerAbove = s.playerPosition === "above";
-    const tuneSeparator = showTuneDividers
-      ? '\n      <div class="section-divider" aria-hidden="true"><span>' + t.ornament + '</span></div>\n'
-      : "\n";
 
-    const instrumentSelectorMarkup = includeInstrumentSelector
-      ? `<div class="site-instrument-selector">
+
+    const instrumentSelectorFieldMarkup = includeInstrumentSelector
+      ? `<div class="site-selector-field">
           <label for="site-instrument-selector">Display / Instrument:</label>
           <!--
             Display / Instrument selector customization:
@@ -5944,12 +6498,41 @@ fiddle: {
         </div>`
       : "";
 
+    const showTuneGroupCounts = String(s.largeCollectionGrouping || "") !== "groupsOf100";
+
+    const tuneGroupSelectorFieldMarkup = largeCollectionGroupingEnabled
+      ? `<div class="site-selector-field">
+          <label for="site-tune-group-selector">Tune Section:</label>
+          <select id="site-tune-group-selector" class="instrument-selector" aria-label="Select tune section">
+            ${tuneGroups.map(group => {
+              const groupLabel = showTuneGroupCounts
+                ? `${group.name} (${group.count})`
+                : group.name;
+              return `<option value="${escapeHtml(group.id)}">${escapeHtml(groupLabel)}</option>`;
+            }).join("\\n            ")}
+          </select>
+        </div>`
+      : "";
+
+    const siteSelectorMarkup = (includeInstrumentSelector || largeCollectionGroupingEnabled)
+      ? `<div class="site-instrument-selector">
+          ${instrumentSelectorFieldMarkup}
+          ${tuneGroupSelectorFieldMarkup}
+        </div>`
+      : "";
+    const includeSiteSelector = includeInstrumentSelector || largeCollectionGroupingEnabled;
+
     const workingBannerMarkup = `<div id="instrument-working-overlay" class="instrument-working-overlay" hidden>
       <div id="instrument-working-banner" class="instrument-working-banner" role="status" aria-live="polite" aria-atomic="true">Working...</div>
     </div>`;
 
-    const articles = tunes.map(tune => {
+    const articleBlocks = tunes.map((tune, index) => {
       const showThisNumber = shouldShowNumber(tune);
+      const groupHiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
+      const dividerMarkup = index > 0 && showTuneDividers && tunes[index - 1] && tunes[index - 1].groupId === tune.groupId
+        ? `
+      <div class="section-divider" data-group-divider="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr} aria-hidden="true"><span>${t.ornament}</span></div>`
+        : "";
 
       if (tune.isSectionHeader) {
         const sectionHeaderActionClass = includeTableOfContents ? " has-toc-link" : " no-tune-actions";
@@ -5962,8 +6545,8 @@ fiddle: {
         </div>`
           : "";
 
-        return `
-      <article class="score-panel section-header-panel${sectionHeaderActionClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}">
+        return dividerMarkup + `
+      <article class="score-panel section-header-panel${sectionHeaderActionClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-group-panel="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr}>
         <div class="section-header-main">
           <div class="section-header-topline">
             ${sectionHeaderNumberMarkup}
@@ -5994,24 +6577,20 @@ fiddle: {
         : "";
 
 
-      return `
-      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}">
+      return dividerMarkup + `
+      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}" data-group-panel="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr}>
         ${showThisNumber ? `<div class="chapter-label">${tune.number}</div>` : ""}
         ${tuneHeaderMarkup}
         ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
-        ${includeTuneTextBefore && tuneTextBefore.trim()
-          ? `<div class="prose tune-text-before"><p>${tuneTextBefore}</p></div>`
-          : ""}
         ${playerAbove ? audio : ""}
         <div class="notation-wrap">
           <div id="${tune.key}-paper" class="paper" aria-label="${escapeHtml(tune.title)} notation"></div>
         </div>
         ${playerAbove ? "" : audio}
-        ${includeTuneTextAfter && tuneTextAfter.trim()
-          ? `<div class="afterword tune-text-after"><p>${tuneTextAfter}</p></div>`
-          : ""}
       </article>`;
-    }).join(tuneSeparator);
+    });
+
+    const articles = articleBlocks.join("");
 
     const abcBlocks = tunes
       .filter(tune => !tune.isSectionHeader)
@@ -6027,6 +6606,7 @@ fiddle: {
       )
     ).toString(36);
     const instrumentSelectorStorageKey = "abcjs-eskin-website-display-instrument:" + selectorStorageHash;
+    const tuneGroupStorageKey = "abcjs-eskin-website-tune-group:" + selectorStorageHash;
 
     const displayMode = JSON.stringify(s.displayMode);
     const cursorColors = {
@@ -6119,9 +6699,7 @@ fiddle: {
       text-decoration-thickness:.09em;
       text-underline-offset:.16em;
     }
-    .collection-intro a,
-    .prose a,
-    .afterword a {
+    .collection-intro a {
       color:var(--secondary);
       font-weight:700;
       text-decoration-thickness:.09em;
@@ -6132,11 +6710,7 @@ fiddle: {
     .site-footer a:hover,
     .site-footer a:focus-visible,
     .collection-intro a:hover,
-    .collection-intro a:focus-visible,
-    .prose a:hover,
-    .prose a:focus-visible,
-    .afterword a:hover,
-    .afterword a:focus-visible {
+    .collection-intro a:focus-visible {
       opacity:.78;
       outline:none;
     }
@@ -6343,8 +6917,6 @@ fiddle: {
     .tune-header.no-tune-heading { min-height:34px; }
     .tune-header.no-tune-heading .back-to-toc { top:0; transform:none; }
     .tune-meta { margin:10px 0 0; color:var(--secondary); font-weight:750; text-align:center; }
-    .prose,.afterword { max-width:82ch; margin:18px auto; color:var(--muted); }
-    .tune-text-before,.tune-text-after { text-align:center; }
     .notation-wrap {
       width:${width}%;
       margin:16px auto 0;
@@ -6378,17 +6950,25 @@ fiddle: {
     .status.error { color:#a00000; font-weight:700; }
     .flatten-parts-playback-note { width:${width}%; margin:4px auto 0; color:var(--muted); text-align:center; font-size:.9rem; font-weight:700; }
     .site-instrument-selector {
-      width:min(520px, calc(100% - 34px));
+      width:min(920px, calc(100% - 34px));
       margin:18px auto 0;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      gap:12px 22px;
+      color:#fff;
+      font-size:.98rem;
+    }
+    .site-selector-field {
       display:flex;
       justify-content:center;
       align-items:center;
       gap:10px;
-      color:#fff;
-      font-size:.98rem;
     }
     .site-instrument-selector label {
       font-weight:800;
+      white-space:nowrap;
     }
     .instrument-selector {
       -webkit-appearance:none;
@@ -6501,6 +7081,10 @@ fiddle: {
         flex-direction:column;
         align-items:stretch;
         text-align:center;
+      }
+      .site-selector-field {
+        flex-direction:column;
+        align-items:stretch;
       }
       .instrument-selector {
         width:100%;
@@ -6740,11 +7324,11 @@ fiddle: {
   </style>
 </head>
 <body>
-  <header class="hero${includeInstrumentSelector ? " has-site-instrument-selector" : ""}">
+  <header class="hero${includeSiteSelector ? " has-site-instrument-selector" : ""}">
     <div class="page-width">
       <h1>${title}</h1>
       ${subtitleMarkup}
-      ${instrumentSelectorMarkup}
+      ${siteSelectorMarkup}
     </div>
   </header>
 
@@ -6775,13 +7359,20 @@ fiddle: {
 
     const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
       key: panel.dataset.key,
+      groupId: panel.dataset.group || "group-1",
       abcElementId: panel.dataset.key + "-abc"
     }));
 
     const controllers = new Map();
     const defaultDisplayMode = ${displayMode};
     const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
+    const tuneGroupSelectorEnabled = ${JSON.stringify(largeCollectionGroupingEnabled)};
+    const tuneGroups = ${JSON.stringify(tuneGroups)};
+    const firstTuneGroupId = ${JSON.stringify(firstTuneGroupId)};
     const instrumentSelectorStorageKey = ${JSON.stringify(instrumentSelectorStorageKey)};
+    const tuneGroupStorageKey = ${JSON.stringify(tuneGroupStorageKey)};
+    let activeTuneGroupId = firstTuneGroupId;
+    let applyTocFilter = function() {};
     const abcToolsLinkMode = ${JSON.stringify(abcToolsLinkMode)};
     const defaultABCToolsFormat = ${JSON.stringify(abcToolsFormat)};
     const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
@@ -7060,29 +7651,31 @@ fiddle: {
     function installTableOfContentsSearch() {
       const input = document.getElementById("toc-search-input");
       const clearButton = document.getElementById("toc-search-clear");
-      if (!input || !clearButton) return;
-
       const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
 
-      function applyFilter() {
-        const query = input.value.trim().toLowerCase();
+      applyTocFilter = function() {
+        const query = input ? input.value.trim().toLowerCase() : "";
         entries.forEach(link => {
           const title = (link.dataset.tocTitle || link.textContent || "").toLowerCase();
-          const shouldHide = !!query && title.indexOf(query) === -1;
+          const groupMismatch = tuneGroupSelectorEnabled && link.dataset.group !== activeTuneGroupId;
+          const searchMismatch = !!query && title.indexOf(query) === -1;
+          const shouldHide = groupMismatch || searchMismatch;
           link.hidden = shouldHide;
           link.style.display = shouldHide ? "none" : "";
         });
-        clearButton.hidden = !query;
+        if (clearButton) clearButton.hidden = !query;
+      };
+
+      if (input && clearButton) {
+        input.addEventListener("input", applyTocFilter);
+        clearButton.addEventListener("click", () => {
+          input.value = "";
+          applyTocFilter();
+          input.focus();
+        });
       }
 
-      input.addEventListener("input", applyFilter);
-      clearButton.addEventListener("click", () => {
-        input.value = "";
-        applyFilter();
-        input.focus();
-      });
-
-      applyFilter();
+      applyTocFilter();
     }
 
     function installNavigation() {
@@ -7421,12 +8014,109 @@ fiddle: {
       });
     }
 
+    function validTuneGroupId(value) {
+      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+      if (value && tuneGroups.some(group => group.id === value)) return value;
+      return firstTuneGroupId;
+    }
+
+    function loadSavedTuneGroup() {
+      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+      try {
+        return validTuneGroupId(localStorage.getItem(tuneGroupStorageKey) || "");
+      } catch (error) {
+        console.warn("Unable to restore tune group selector setting.", error);
+        return firstTuneGroupId;
+      }
+    }
+
+    function saveTuneGroup(groupId) {
+      if (!tuneGroupSelectorEnabled) return;
+      try {
+        localStorage.setItem(tuneGroupStorageKey, validTuneGroupId(groupId));
+      } catch (error) {
+        console.warn("Unable to save tune group selector setting.", error);
+      }
+    }
+
+    function clearWorkRender(work) {
+      const previousController = controllers.get(work.key);
+      if (previousController && typeof previousController.pause === "function") previousController.pause();
+      controllers.delete(work.key);
+
+      const paper = document.getElementById(work.key + "-paper");
+      const audioElement = document.getElementById(work.key + "-audio");
+      const status = document.getElementById(work.key + "-status");
+      const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
+
+      if (paper) {
+        paper.innerHTML = "";
+        paper.onclick = null;
+        paper.onkeydown = null;
+        paper.removeAttribute("tabindex");
+        paper.removeAttribute("title");
+      }
+      if (audioElement) audioElement.innerHTML = "";
+      if (flattenPartsNote) flattenPartsNote.hidden = true;
+      if (status) {
+        status.classList.remove("error");
+        status.textContent = "";
+      }
+    }
+
+    function getActiveWorks() {
+      if (!tuneGroupSelectorEnabled) return works;
+      return works.filter(work => work.groupId === activeTuneGroupId);
+    }
+
+    function currentInstrumentChoiceId() {
+      const selector = document.getElementById("site-instrument-selector");
+      return validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
+    }
+
+    function applyTuneGroup(groupId) {
+      activeTuneGroupId = validTuneGroupId(groupId);
+
+      document.querySelectorAll("[data-group-panel='true'], [data-group-divider='true']").forEach(element => {
+        element.hidden = tuneGroupSelectorEnabled && element.dataset.group !== activeTuneGroupId;
+      });
+
+      works.forEach(work => {
+        if (tuneGroupSelectorEnabled && work.groupId !== activeTuneGroupId) clearWorkRender(work);
+      });
+
+      applyTocFilter();
+    }
+
+    function initializeTuneGroupSelector() {
+      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+
+      const selector = document.getElementById("site-tune-group-selector");
+      const savedGroupId = loadSavedTuneGroup();
+      activeTuneGroupId = savedGroupId;
+      if (!selector) return savedGroupId;
+
+      selector.value = savedGroupId;
+      selector.addEventListener("change", () => {
+        const groupId = validTuneGroupId(selector.value);
+        selector.value = groupId;
+        saveTuneGroup(groupId);
+        applyTuneGroup(groupId);
+        void renderAllWorks(currentInstrumentChoiceId());
+      });
+
+      return savedGroupId;
+    }
+
     async function renderAllWorks(choiceId) {
       const selector = document.getElementById("site-instrument-selector");
+      const groupSelector = document.getElementById("site-tune-group-selector");
       const activeChoiceId = validInstrumentChoiceId(choiceId);
-      const showWorkingBanner = works.length > 0;
+      const activeWorks = getActiveWorks();
+      const showWorkingBanner = activeWorks.length > 0;
 
       if (selector) selector.disabled = true;
+      if (groupSelector) groupSelector.disabled = true;
       if (showWorkingBanner) {
         setInstrumentWorkingBannerVisible(true);
         await waitForWorkingBannerPaint();
@@ -7436,9 +8126,10 @@ fiddle: {
       updateABCTranscriptionToolsLinks(activeChoiceId);
 
       try {
-        for (const work of works) await prepareWork(work, activeChoiceId);
+        for (const work of activeWorks) await prepareWork(work, activeChoiceId);
       } finally {
         if (selector) selector.disabled = false;
+        if (groupSelector) groupSelector.disabled = false;
         if (showWorkingBanner) setInstrumentWorkingBannerVisible(false);
       }
     }
@@ -7466,6 +8157,8 @@ fiddle: {
       ABCJS.eskinConfig.setIrishRolls(true);
       ABCJS.eskinConfig.setCustomGMSounds(true);
       ABCJS.eskinConfig.setPlayerDefaults(100, false);
+      const savedTuneGroupId = initializeTuneGroupSelector();
+      applyTuneGroup(savedTuneGroupId);
       installNavigation();
       const savedInstrumentChoiceId = initializeInstrumentSelector();
       await renderAllWorks(savedInstrumentChoiceId);
@@ -7530,6 +8223,12 @@ fiddle: {
     }
 
     try {
+      const shouldContinueWithMissingRhythms = await confirmBuildWithMissingRhythmTags(state.settings);
+      if (!shouldContinueWithMissingRhythms) {
+        setStatus("Website build canceled because some tunes are missing R: Rhythm tags.");
+        return;
+      }
+
       const filename = await promptFilename();
       if (!filename) return;
 
