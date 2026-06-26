@@ -850,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.0";
+  const WEBSITE_BUILDER_VERSION = "1.1.1";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1671,8 +1671,8 @@
       : `Manual T: section headers (groups of ${label})`;
     return [
       { id: "disabled", name: "Disabled" },
-      { id: "alphabeticalTitle", name: alphabeticalLabel },
       { id: "groupsOf100", name: `Groups of ${labelLower} tunes` },
+      { id: "alphabeticalTitle", name: alphabeticalLabel },
       { id: "rhythmTag", name: rhythmLabel },
       { id: "rhythmTagAlphabetical", name: rhythmAlphabeticalLabel },
       { id: "manualSectionHeaders", name: manualLabel }
@@ -3789,8 +3789,8 @@
             <li><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections.
               <ul>
                 <li><b>Disabled</b> is the default.</li>
-                <li><b>Alphabetical by title (groups of 100)</b> creates alphabetical title groups using the selected <b>Large tune collection grouping batch size</b> as a hard maximum for finite batch sizes. If one starting letter contains more tunes than the selected size, that single letter is split into explicit range subgroups such as <b>A · 1–50</b>, <b>A · 51–100</b>, and <b>A · 101–150</b>.</li>
                 <li><b>Groups of 100 tunes</b> breaks the ordinary tunes into simple sequential groups.</li>
+                <li><b>Alphabetical by title (groups of 100)</b> creates alphabetical title groups using the selected <b>Large tune collection grouping batch size</b> as a hard maximum for finite batch sizes. If one starting letter contains more tunes than the selected size, that single letter is split into explicit range subgroups such as <b>A · 1–50</b>, <b>A · 51–100</b>, and <b>A · 101–150</b>.</li>
                 <li><b>R: Rhythm tag (groups of 100)</b> creates rhythm groups and splits any rhythm group larger than the selected batch size into sequential subgroups without alphabetical sorting.</li>
                 <li><b>R: Rhythm tag + alphabetical subgroups (groups of 100)</b> creates rhythm groups and splits large rhythm groups into alphabetical subgroups. Automatic alphabetical splitting uses the selected batch size as a hard maximum for finite batch sizes; if one starting letter contains more tunes than the selected size inside a rhythm group, it is split into the same explicit range subgroups.</li>
                 <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
