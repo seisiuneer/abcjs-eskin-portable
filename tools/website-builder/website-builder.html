@@ -856,7 +856,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.20";
+  const WEBSITE_BUILDER_VERSION = "1.1.27";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -925,6 +925,11 @@
   const TITLE_ARTICLE_REVERSE_OPTIONS = [
     { id: "disabled", name: "Disabled" },
     { id: "postfixToPrefix", name: "Kesh, The -> The Kesh" }
+  ];
+
+  const DEPLOYMENT_TARGET_OPTIONS = [
+    { id: "standalone", name: "Standalone website" },
+    { id: "embedded", name: "Embedded website (experimental)" }
   ];
 
   const LARGE_COLLECTION_GROUPING_OPTIONS = [
@@ -1642,7 +1647,8 @@
     titleArticleReverser: "postfixToPrefix",
     largeCollectionGrouping: "disabled",
     tuneOrder: "preserve",
-    largeCollectionGroupingBatchSize: "100"
+    largeCollectionGroupingBatchSize: "100",
+    deploymentTarget: "standalone"
   };
 
   function largeCollectionBatchSizeLabel(batchSize) {
@@ -2005,6 +2011,22 @@
     const contrastWithBlack = (luminance + 0.05) / 0.05;
 
     return contrastWithBlack > contrastWithWhite ? "#000000" : "#ffffff";
+  }
+
+  function extractCssProperty(css, selector, propertyName) {
+    const selectorText = String(selector || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const propertyText = String(propertyName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const blockPattern = new RegExp(selectorText + "\\s*\\{([\\s\\S]*?)\\}", "gi");
+    let match;
+    let value = "";
+
+    while ((match = blockPattern.exec(String(css || "")))) {
+      const propertyPattern = new RegExp("(^|;)\\s*" + propertyText + "\\s*:\\s*([^;]+)", "i");
+      const propertyMatch = match[1].match(propertyPattern);
+      if (propertyMatch) value = propertyMatch[2].trim();
+    }
+
+    return value;
   }
 
   function slugify(text, fallback = "tune") {
@@ -2611,6 +2633,7 @@
       `${state.settings.instrumentSelector === "show" ? "Display/Instrument selector shown" : "Display/Instrument selector hidden"} · ` +
       `${state.settings.showStringInstrumentTablatureNames === "show" ? "Stringed tablature names shown" : "Stringed tablature names hidden"} · ` +
       `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
+      `${escapeHtml(optionName(DEPLOYMENT_TARGET_OPTIONS, state.settings.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget))} deployment target · ` +
       `${state.settings.includeCollectionIntro ? "Text before tune collection" : "No text before tune collection"}`;
   }
 
@@ -2909,7 +2932,7 @@
         "tuneOrder", "instrumentSelector",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "abcToolsLinks", "showStringInstrumentTablatureNames",
-        "titleArticleReverser"
+        "titleArticleReverser", "deploymentTarget"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -2941,7 +2964,7 @@
       });
     });
 
-    if (moved < 30) return false;
+    if (moved < 31) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3075,7 +3098,8 @@
       titleArticleReverser: optionIds(TITLE_ARTICLE_REVERSE_OPTIONS),
       largeCollectionGrouping: new Set([...optionIds(LARGE_COLLECTION_GROUPING_OPTIONS), "rhythmTagHundred"]),
       tuneOrder: optionIds(TUNE_ORDER_OPTIONS),
-      largeCollectionGroupingBatchSize: optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS)
+      largeCollectionGroupingBatchSize: optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS),
+      deploymentTarget: optionIds(DEPLOYMENT_TARGET_OPTIONS)
     };
 
     Object.keys(source).forEach(key => {
@@ -3719,6 +3743,12 @@
         id: "titleArticleReverser",
         type: "select",
         options: TITLE_ARTICLE_REVERSE_OPTIONS
+      },
+      {
+        name: "Deployment target",
+        id: "deploymentTarget",
+        type: "select",
+        options: DEPLOYMENT_TARGET_OPTIONS
       }
     ];
 
@@ -3958,6 +3988,13 @@
                 <li>The supported article set is also used when sorting titles for large tune collection grouping.</li>
                 <li>The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website.</li>
                 <li>The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
+              </ul>
+            </li>
+            <li><b>Deployment target</b> controls whether the exported HTML is optimized as a complete standalone page or as HTML that may be pasted directly into another website builder or content-management page.
+              <ul>
+                <li><b>Standalone website</b> is the default and produces the same standalone export style used by previous versions. Use this when the exported HTML file will be opened directly, uploaded as its own page, or embedded with an iframe.</li>
+                <li><b>Embedded website (experimental)</b> adds a defensive CSS compatibility layer and an outer wrapper around the visible site content to reduce interference from host-page styles when the exported HTML is directly pasted and embedded into another page, for example on Squarespace, WordPress, or other hosted CMS services.</li>
+                <li>Embedded website mode is experimental. It can help protect fonts, form fields, search bar sizing, buttons, and tune panel layout from host-page CSS, but it cannot guarantee perfect isolation from every website platform or theme. Iframe embedding remains the safest option when complete style isolation is required.</li>
               </ul>
             </li>
           </ul>
@@ -4454,7 +4491,12 @@ fiddle: {
       [{ name: "Website filename", id: "filename", type: "text" }],
       { filename: defaultName },
       { top: 150},
-      { title: "Save Standalone Website", width: 470, okText: "Save", cancelText: "Cancel" }
+      {
+        title: String(state.settings.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget) === "embedded" ? "Save Embedded Website" : "Save Standalone Website",
+        width: 470,
+        okText: "Save",
+        cancelText: "Cancel"
+      }
     );
 
     if (result.canceled) return null;
@@ -4466,6 +4508,12 @@ fiddle: {
 
   function safeScriptText(value) {
     return String(value).replace(/<\/script/gi, "<\\/script");
+  }
+
+  function scopeCssBodyRulesForEmbeddedDeployment(css) {
+    return String(css || "").replace(/(^|})\s*body\s*\{/g, (match, prefix) => {
+      return prefix + "\n    .abcjs-eskin-embedded-site {";
+    });
   }
 
   function themeCss(theme, builtInOnly = false) {
@@ -6488,6 +6536,10 @@ fiddle: {
     const t = themeCss(s.theme);
     const controllerTextColor = readableTextForBackground(t.primary);
     const controllerSliderColor = mixHexColors(t.primary, "#ffffff", 0.18);
+    const embeddedBackToTocTextColor =
+      extractCssProperty(t.customCss, ".back-to-toc", "color") || "#ffffff";
+    const embeddedAbcToolsTextColor =
+      extractCssProperty(t.customCss, ".abc-tools-link", "color") || embeddedBackToTocTextColor;
     const title = escapeHtml(s.title);
     const subtitle = escapeHtmlAllowLinksAndBreaks(s.subtitle);
     const subtitleMarkup = subtitle.trim()
@@ -6503,6 +6555,10 @@ fiddle: {
     const collectionIntroMarkup = hasCollectionIntro
       ? `<section class="collection-intro page-width"><p>${collectionIntro}</p></section>`
       : "";
+    const deploymentTarget = String(s.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget);
+    const embeddedDeployment = deploymentTarget === "embedded";
+    const embeddedOpenMarkup = embeddedDeployment ? '  <div class="abcjs-eskin-embedded-site">\n' : "";
+    const embeddedCloseMarkup = embeddedDeployment ? '  </div>\n' : "";
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
@@ -6764,12 +6820,201 @@ fiddle: {
       red: "#ff2020"
     };
     const cursorColor = JSON.stringify(cursorColors[s.cursorColor] || cursorColors.green);
-    const customThemeCss = t.customCss || "";
+    const customThemeCss = embeddedDeployment
+      ? scopeCssBodyRulesForEmbeddedDeployment(t.customCss || "")
+      : (t.customCss || "");
     const whistleTabCss = (s.displayMode === "whistleNotation" || includeInstrumentSelector)
       ? `${WHISTLE_TAB_FONT_CSS}
     .whistle { font-family:'TinWhistleFingering'; font-size:50px; }
     .whistle_small { font-family:'TinWhistleFingering'; font-size:32px; }
     .hiddentabline { display:none; }`
+      : "";
+    const embeddedDeploymentCss = embeddedDeployment
+      ? `
+    /*
+      Embedded website compatibility: this defensive CSS is only added when
+      Deployment target is set to Embedded website (experimental). It helps protect directly
+      pasted exports from host-page CSS that may otherwise change fonts, form
+      fields, widths, spacing, and button styling. For complete style isolation,
+      iframe embedding is still the safest deployment method.
+    */
+    .abcjs-eskin-embedded-site,
+    .abcjs-eskin-embedded-site * {
+      box-sizing:border-box !important;
+    }
+    .abcjs-eskin-embedded-site {
+      width:100% !important;
+      max-width:100% !important;
+      margin:0 auto !important;
+      color:var(--ink) !important;
+      background:var(--bg) !important;
+      font:17px/1.65 ${t.font} !important;
+      text-align:initial !important;
+    }
+    .abcjs-eskin-embedded-site .page-width {
+      width:min(${bodyWidth}px, calc(100% - 34px)) !important;
+      max-width:calc(100% - 34px) !important;
+      margin-left:auto !important;
+      margin-right:auto !important;
+    }
+    .abcjs-eskin-embedded-site .hero,
+    .abcjs-eskin-embedded-site .table-of-contents,
+    .abcjs-eskin-embedded-site .collection-intro,
+    .abcjs-eskin-embedded-site .score-panel,
+    .abcjs-eskin-embedded-site .site-footer {
+      font-family:${t.font} !important;
+    }
+    .abcjs-eskin-embedded-site .hero {
+      text-align:center !important;
+    }
+    .abcjs-eskin-embedded-site .hero .page-width {
+      text-align:center !important;
+    }
+    .abcjs-eskin-embedded-site h1,
+    .abcjs-eskin-embedded-site h2,
+    .abcjs-eskin-embedded-site h3,
+    .abcjs-eskin-embedded-site p {
+      font-family:inherit !important;
+      color:inherit;
+      letter-spacing:normal;
+      text-transform:none;
+    }
+    .abcjs-eskin-embedded-site .hero h1 {
+      max-width:min(1040px, 100%) !important;
+      margin:0 auto !important;
+      color:inherit !important;
+      font-family:inherit !important;
+      font-size:clamp(1.8rem,4.2vw,3.0rem) !important;
+      font-weight:700 !important;
+      line-height:1.08 !important;
+      text-align:center !important;
+    }
+    .abcjs-eskin-embedded-site .table-of-contents h2,
+    .abcjs-eskin-embedded-site .section-header-title {
+      color:var(--ink) !important;
+      font-family:inherit !important;
+      font-size:clamp(1.7rem,4vw,2.2rem) !important;
+      font-weight:800 !important;
+      line-height:1.1 !important;
+      text-align:center !important;
+      text-transform:none !important;
+      letter-spacing:normal !important;
+    }
+    .abcjs-eskin-embedded-site .tune-header h2 {
+      color:var(--ink) !important;
+      font-family:inherit !important;
+      font-size:clamp(1.5rem,3.7vw,2.1rem) !important;
+      font-weight:700 !important;
+      line-height:1.15 !important;
+      text-align:center !important;
+      text-transform:none !important;
+      letter-spacing:normal !important;
+    }
+    .abcjs-eskin-embedded-site input,
+    .abcjs-eskin-embedded-site select,
+    .abcjs-eskin-embedded-site textarea,
+    .abcjs-eskin-embedded-site button {
+      max-width:100% !important;
+      font:inherit !important;
+      letter-spacing:normal !important;
+      text-transform:none !important;
+    }
+    .abcjs-eskin-embedded-site .toc-search,
+    .abcjs-eskin-embedded-site .toc-search input {
+      width:100% !important;
+      max-width:100% !important;
+    }
+    .abcjs-eskin-embedded-site .toc-search input {
+      display:block !important;
+      min-height:48px !important;
+      margin:0 !important;
+      color:var(--ink) !important;
+      background:color-mix(in srgb,var(--panel) 90%,white) !important;
+      border:1px solid var(--line) !important;
+      border-radius:calc(var(--radius) / 2) !important;
+      box-shadow:inset 0 1px 2px rgba(0,0,0,.08) !important;
+    }
+    .abcjs-eskin-embedded-site .toc-search input:not(:placeholder-shown),
+    .abcjs-eskin-embedded-site .toc-search input::placeholder {
+      font:inherit !important;
+    }
+    .abcjs-eskin-embedded-site a {
+      cursor:pointer;
+    }
+    .abcjs-eskin-embedded-site .toc-links a,
+    .abcjs-eskin-embedded-site .back-to-toc,
+    .abcjs-eskin-embedded-site .abc-tools-link,
+    .abcjs-eskin-embedded-site .site-selector-field select,
+    .abcjs-eskin-embedded-site .toc-search-all-button,
+    .abcjs-eskin-embedded-site .toc-search-clear-button,
+    .abcjs-eskin-embedded-site .toc-search-all-option {
+      font-family:inherit !important;
+      text-transform:none !important;
+      letter-spacing:normal !important;
+    }
+    .abcjs-eskin-embedded-site .toc-links a {
+      display:flex !important;
+      align-items:center !important;
+      gap:10px !important;
+      min-height:54px !important;
+      padding:10px 13px !important;
+      font-size:1rem !important;
+      font-weight:400 !important;
+      line-height:1.65 !important;
+      text-align:left !important;
+    }
+    .abcjs-eskin-embedded-site [hidden],
+    .abcjs-eskin-embedded-site [data-group-panel="true"][hidden],
+    .abcjs-eskin-embedded-site [data-group-divider="true"][hidden],
+    .abcjs-eskin-embedded-site .toc-links a[hidden],
+    .abcjs-eskin-embedded-site .toc-search-all-results[hidden],
+    .abcjs-eskin-embedded-site .instrument-working-overlay[hidden] {
+      display:none !important;
+    }
+    .abcjs-eskin-embedded-site .toc-links span,
+    .abcjs-eskin-embedded-site .chapter-label {
+      display:grid !important;
+      place-items:center !important;
+      font-weight:800 !important;
+      line-height:1 !important;
+    }
+    .abcjs-eskin-embedded-site .back-to-toc,
+    .abcjs-eskin-embedded-site .abc-tools-link {
+      padding:7px 10px !important;
+      font-size:.8rem !important;
+      font-weight:800 !important;
+      line-height:1.65 !important;
+      white-space:nowrap !important;
+      text-align:center !important;
+      text-decoration:none !important;
+    }
+    .abcjs-eskin-embedded-site .back-to-toc {
+      color:${embeddedBackToTocTextColor} !important;
+      -webkit-text-fill-color:${embeddedBackToTocTextColor} !important;
+    }
+    .abcjs-eskin-embedded-site .abc-tools-link {
+      color:${embeddedAbcToolsTextColor} !important;
+      -webkit-text-fill-color:${embeddedAbcToolsTextColor} !important;
+    }
+    .abcjs-eskin-embedded-site .site-selector-field select {
+      font-size:1rem !important;
+      font-weight:400 !important;
+      line-height:1.2 !important;
+    }
+    .abcjs-eskin-embedded-site .toc-search-clear-button {
+      font-size:1.1rem !important;
+      font-weight:400 !important;
+      line-height:1 !important;
+    }
+    .abcjs-eskin-embedded-site .toc-search-all-button,
+    .abcjs-eskin-embedded-site .toc-search-all-option {
+      font-size:.8rem !important;
+      font-weight:800 !important;
+      line-height:1.2 !important;
+    }
+    .abcjs-eskin-embedded-site svg {
+      max-width:100% !important;
+    }`
       : "";
 
     return `<!doctype html>
@@ -6809,9 +7054,9 @@ fiddle: {
       /* Card shadow used by panels and the table of contents. Use 'none' for a flatter design. */
       --shadow: ${t.shadow};
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: auto; }
-    body { margin:0; color:var(--ink); background:var(--bg); font:17px/1.65 ${t.font}; }
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site,\n    .abcjs-eskin-embedded-site *" : "*"} { box-sizing: border-box; }
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site" : "html"} { scroll-behavior: auto; }
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site" : "body"} { margin:0; color:var(--ink); background:var(--bg); font:17px/1.65 ${t.font}; }
     /*
       Page width customization: controls the maximum width of the exported website
       content, including the header contents, table of contents, tune panels, and footer.
@@ -6825,7 +7070,7 @@ fiddle: {
       change background:${t.hero} to customize the header color or gradient.
     */
     .hero { padding:44px 0 38px; color:#fff; background:${t.hero}; text-align:center; border-bottom:6px solid var(--accent); }
-    h1 {
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site .hero h1" : "h1"} {
       margin:0;
       /*
         Font size customization: website title at the top of the exported website.
@@ -7025,7 +7270,7 @@ fiddle: {
       content block and below the final tune panel. Increase padding-bottom for more
       footer separation; decrease it for a shorter page.
     */
-    main { padding-top:${includeTableOfContents || hasCollectionIntro ? "0" : "24px"}; padding-bottom:64px; }
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site main.page-width" : "main"} { padding-top:${includeTableOfContents || hasCollectionIntro ? "0" : "24px"}; padding-bottom:64px; }
     /*
       Tune card customization: controls each tune panel's inner padding, background,
       border, rounded corners, and shadow. Increase padding for more whitespace around
@@ -7330,7 +7575,7 @@ fiddle: {
     }
     ${customThemeCss}
     ${whistleTabCss}
-    .abc-tools-link {
+${embeddedDeploymentCss}    .abc-tools-link {
       left:0;
       right:auto;
     }
@@ -7493,7 +7738,7 @@ fiddle: {
   </style>
 </head>
 <body>
-  <header class="hero${includeSiteSelector ? " has-site-instrument-selector" : ""}">
+${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-instrument-selector" : ""}">
     <div class="page-width">
       <h1>${title}</h1>
       ${subtitleMarkup}
@@ -7517,7 +7762,7 @@ fiddle: {
       <p>${footer}</p>
     </div>
   </footer>
-
+${embeddedCloseMarkup}
   ${abcBlocks}
 
   <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js"><\/script>
