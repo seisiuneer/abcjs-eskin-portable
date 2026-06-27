@@ -168,6 +168,7 @@
       justify-items: center;
       align-items: start;
       text-align: center;
+      padding-top: 18px;
     }
 
     .website-settings-manage-card {
@@ -849,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.6";
+  const WEBSITE_BUILDER_VERSION = "1.1.14";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -952,6 +953,7 @@
   const TABLE_OF_CONTENTS_OPTIONS = [
     { id: "show", name: "Show" },
     { id: "showSearch", name: "Show (include search bar)" },
+    { id: "showSearchAll", name: "Show (include search bar and search all button)" },
     { id: "hide", name: "Hide" }
   ];
 
@@ -1617,7 +1619,7 @@
     showStringInstrumentTablatureNames: "hide",
     cursorColor: "green",
     showTuneDividers: "show",
-    includeTableOfContents: "show",
+    includeTableOfContents: "showSearch",
     injectSoundSettings: true,
     soundfont: "fatboy",
     melodyProgram: "0",
@@ -1700,6 +1702,11 @@
     }
 
     const groupingMode = String(normalized.largeCollectionGrouping || "");
+
+    if (String(normalized.includeTableOfContents || "") === "showSearchAll" && groupingMode === "disabled") {
+      normalized.includeTableOfContents = "showSearch";
+    }
+
     if (groupingMode === "alphabeticalTitle") {
       normalized.tuneOrder = "sortTitle";
     } else if (groupingMode === "manualSectionHeaders") {
@@ -2767,6 +2774,7 @@
     const groupingField = findWebsiteSettingsField(modalRoot, "largeCollectionGrouping");
     const tuneOrderField = findWebsiteSettingsField(modalRoot, "tuneOrder");
     const batchSizeField = findWebsiteSettingsField(modalRoot, "largeCollectionGroupingBatchSize");
+    const tableOfContentsField = findWebsiteSettingsField(modalRoot, "includeTableOfContents");
     if (!groupingField || !tuneOrderField || !batchSizeField || groupingField.dataset.largeCollectionControlGuard === "true") return;
 
     const updateGroupingLabels = () => {
@@ -2789,15 +2797,29 @@
       }
     };
 
+    const enforceSearchAllTableOfContentsMode = () => {
+      if (!tableOfContentsField) return;
+      const groupingMode = String(groupingField.value || "");
+      if (groupingMode === "disabled" && String(tableOfContentsField.value || "") === "showSearchAll") {
+        tableOfContentsField.value = "showSearch";
+      }
+    };
+
+    const enforceLargeCollectionControls = () => {
+      enforceLargeCollectionTuneOrder();
+      enforceSearchAllTableOfContentsMode();
+    };
+
     batchSizeField.addEventListener("change", () => {
       updateGroupingLabels();
-      enforceLargeCollectionTuneOrder();
+      enforceLargeCollectionControls();
     });
-    groupingField.addEventListener("change", enforceLargeCollectionTuneOrder);
+    groupingField.addEventListener("change", enforceLargeCollectionControls);
     tuneOrderField.addEventListener("change", enforceLargeCollectionTuneOrder);
+    if (tableOfContentsField) tableOfContentsField.addEventListener("change", enforceSearchAllTableOfContentsMode);
     groupingField.dataset.largeCollectionControlGuard = "true";
     updateGroupingLabels();
-    enforceLargeCollectionTuneOrder();
+    enforceLargeCollectionControls();
   }
 
   function updateOpenSettingsCustomThemeOption() {
@@ -3444,7 +3466,7 @@
           '<div id="website-settings-tabs-root" class="website-settings-tabs" style="--website-settings-tab-panels-height:' + settingsTabPanelsHeight + 'px;">' +
             '<div class="website-settings-tab-bar" role="tablist" aria-label="Website settings sections">' +
               '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
-              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Display</button>' +
+              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Options</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_playback" role="tab" aria-selected="false">Playback &amp; Sounds</button>' +
               '<button type="button" class="website-settings-tab-button manage-tab" data-tab="website_settings_manage" role="tab" aria-selected="false">Manage Settings</button>' +
             '</div>' +
@@ -3727,7 +3749,7 @@
             <b>Configure website topics</b>
             <ol style="margin-bottom:0;">
               <li><a href="#instructions-configure-text-content">Text &amp; Content</a></li>
-              <li><a href="#instructions-configure-style-display">Style &amp; Display</a></li>
+              <li><a href="#instructions-configure-style-display">Style &amp; Options</a></li>
               <li><a href="#instructions-configure-playback-sounds">Playback &amp; Sounds</a></li>
               <li><a href="#instructions-configure-manage-settings">Manage Settings</a></li>
             </ol>
@@ -3747,7 +3769,7 @@
             <li>The matching <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
           </ul>
 
-          <p id="instructions-configure-style-display"><b>Style &amp; Display</b></p>
+          <p id="instructions-configure-style-display"><b>Style &amp; Options</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Music genre visual theme</b> selects the complete visual theme for the exported site including colors and graphic decorations.</li>
@@ -3775,8 +3797,9 @@
             <li><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
             <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents.
               <ul>
-                <li><b>Show</b> is the default and displays the table of contents.</li>
-                <li><b>Show (include search bar)</b> adds a search box directly below the table of contents heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li><b>Show</b> displays the table of contents.</li>
+                <li><b>Show (include search bar)</b> is the default and adds a search box directly below the table of contents heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li><b>Show (include search bar and search all button)</b> adds the same search box plus a small <b>Search all sections</b> button inside the search area. <b>Search all sections</b> is only available on generated websites that also have a <b>Tune Section</b> selector. It searches all tune sections, shows a custom styled result list of up to 50 matching tune entries with their tune section names, and reports when only the first matches are shown. Choosing a result switches the <b>Tune Section</b> selector to that tune's section and jumps directly to the tune. If <b>Large tune collection grouping</b> is <b>Disabled</b>, this setting is automatically forced back to <b>Show (include search bar)</b> because there is no <b>Tune Section</b> selector to search across.</li>
                 <li>When a generated website also has a <b>Tune Section</b> selector, the table of contents title reflects the currently selected tune section name instead of always saying <b>Table of Contents</b>.</li>
                 <li><b>Hide</b> omits the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
               </ul>
@@ -3945,6 +3968,7 @@
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. The selected value is remembered for that generated website.</li>
             <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
+            <li>If the generated website includes both a table of contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed table of contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
             <li>Click the notation itself to pause or resume playback.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
             <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
@@ -4100,7 +4124,7 @@
           <p id="developer-table-of-contents-styling"><b>Table of Contents styling</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the TOC panel, optional search field, and tune-link grid:</p>
-          <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
+          <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-search-all-button</code>, <code>.toc-search-all-results</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
           <p>Change TOC <code>padding</code> for a roomier or more compact card. Change the <code>minmax(220px,1fr)</code> value in <code>.toc-links</code> to control how many TOC columns appear on wider screens.</p>
 
           <p id="developer-card-spacing"><b>Card spacing</b></p>
@@ -6406,7 +6430,7 @@ fiddle: {
     const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
     const tableOfContentsMode = String(s.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents);
     const includeTableOfContents = tableOfContentsMode !== "hide";
-    const includeTableOfContentsSearch = tableOfContentsMode === "showSearch";
+    const includeTableOfContentsSearch = tableOfContentsMode === "showSearch" || tableOfContentsMode === "showSearchAll";
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
     const largeCollectionGroupingMode = String(s.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping);
@@ -6414,6 +6438,7 @@ fiddle: {
     const largeCollectionBatchSizeMode = String(s.largeCollectionGroupingBatchSize || DEFAULT_SETTINGS.largeCollectionGroupingBatchSize);
     const largeCollectionPlan = buildLargeCollectionGroups(state.tunes, largeCollectionGroupingMode, tuneOrderMode, titleArticleMode, largeCollectionBatchSizeMode);
     const largeCollectionGroupingEnabled = largeCollectionPlan.enabled;
+    const includeTableOfContentsSearchAll = tableOfContentsMode === "showSearchAll" && largeCollectionGroupingEnabled;
     const tuneGroups = largeCollectionPlan.groups;
     const firstTuneGroupId = tuneGroups.length ? tuneGroups[0].id : "group-1";
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
@@ -6477,14 +6502,19 @@ fiddle: {
 
     const toc = tunes.map(tune => {
       const hiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
-      return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle.toLowerCase())}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
+      return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle)}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
     }).join("\n        ");
 
     const tocSearchMarkup = includeTableOfContentsSearch
-      ? `<div class="toc-search" role="search">
+      ? `<div class="toc-search${includeTableOfContentsSearchAll ? " has-search-all" : ""}" role="search">
       <label class="visually-hidden" for="toc-search-input">Search table of contents</label>
-      <input id="toc-search-input" type="search" autocomplete="off" placeholder="${largeCollectionGroupingEnabled ? "Search these tunes..." : "Search tunes..."}" aria-label="Search table of contents">
-      <button id="toc-search-clear" type="button" aria-label="Clear table of contents search" hidden>×</button>
+      <input id="toc-search-input" type="search" autocomplete="off" placeholder="${largeCollectionGroupingEnabled ? "Search this section..." : "Search tunes..."}" aria-label="Search table of contents">
+      ${includeTableOfContentsSearchAll ? `<button id="toc-search-all" class="toc-search-all-button" type="button"><span class="toc-search-all-label-long">Search all sections</span><span class="toc-search-all-label-short">Search all</span></button>` : ""}
+      <button id="toc-search-clear" class="toc-search-clear-button" type="button" aria-label="Clear table of contents search" hidden>×</button>
+      ${includeTableOfContentsSearchAll ? `<div id="toc-search-all-results" class="toc-search-all-results" hidden>
+        <div id="toc-search-all-message" class="toc-search-all-message" role="status" aria-live="polite"></div>
+        <div id="toc-search-all-list" class="toc-search-all-list" role="listbox" aria-label="Search all sections results"></div>
+      </div>` : ""}
     </div>`
       : "";
 
@@ -6867,9 +6897,29 @@ fiddle: {
       a larger touch target; decrease them for a more compact search field.
     */
     .toc-search input { width:100%; min-height:48px; padding:10px 44px 10px 14px; color:var(--ink); background:color-mix(in srgb,var(--panel) 90%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); font:inherit; box-shadow:inset 0 1px 2px rgba(0,0,0,.08); }
+    .toc-search.has-search-all input { padding-right:196px; }
     .toc-search input:focus { outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:2px; }
-    .toc-search button { position:absolute; top:50%; right:9px; width:30px; height:30px; transform:translateY(-50%); display:grid; place-items:center; padding:0; color:var(--muted); background:transparent; border:0; border-radius:50%; font:inherit; font-size:1.35rem; line-height:1; cursor:pointer; }
-    .toc-search button:hover, .toc-search button:focus-visible { color:#fff; background:var(--primary); outline:none; }
+    .toc-search-clear-button { position:absolute; top:24px; right:9px; width:30px; height:30px; transform:translateY(-50%); display:grid; place-items:center; padding:0; color:var(--muted); background:transparent; border:0; border-radius:50%; font:inherit; font-size:1.35rem; line-height:1; cursor:pointer; }
+    .toc-search-clear-button:hover, .toc-search-clear-button:focus-visible { color:#fff; background:var(--primary); outline:none; }
+    .toc-search-all-button { position:absolute; top:24px; right:46px; min-width:142px; height:30px; transform:translateY(-50%); display:grid; place-items:center; padding:0 10px; color:var(--primary); background:color-mix(in srgb,var(--panel) 80%,white); border:1px solid var(--line); border-radius:999px; font:inherit; font-size:.8rem; font-weight:800; line-height:1; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+    .toc-search-all-button:hover, .toc-search-all-button:focus-visible { color:#fff; background:var(--primary); outline:none; }
+    .toc-search-all-label-short { display:none; }
+    .toc-search-all-results { margin:10px 0 0; padding:12px; color:var(--ink); background:color-mix(in srgb,var(--panel) 94%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); box-shadow:0 8px 18px rgba(0,0,0,.10); text-align:left; }
+    .toc-search-all-results[hidden] { display:none; }
+    .toc-search-all-message { margin:0 0 10px; color:var(--muted); font-size:.95rem; font-weight:700; }
+    .toc-search-all-list { display:grid; gap:8px; max-height:min(420px,50vh); overflow-y:auto; overscroll-behavior:contain; padding:2px; scrollbar-gutter:stable; }
+    .toc-search-all-option { appearance:none; -webkit-appearance:none; width:100%; display:grid; gap:3px; padding:10px 12px; color:var(--ink); background:color-mix(in srgb,var(--panel) 86%,white); border:1px solid var(--line); border-radius:calc(var(--radius) / 2); font:inherit; text-align:left; cursor:pointer; }
+    .toc-search-all-option:hover, .toc-search-all-option:focus-visible { color:#fff; background:var(--primary); outline:none; }
+    .toc-search-all-title { font-weight:800; }
+    .toc-search-all-section { color:var(--muted); font-size:.88rem; font-weight:700; }
+    .toc-search-all-option:hover .toc-search-all-section, .toc-search-all-option:focus-visible .toc-search-all-section { color:color-mix(in srgb,#fff 82%,var(--accent)); }
+    @media (max-width:760px) {
+      .toc-search.has-search-all input { padding-right:132px; }
+      .toc-search-all-button { right:47px; min-width:76px; padding:0 8px; font-size:.76rem; }
+      .toc-search-all-label-long { display:none; }
+      .toc-search-all-label-short { display:inline; }
+      .toc-search-all-list { max-height:min(360px,55vh); }
+    }
     /*
       TOC link grid customization: controls the link column layout and spacing.
       Increase 220px for fewer/wider columns; decrease it for more/narrower columns.
@@ -7686,7 +7736,119 @@ fiddle: {
     function installTableOfContentsSearch() {
       const input = document.getElementById("toc-search-input");
       const clearButton = document.getElementById("toc-search-clear");
+      const searchAllButton = document.getElementById("toc-search-all");
+      const searchAllResults = document.getElementById("toc-search-all-results");
+      const searchAllMessage = document.getElementById("toc-search-all-message");
+      const searchAllList = document.getElementById("toc-search-all-list");
       const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
+      const searchAllResultLimit = 50;
+
+      function hideSearchAllResults() {
+        if (searchAllResults) searchAllResults.hidden = true;
+        if (searchAllList) searchAllList.innerHTML = "";
+      }
+
+      function displaySearchAllMessage(message) {
+        if (!searchAllResults || !searchAllMessage || !searchAllList) return;
+        searchAllMessage.textContent = message;
+        searchAllList.innerHTML = "";
+        searchAllResults.hidden = false;
+        searchAllResults.scrollTop = 0;
+        searchAllList.scrollTop = 0;
+      }
+
+      function tocEntryDisplayTitle(link) {
+        if (!link) return "";
+
+        const clone = link.cloneNode(true);
+        clone.querySelectorAll("span").forEach(span => span.remove());
+
+        return (clone.textContent || link.dataset.tocTitle || link.textContent || "")
+          .replace(/\\s+/g, " ")
+          .trim();
+      }
+
+      function searchAllMatches(query) {
+        if (!query) return [];
+        return entries.filter(link => {
+          const title = tocEntryDisplayTitle(link).toLowerCase();
+          return title.indexOf(query) !== -1;
+        });
+      }
+
+      async function selectSearchAllMatch(link) {
+        if (!link) return;
+
+        const groupId = validTuneGroupId(link.dataset.group || "");
+        const selector = document.getElementById("site-tune-group-selector");
+        const href = link.getAttribute("href") || "";
+        const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
+        hideSearchAllResults();
+
+        if (selector) selector.value = groupId;
+        saveTuneGroup(groupId);
+        applyTuneGroup(groupId);
+        await renderAllWorks(currentInstrumentChoiceId());
+
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (target) {
+          stopAllPlayback();
+          target.scrollIntoView({ behavior: "auto", block: "start" });
+          history.replaceState(null, "", "#" + targetId);
+        }
+      }
+
+      function renderSearchAllResults() {
+        if (!searchAllButton || !searchAllResults || !searchAllMessage || !searchAllList) return;
+
+        const query = input ? input.value.trim().toLowerCase() : "";
+        if (!query) {
+          displaySearchAllMessage("Enter search text to search all tune sections.");
+          return;
+        }
+
+        const matches = searchAllMatches(query);
+        const shown = matches.slice(0, searchAllResultLimit);
+
+        if (!matches.length) {
+          displaySearchAllMessage("No matches found across all tune sections.");
+          return;
+        }
+
+        if (matches.length > shown.length) {
+          searchAllMessage.textContent = "Only the first " + shown.length + " matches of " + matches.length + " are shown.";
+        } else {
+          searchAllMessage.textContent = "Showing " + shown.length + " match" + (shown.length === 1 ? "" : "es") + " across all tune sections.";
+        }
+
+        searchAllList.innerHTML = "";
+        shown.forEach(link => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "toc-search-all-option";
+          item.setAttribute("role", "option");
+
+          const title = document.createElement("span");
+          title.className = "toc-search-all-title";
+          title.textContent = tocEntryDisplayTitle(link);
+
+          const section = document.createElement("span");
+          section.className = "toc-search-all-section";
+          section.textContent = "Tune Section: " + tuneGroupName(link.dataset.group || "");
+
+          item.appendChild(title);
+          item.appendChild(section);
+          item.addEventListener("click", () => {
+            void selectSearchAllMatch(link);
+          });
+
+          searchAllList.appendChild(item);
+        });
+
+        searchAllResults.hidden = false;
+        searchAllResults.scrollTop = 0;
+        searchAllList.scrollTop = 0;
+      }
 
       applyTocFilter = function() {
         const query = input ? input.value.trim().toLowerCase() : "";
@@ -7701,14 +7863,33 @@ fiddle: {
         if (clearButton) clearButton.hidden = !query;
       };
 
+      function handleTocSearchInput() {
+        hideSearchAllResults();
+        applyTocFilter();
+      }
+
       if (input && clearButton) {
-        input.addEventListener("input", applyTocFilter);
+        input.addEventListener("input", handleTocSearchInput);
+        input.addEventListener("search", handleTocSearchInput);
+        input.addEventListener("change", handleTocSearchInput);
+        input.addEventListener("keyup", handleTocSearchInput);
         clearButton.addEventListener("click", () => {
           input.value = "";
+          hideSearchAllResults();
           applyTocFilter();
           input.focus();
         });
       }
+
+      if (searchAllButton) {
+        searchAllButton.addEventListener("click", renderSearchAllResults);
+      }
+
+      document.addEventListener("click", event => {
+        if (!searchAllResults || searchAllResults.hidden) return;
+        const searchRoot = searchAllResults.closest(".toc-search");
+        if (searchRoot && !searchRoot.contains(event.target)) hideSearchAllResults();
+      });
 
       applyTocFilter();
     }
@@ -8147,6 +8328,13 @@ fiddle: {
       selector.value = savedGroupId;
       selector.addEventListener("change", () => {
         const groupId = validTuneGroupId(selector.value);
+        const searchAllResults = document.getElementById("toc-search-all-results");
+        const searchAllList = document.getElementById("toc-search-all-list");
+        if (searchAllResults) searchAllResults.hidden = true;
+        if (searchAllList) {
+          searchAllList.innerHTML = "";
+          searchAllList.scrollTop = 0;
+        }
         selector.value = groupId;
         saveTuneGroup(groupId);
         applyTuneGroup(groupId);
