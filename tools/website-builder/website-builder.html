@@ -849,7 +849,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.5";
+  const WEBSITE_BUILDER_VERSION = "1.1.6";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -6483,7 +6483,7 @@ fiddle: {
     const tocSearchMarkup = includeTableOfContentsSearch
       ? `<div class="toc-search" role="search">
       <label class="visually-hidden" for="toc-search-input">Search table of contents</label>
-      <input id="toc-search-input" type="search" autocomplete="off" placeholder="Search these tunes..." aria-label="Search table of contents">
+      <input id="toc-search-input" type="search" autocomplete="off" placeholder="${largeCollectionGroupingEnabled ? "Search these tunes..." : "Search tunes..."}" aria-label="Search table of contents">
       <button id="toc-search-clear" type="button" aria-label="Clear table of contents search" hidden>×</button>
     </div>`
       : "";
