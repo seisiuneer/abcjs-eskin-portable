@@ -850,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.3";
+  const WEBSITE_BUILDER_VERSION = "1.1.4";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3777,7 +3777,8 @@
             <li><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents.
               <ul>
                 <li><b>Show</b> is the default and displays the table of contents.</li>
-                <li><b>Show (include search bar)</b> adds a search box directly below the <b>Table of Contents</b> heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li><b>Show (include search bar)</b> adds a search box directly below the table of contents heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li>When a generated website also has a <b>Tune Section</b> selector, the table of contents title reflects the currently selected tune section name instead of always saying <b>Table of Contents</b>.</li>
                 <li><b>Hide</b> omits the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
               </ul>
             </li>
@@ -3820,6 +3821,7 @@
                 <li><b>R: Rhythm tag + alphabetical subgroups (groups of 100)</b> creates rhythm groups and splits large rhythm groups into alphabetical subgroups. Automatic alphabetical splitting uses the selected batch size as a hard maximum for finite batch sizes; if one starting letter contains more tunes than the selected size inside a rhythm group, it is split into the same explicit range subgroups.</li>
                 <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
                 <li>The <b>Groups of 100</b> and <b>(groups of 100)</b> value in the options listed above will be replaced by the batch size currently selected in the <b>Large tune collection grouping batch size</b> control below.</li>
+                <li>In generated websites that use the <b>Tune Section</b> selector, the visitor's most recent Tune Section choice is saved in a website-specific localStorage key and restored the next time that generated website is opened.</li>
                 <li>Automatic grouping options group ordinary tunes; use <b>Manual T: section headers</b> when you want existing <code>T:*</code> section-header tunes to define and appear as the group names.</li>
                 <li>If an <b>R: Rhythm tag</b> grouping option is selected and some ordinary tunes do not have <code>R:</code> tags, the builder warns before saving. If you continue, tunes without rhythm tags are placed in an <b>Other</b> rhythm group.</li>
               </ul>
@@ -3943,7 +3945,7 @@
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. The selected value is remembered for that generated website.</li>
-            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered, and the table of contents is rebuilt for that group. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
+            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>Click the notation itself to pause or resume playback.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
             <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
@@ -6482,14 +6484,18 @@ fiddle: {
     const tocSearchMarkup = includeTableOfContentsSearch
       ? `<div class="toc-search" role="search">
       <label class="visually-hidden" for="toc-search-input">Search table of contents</label>
-      <input id="toc-search-input" type="search" autocomplete="off" placeholder="Search tunes..." aria-label="Search table of contents">
+      <input id="toc-search-input" type="search" autocomplete="off" placeholder="Search these tunes..." aria-label="Search table of contents">
       <button id="toc-search-clear" type="button" aria-label="Clear table of contents search" hidden>×</button>
     </div>`
       : "";
 
+    const initialTocTitle = largeCollectionGroupingEnabled && tuneGroups.length
+      ? tuneGroups[0].name
+      : "Table of Contents";
+
     const tocMarkup = includeTableOfContents
       ? `<nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
-    <h2 id="toc-title">Table of Contents</h2>
+    <h2 id="toc-title">${escapeHtml(initialTocTitle)}</h2>
     ${tocSearchMarkup}
     <div class="toc-links">
         ${toc}
@@ -8050,6 +8056,18 @@ fiddle: {
       return firstTuneGroupId;
     }
 
+    function tuneGroupName(groupId) {
+      const validGroupId = validTuneGroupId(groupId);
+      const group = tuneGroups.find(item => item.id === validGroupId);
+      return group && group.name ? group.name : "Table of Contents";
+    }
+
+    function updateTableOfContentsTitle(groupId) {
+      const title = document.getElementById("toc-title");
+      if (!title) return;
+      title.textContent = tuneGroupSelectorEnabled ? tuneGroupName(groupId) : "Table of Contents";
+    }
+
     function loadSavedTuneGroup() {
       if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
       try {
@@ -8106,6 +8124,7 @@ fiddle: {
 
     function applyTuneGroup(groupId) {
       activeTuneGroupId = validTuneGroupId(groupId);
+      updateTableOfContentsTitle(activeTuneGroupId);
 
       document.querySelectorAll("[data-group-panel='true'], [data-group-divider='true']").forEach(element => {
         element.hidden = tuneGroupSelectorEnabled && element.dataset.group !== activeTuneGroupId;
