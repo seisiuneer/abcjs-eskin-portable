@@ -856,7 +856,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.19";
+  const WEBSITE_BUILDER_VERSION = "1.1.20";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -7835,6 +7835,13 @@ fiddle: {
       const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
       const searchAllResultLimit = 50;
 
+      function normalizeSearchText(text) {
+        return String(text || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      }
+
       function hideSearchAllResults() {
         if (searchAllResults) searchAllResults.hidden = true;
         if (searchAllList) searchAllList.innerHTML = "";
@@ -7863,7 +7870,7 @@ fiddle: {
       function searchAllMatches(query) {
         if (!query) return [];
         return entries.filter(link => {
-          const title = tocEntryDisplayTitle(link).toLowerCase();
+          const title = normalizeSearchText(tocEntryDisplayTitle(link));
           return title.indexOf(query) !== -1;
         });
       }
@@ -7893,7 +7900,7 @@ fiddle: {
       function renderSearchAllResults() {
         if (!searchAllButton || !searchAllResults || !searchAllMessage || !searchAllList) return;
 
-        const query = input ? input.value.trim().toLowerCase() : "";
+        const query = input ? normalizeSearchText(input.value.trim()) : "";
         if (!query) {
           displaySearchAllMessage("Enter search text to search all tune sections.");
           return;
@@ -7943,9 +7950,9 @@ fiddle: {
       }
 
       applyTocFilter = function() {
-        const query = input ? input.value.trim().toLowerCase() : "";
+        const query = input ? normalizeSearchText(input.value.trim()) : "";
         entries.forEach(link => {
-          const title = (link.dataset.tocTitle || link.textContent || "").toLowerCase();
+          const title = normalizeSearchText(link.dataset.tocTitle || link.textContent || "");
           const groupMismatch = tuneGroupSelectorEnabled && link.dataset.group !== activeTuneGroupId;
           const searchMismatch = !!query && title.indexOf(query) === -1;
           const shouldHide = groupMismatch || searchMismatch;
