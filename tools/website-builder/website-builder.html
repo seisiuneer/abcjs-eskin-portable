@@ -856,7 +856,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.18";
+  const WEBSITE_BUILDER_VERSION = "1.1.19";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3737,6 +3737,7 @@
 
     if (result.canceled) {
       resetWebsiteFilenameOnSettingsApply = false;
+      setStatus("Website settings canceled. Current applied settings unchanged.");
       return;
     }
 
