@@ -273,6 +273,12 @@
       border-radius: 0 0 10px 10px;
     }
 
+    .website-settings-tabs.settings-drop-active .website-settings-tab-panels {
+      background: #e4f3ff;
+      border-color: #5f8fb3;
+      box-shadow: inset 0 0 0 2px rgba(95, 143, 179, .28);
+    }
+
     .website-settings-tab-panel {
       display: none;
     }
@@ -850,7 +856,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.16";
+  const WEBSITE_BUILDER_VERSION = "1.1.18";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2942,6 +2948,7 @@
     initializeWebsiteSettingsManageActions();
     initializeLargeCollectionGroupingDialogControls();
     initializeCustomThemeSelectionGuard();
+    initializeWebsiteSettingsDialogDropZone();
     updateOpenSettingsCustomThemeOption();
     return true;
   }
@@ -3188,9 +3195,11 @@
     });
   }
 
-  async function loadWebsiteSettingsFromFile() {
-    const file = await selectSettingsFile();
-    if (!file) return;
+  async function loadWebsiteSettingsFileIntoOpenDialog(file, options = {}) {
+    const tabId = Object.prototype.hasOwnProperty.call(options, "tabId") ? options.tabId : "website_settings_manage";
+    const showAlert = options.showAlert !== false;
+
+    if (!file) return false;
 
     try {
       const text = await file.text();
@@ -3201,14 +3210,20 @@
         throw new Error(validation.errors.join("\n"));
       }
 
-      applySettingsValuesInOpenSettingsDialog(validation.settings, "website_settings_manage");
+      applySettingsValuesInOpenSettingsDialog(validation.settings, tabId);
       resetWebsiteFilenameOnSettingsApply = true;
       setStatus(`Loaded website settings from ${file.name}. Click Apply to use them.`);
-      const loadedAlertPromise = DayPilot.Modal.alert(
-        '<div style="text-align:center;">Website settings were successfully loaded.<br><br>Click <b>Apply</b> to use them,<br/>or <b>Cancel</b> to leave the current applied settings unchanged.</div>',
-        { title: "Settings Loaded", okText: "OK", top: 150 }
-      );
-      await loadedAlertPromise;
+
+      if (showAlert) {
+        await DayPilot.Modal.alert(
+          '<div style="text-align:center;">Website settings were successfully loaded from:<br>' +
+          '<div style="margin-top:8px;font-weight:700;">' + escapeHtml(file.name) + '</div>' +
+          '<br>Click <b>Apply</b> to use them,<br/>or <b>Cancel</b> to leave the current applied settings unchanged.</div>',
+          { title: "Settings Loaded", okText: "OK", top: 150 }
+        );
+      }
+
+      return true;
     } catch (error) {
       console.warn("Unable to load website settings file.", error);
       await DayPilot.Modal.alert(
@@ -3217,7 +3232,71 @@
         { title: "Invalid Settings File", okText: "OK" }
       );
       setStatus("The selected settings file could not be loaded.", true);
+      return false;
     }
+  }
+
+  async function loadWebsiteSettingsFromFile() {
+    const file = await selectSettingsFile();
+    if (!file) return;
+
+    await loadWebsiteSettingsFileIntoOpenDialog(file, { tabId: "website_settings_manage", showAlert: true });
+  }
+
+  function settingsDropFilesFromEvent(event) {
+    return Array.from((event.dataTransfer && event.dataTransfer.files) || [])
+      .filter(fileIsSettingsDropCandidate);
+  }
+
+  function initializeWebsiteSettingsDialogDropZone() {
+    const tabsRoot = document.getElementById("website-settings-tabs-root");
+    if (!tabsRoot || tabsRoot.dataset.settingsDropInitialized === "true" || !window.File || !window.FileReader) return;
+
+    let dragDepth = 0;
+
+    const clearDropHighlight = () => {
+      dragDepth = 0;
+      tabsRoot.classList.remove("settings-drop-active");
+    };
+
+    tabsRoot.addEventListener("dragenter", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      dragDepth += 1;
+      tabsRoot.classList.add("settings-drop-active");
+    });
+
+    tabsRoot.addEventListener("dragover", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    });
+
+    tabsRoot.addEventListener("dragleave", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) tabsRoot.classList.remove("settings-drop-active");
+    });
+
+    tabsRoot.addEventListener("drop", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      clearDropHighlight();
+
+      const settingsFiles = settingsDropFilesFromEvent(event);
+      if (!settingsFiles.length) {
+        setStatus("Drop a saved Website Builder settings .txt or .json file onto the settings dialog.", true);
+        return;
+      }
+
+      loadWebsiteSettingsFileIntoOpenDialog(settingsFiles[0], { tabId: null, showAlert: true }).catch(error => {
+        console.error(error);
+        setStatus(error && error.message ? error.message : String(error), true);
+      });
+    });
+
+    tabsRoot.dataset.settingsDropInitialized = "true";
   }
 
   function parseCustomThemeFileText(text) {
@@ -3492,7 +3571,7 @@
                 '<div class="website-settings-manage-panel">' +
                   '<div class="website-settings-manage-card">' +
                     '<h3>Manage website settings</h3>' +
-                    '<p>Save or load website settings, import a custom theme, or reset every setting to the original defaults. You can also drag a saved settings <code>.txt</code> file onto the Loaded Tunes box to apply it immediately.</p>' +
+                    '<p>Save or load website settings, import a custom theme, or reset every setting to the original defaults. You can also drag a saved settings <code>.txt</code> or <code>.json</code> file onto any tab in this dialog to load those values here without applying them to the live website settings.</p>' +
                     '<div class="website-settings-manage-actions">' +
                       '<div class="website-settings-manage-file-actions">' +
                         '<button id="website-settings-load-action" class="website-settings-manage-action" type="button">Load Settings</button>' +
@@ -3916,6 +3995,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged. When loaded settings are applied, the default exported website filename is reset from the loaded website title.</li>
+            <li>On desktop computers, you can also drag a saved Website Builder settings <code>.txt</code> or <code>.json</code> file onto any tab in the settings dialog. The dropped settings are loaded into the dialog and the visible controls are refreshed, but the live website settings are not changed until you click <b>Apply</b>.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
             <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu switches to <b>Custom - Imported theme name</b>.</li>
             <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Click <b>Apply</b> to use the imported custom theme for exported websites, or <b>Cancel</b> to leave the currently applied theme unchanged.</li>
@@ -3931,7 +4011,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Website settings are stored in this browser using <code>localStorage</code> when
-            <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
+            <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog, including by drag and drop onto the settings dialog, does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
           </p>
 
           <h3 id="instructions-build-save">4. Build and save the website</h3>
