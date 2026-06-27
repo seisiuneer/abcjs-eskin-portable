@@ -850,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.14";
+  const WEBSITE_BUILDER_VERSION = "1.1.16";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3829,7 +3829,7 @@
               <ul>
                 <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
                 <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
-                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, or Hammered Dulcimer for all tunes.</li>
+                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
                 <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
                 <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
               </ul>
@@ -6461,6 +6461,7 @@ fiddle: {
       const tune = entry.tune;
       const displayTitle = titleForWebsiteDisplay(tune.title, tune.isSectionHeader, titleArticleMode);
       let key = slugify(tune.title, "tune-" + (entry.originalIndex + 1));
+      if (/^[0-9]/.test(key)) key = "tune-" + key;
       const base = key;
       let suffix = 2;
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
@@ -6558,6 +6559,8 @@ fiddle: {
             <option value="irishFlute">Irish Flute</option>
             <option value="accordion">Accordion</option>
             <option value="concertina">Concertina</option>
+            <option value="fiddle">Fiddle</option>
+            <option value="harp">Harp</option>
             <option value="hammeredDulcimer">Hammered Dulcimer</option>
           </select>
         </div>`
@@ -7448,6 +7451,12 @@ fiddle: {
       abcElementId: panel.dataset.key + "-abc"
     }));
 
+    function cssIdSelector(id) {
+      const value = String(id || "");
+      if (window.CSS && typeof window.CSS.escape === "function") return "#" + window.CSS.escape(value);
+      return "#" + value.replace(/(^[0-9])|[^a-zA-Z0-9_-]/g, character => "\\\\" + character.charCodeAt(0).toString(16) + " ");
+    }
+
     const controllers = new Map();
     const defaultDisplayMode = ${displayMode};
     const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
@@ -7502,6 +7511,8 @@ fiddle: {
       irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
       accordion: { displayMode: "notation", program: "21", format: "noten" },
       concertina: { displayMode: "notation", program: "133", format: "noten" },
+      fiddle: { displayMode: "notation", program: "110", format: "noten" },
+      harp: { displayMode: "notation", program: "46", format: "noten" },
       hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }
     };
 
@@ -7914,10 +7925,12 @@ fiddle: {
         link.addEventListener("click", event => {
           event.preventDefault();
           stopAllPlayback();
-          const target = document.querySelector(link.getAttribute("href"));
+          const href = link.getAttribute("href") || "";
+          const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
+          const target = targetId ? document.getElementById(targetId) : null;
           if (target) {
             target.scrollIntoView({ behavior: "auto", block: "start" });
-            history.replaceState(null, "", link.getAttribute("href"));
+            history.replaceState(null, "", "#" + targetId);
           }
         });
       });
@@ -7960,7 +7973,7 @@ fiddle: {
       return {
         onStart() {
           stopOtherPlayback(workKey);
-          const svg = document.querySelector("#" + paperId + " svg");
+          const svg = paper ? paper.querySelector("svg") : null;
           if (!svg) return;
           svg.querySelectorAll(".abcjs-cursor").forEach(item => item.remove());
           cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -8158,7 +8171,7 @@ fiddle: {
         }
 
         const controller = new ABCJS.synth.SynthController();
-        controller.load("#" + audioId, createCursorControl(paperId, work.key), playerOptions);
+        controller.load(cssIdSelector(audioId), createCursorControl(paperId, work.key), playerOptions);
         await controller.setTune(rendered[0], false, synthOptions);
         controllers.set(work.key, controller);
 
