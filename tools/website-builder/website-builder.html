@@ -770,22 +770,21 @@
 
     @media (min-width: 761px) and (max-width: 1100px) {
       .toolbar {
-        flex-wrap: nowrap;
-        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
         padding: 14px;
       }
 
       .toolbar .button {
-        flex: 0 0 auto;
-        width: auto;
+        width: 100%;
         min-width: 0;
-        padding: 10px 13px;
-        white-space: nowrap;
+        padding: 10px 12px;
+        white-space: normal;
       }
 
-      #save-button {
-        padding-left: 12px;
-        padding-right: 12px;
+      .toolbar .instructions-button {
+        margin-left: 0;
       }
     }
 
@@ -850,7 +849,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.4";
+  const WEBSITE_BUILDER_VERSION = "1.1.5";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
