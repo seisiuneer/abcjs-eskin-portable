@@ -261,7 +261,7 @@
     }
 
     .website-settings-tab-panels {
-      height: min(660px, calc(100vh - 220px));
+      height: var(--website-settings-tab-panels-height, min(660px, calc(100vh - 220px)));
       min-height: 330px;
       overflow-y: auto;
       overscroll-behavior: contain;
@@ -386,7 +386,7 @@
       }
 
       .website-settings-tab-panels {
-        height: calc(100vh - 270px);
+        height: var(--website-settings-tab-panels-height, calc(100vh - 270px));
       }
     }
 
@@ -850,7 +850,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.1";
+  const WEBSITE_BUILDER_VERSION = "1.1.3";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1850,6 +1850,7 @@
   let lastWebsiteSettingsTabId = "website_settings_text";
   let sessionSettingsFilename = "website-settings.txt";
   let sessionWebsiteFilename = null;
+  let resetWebsiteFilenameOnSettingsApply = false;
 
   const fileInput = document.getElementById("abc-files");
   const settingsButton = document.getElementById("settings-button");
@@ -2434,6 +2435,7 @@
 
   function applyDroppedWebsiteSettings(settings, sourceName) {
     state.settings = settingsWithInstrumentSelectorRequiredSoundInjection(settings);
+    resetWebsiteExportFilenameDefaultForSettings(state.settings);
     saveSettings();
 
     // If the Website Settings dialog is currently open, keep its fields in sync
@@ -2462,6 +2464,7 @@
       if (droppedSettings) {
         settingsCount += 1;
         state.settings = settingsWithInstrumentSelectorRequiredSoundInjection(droppedSettings);
+        resetWebsiteExportFilenameDefaultForSettings(state.settings);
         saveSettings();
         applySettingsValuesInOpenSettingsDialog(state.settings, "website_settings_manage");
       } else {
@@ -3178,6 +3181,7 @@
       }
 
       applySettingsValuesInOpenSettingsDialog(validation.settings, "website_settings_manage");
+      resetWebsiteFilenameOnSettingsApply = true;
       setStatus(`Loaded website settings from ${file.name}. Click Apply to use them.`);
       const loadedAlertPromise = DayPilot.Modal.alert(
         '<div style="text-align:center;">Website settings were successfully loaded.<br><br>Click <b>Apply</b> to use them,<br/>or <b>Cancel</b> to leave the current applied settings unchanged.</div>',
@@ -3424,10 +3428,21 @@
       return;
     }
 
+    resetWebsiteFilenameOnSettingsApply = false;
+
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 900;
+    const settingsDialogTop = viewportHeight < 700 ? 12 : 24;
+    const settingsDialogHeight = Math.min(
+      1060,
+      Math.max(620, viewportHeight - settingsDialogTop - 76)
+    );
+    const settingsTabPanelsHeight = Math.max(330, settingsDialogHeight - 240);
+
     const form = [
       {
         html:
-          '<div id="website-settings-tabs-root" class="website-settings-tabs">' +
+          '<div id="website-settings-tabs-root" class="website-settings-tabs" style="--website-settings-tab-panels-height:' + settingsTabPanelsHeight + 'px;">' +
             '<div class="website-settings-tab-bar" role="tablist" aria-label="Website settings sections">' +
               '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Display</button>' +
@@ -3609,8 +3624,9 @@
 
     const modalPromise = DayPilot.Modal.form(form, { ...state.settings }, {
       title: "Website Settings",
-      width: Math.min(1040, Math.max(720, window.innerWidth - 28)),
-      height: Math.min(900, Math.max(620, window.innerHeight - 20)),
+      width: Math.min(1040, Math.max(720, viewportWidth - 28)),
+      height: settingsDialogHeight,
+      top: settingsDialogTop,
       autoFocus: false,
       okText: "Apply",
       cancelText: "Cancel"
@@ -3619,14 +3635,23 @@
     scheduleWebsiteSettingsTabs();
     const result = await modalPromise;
 
-    if (result.canceled) return;
+    if (result.canceled) {
+      resetWebsiteFilenameOnSettingsApply = false;
+      return;
+    }
 
     if (result.result && result.result.theme === "custom" && !state.customTheme) {
+      resetWebsiteFilenameOnSettingsApply = false;
       await showCustomThemeRequiredDialog();
       return;
     }
 
-    state.settings = settingsWithInstrumentSelectorRequiredSoundInjection({ ...state.settings, ...result.result });
+    const nextSettings = settingsWithInstrumentSelectorRequiredSoundInjection({ ...state.settings, ...result.result });
+    if (resetWebsiteFilenameOnSettingsApply) {
+      resetWebsiteExportFilenameDefaultForSettings(nextSettings);
+      resetWebsiteFilenameOnSettingsApply = false;
+    }
+    state.settings = nextSettings;
     saveSettings();
     renderState();
     setStatus("Website settings updated and saved.");
@@ -3675,7 +3700,7 @@
           <p>
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
-            the <code>abcjs-eskin-portable</code> JavaScript library. The generated site can include a display/instrument selector, table of contents,
+            the <code>abcjs-eskin-portable</code> JavaScript library. The generated site can include a display/instrument selector, large tunebook navigation, table of contents,
             individual tune sections, T:* style section headers, playback controls, cursor tracking, autoscroll, decorative 
             ornaments between tunes, and links back to the table of contents.
           </p>
@@ -3786,7 +3811,7 @@
                 <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
               </ul>
             </li>
-            <li><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections.
+            <li><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections. 
               <ul>
                 <li><b>Disabled</b> is the default.</li>
                 <li><b>Groups of 100 tunes</b> breaks the ordinary tunes into simple sequential groups.</li>
@@ -3794,9 +3819,8 @@
                 <li><b>R: Rhythm tag (groups of 100)</b> creates rhythm groups and splits any rhythm group larger than the selected batch size into sequential subgroups without alphabetical sorting.</li>
                 <li><b>R: Rhythm tag + alphabetical subgroups (groups of 100)</b> creates rhythm groups and splits large rhythm groups into alphabetical subgroups. Automatic alphabetical splitting uses the selected batch size as a hard maximum for finite batch sizes; if one starting letter contains more tunes than the selected size inside a rhythm group, it is split into the same explicit range subgroups.</li>
                 <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
-                <li>When a dropdown label contains an explicit range, the table-of-contents numbers and tune-panel numbers in that selected section use that same range.</li>
-                <li>The exact labels for the batch-size grouping options update in the settings dialog when <b>Large tune collection grouping batch size</b> changes.</li>
-                <li>Automatic grouping options group ordinary tunes; use <b>Manual T: section headers</b> when you want existing <code>T:*</code> section-header tunes to define and appear as the groups.</li>
+                <li>The <b>Groups of 100</b> and <b>(groups of 100)</b> value in the options listed above will be replaced by the batch size currently selected in the <b>Large tune collection grouping batch size</b> control below.</li>
+                <li>Automatic grouping options group ordinary tunes; use <b>Manual T: section headers</b> when you want existing <code>T:*</code> section-header tunes to define and appear as the group names.</li>
                 <li>If an <b>R: Rhythm tag</b> grouping option is selected and some ordinary tunes do not have <code>R:</code> tags, the builder warns before saving. If you continue, tunes without rhythm tags are placed in an <b>Other</b> rhythm group.</li>
               </ul>
             </li>
@@ -3867,7 +3891,7 @@
           <p id="instructions-configure-manage-settings"><b>Manage Settings</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
-            <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged.</li>
+            <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged. When loaded settings are applied, the default exported website filename is reset from the loaded website title.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
             <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu switches to <b>Custom - Imported theme name</b>.</li>
             <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Click <b>Apply</b> to use the imported custom theme for exported websites, or <b>Cancel</b> to leave the currently applied theme unchanged.</li>
@@ -3890,7 +3914,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ol>
             <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>
-            <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only.</li>
+            <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only. Loading and applying a saved settings file resets this default filename from the loaded website title.</li>
             <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>
           </ol>
           <p>The exported file contains:</p>
@@ -4308,6 +4332,12 @@ fiddle: {
     safeName = safeName.replace(/[\/:*?"<>|]+/g, "-");
     if (!/\.html?$/i.test(safeName)) safeName += ".html";
     return safeName;
+  }
+
+  function resetWebsiteExportFilenameDefaultForSettings(settings) {
+    sessionWebsiteFilename = ensureHtmlExtension(
+      slugify(settings && settings.title, "abc-music-site") + ".html"
+    );
   }
 
   async function promptFilename() {
