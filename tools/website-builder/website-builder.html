@@ -904,7 +904,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.38";
+  const WEBSITE_BUILDER_VERSION = "1.1.40";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -912,6 +912,7 @@
     { id: "english", name: "Traditional English Music" },
     { id: "quebecois", name: "Québécois" },
     { id: "irishpub", name: "Irish Pub Songs" },
+    { id: "flyingshamrocks", name: "Flying Shamrocks" },
 
     { id: "folk", name: "Folk / Acoustic" },
     { id: "bluegrass", name: "Bluegrass" },
@@ -6330,6 +6331,227 @@ fiddle: {
     }
         `
       },
+      flyingshamrocks: {
+          font: 'Georgia, "Times New Roman", serif',
+          bg: '#10291a',
+          panel: '#fff8df',
+          ink: '#1b2e20',
+          muted: '#61705c',
+          primary: '#0f6d3f',
+          secondary: '#9a5a24',
+          accent: '#d4a33d',
+          line: '#275238',
+          hero: 'linear-gradient(135deg,#0b3d24,#0f6d3f)',
+          radius: '18px',
+          shadow: '0 18px 42px rgba(10,40,24,.28)',
+          ornament: '☘',
+          customCss: `
+        body {
+          position: relative;
+          overflow-x: hidden;
+          background:
+            radial-gradient(circle at 24px 24px, rgba(212,163,61,.16) 2px, transparent 2.5px) 0 0 / 48px 48px,
+            linear-gradient(180deg, #15341f, #0d2417);
+        }
+
+        .hero {
+          position: relative;
+          overflow: hidden;
+          border-bottom: 10px solid #d4a33d;
+          background:
+            radial-gradient(circle at 16% 28%, rgba(212,163,61,.38) 0 58px, transparent 59px),
+            linear-gradient(135deg, #0b3d24, #0f6d3f);
+        }
+
+        .hero::before {
+          content: "☘";
+          position: absolute;
+          left: 8%;
+          top: 10px;
+          color: rgba(255,248,223,.22);
+          font-size: 9rem;
+          line-height: 1;
+          transform: rotate(12deg);
+          pointer-events: none;
+        }
+
+        .hero::after {
+          content: "☘";
+          position: absolute;
+          right: 8%;
+          top: 10px;
+          color: rgba(255,248,223,.22);
+          font-size: 9rem;
+          line-height: 1;
+          transform: rotate(-12deg);
+          pointer-events: none;
+        }
+
+        .hero .page-width {
+          position: relative;
+          z-index: 2;
+        }
+
+        .hero h1,
+        .table-of-contents h2,
+        .tune-header h2 {
+          font-family: Georgia, "Times New Roman", serif;
+          font-weight: 900;
+          letter-spacing: .015em;
+        }
+
+        .hero h1 {
+          display: inline;
+          padding: .08em .24em .12em;
+          border-radius: 14px;
+          background: rgba(8,40,23,.30);
+          -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+          text-shadow:
+            0 2px 0 rgba(8,40,23,.74),
+            0 4px 12px rgba(0,0,0,.34);
+        }
+
+        .hero-copy {
+          color: #f2e5c1;
+        }
+
+        .table-of-contents,
+        .score-panel {
+          position: relative;
+          border: 3px solid #275238;
+          border-radius: 20px 8px 20px 8px;
+          box-shadow: 0 18px 42px rgba(10,40,24,.28);
+          background:
+            linear-gradient(rgba(255,248,223,.96), rgba(255,248,223,.96)),
+            radial-gradient(circle at 18px 18px, rgba(15,109,63,.10) 0 7px, transparent 8px) 0 0 / 52px 52px;
+        }
+
+        .toc-links a {
+          color: #1b2e20;
+          background: #fff8df;
+          border: 2px solid #275238;
+          border-radius: 16px 6px 16px 6px;
+          box-shadow: 3px 5px 0 rgba(39,82,56,.18);
+          font-weight: 800;
+        }
+
+        .toc-links a:hover,
+        .toc-links a:focus-visible {
+          color: #fff8df;
+          background: #0f6d3f;
+        }
+
+        .toc-links span,
+        .chapter-label {
+          color: #fff8df;
+          background: #0f6d3f;
+          border: 2px solid #275238;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba(212,163,61,.25);
+          transform: none;
+        }
+
+        .back-to-toc {
+          color: #fff8df;
+          background: #9a5a24;
+          border: 2px solid #275238;
+          border-radius: 999px;
+          box-shadow: 3px 4px 0 rgba(39,82,56,.18);
+        }
+
+        .paper {
+          border: 2px solid #275238;
+          border-radius: 14px;
+          box-shadow: inset 0 0 0 6px rgba(212,163,61,.14);
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+          content: "";
+          height: 5px;
+          background: repeating-linear-gradient(90deg, #0f6d3f 0 22px, transparent 22px 32px);
+        }
+
+        .section-divider span {
+          color: #fff8df;
+          background: #0f6d3f;
+          border: 2px solid #275238;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba(212,163,61,.25);
+          transform: rotate(8deg);
+        }
+
+        .site-footer {
+          color: #f2e5c1;
+          background: #0b3d24;
+          border-top: 10px solid #d4a33d;
+        }
+
+        /* Subtle animated Irish Pub shamrocks: begin */
+        body::before,
+        body::after {
+          content: "";
+          position: fixed;
+          inset: -24vh -24vw;
+          z-index: 0;
+          pointer-events: none;
+          background-repeat: repeat;
+          will-change: background-position, transform;
+        }
+
+        /* Main irregular shamrock layer */
+        body::before {
+          opacity: .24;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='930' height='750' viewBox='0 0 930 750'%3E%3Ctext x='63' y='123' font-size='87' fill='%23d4a33d' transform='rotate(-7 63 123)'%3E%E2%98%98%3C/text%3E%3Ctext x='336' y='198' font-size='69' fill='%23fff8df' transform='rotate(5 336 198)' opacity='.70'%3E%E2%98%98%3C/text%3E%3Ctext x='699' y='147' font-size='99' fill='%230f6d3f' transform='rotate(9 699 147)' opacity='.74'%3E%E2%98%98%3C/text%3E%3Ctext x='174' y='390' font-size='105' fill='%23d4a33d' transform='rotate(4 174 390)' opacity='.66'%3E%E2%98%98%3C/text%3E%3Ctext x='513' y='438' font-size='78' fill='%23fff8df' transform='rotate(-10 513 438)' opacity='.72'%3E%E2%98%98%3C/text%3E%3Ctext x='804' y='573' font-size='66' fill='%230f6d3f' transform='rotate(12 804 573)' opacity='.78'%3E%E2%98%98%3C/text%3E%3Ctext x='264' y='651' font-size='81' fill='%23d4a33d' transform='rotate(-3 264 651)' opacity='.64'%3E%E2%98%98%3C/text%3E%3C/svg%3E");
+          background-size: 930px 750px;
+          animation: irishPubShamrockDriftOne 52s linear infinite;
+        }
+
+        /* Second irregular offset shamrock layer */
+        body::after {
+          opacity: .14;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1170' height='930' viewBox='0 0 1170 930'%3E%3Ctext x='159' y='180' font-size='75' fill='%23fff8df' transform='rotate(11 159 180)' opacity='.68'%3E%E2%98%98%3C/text%3E%3Ctext x='567' y='138' font-size='105' fill='%23d4a33d' transform='rotate(-6 567 138)' opacity='.60'%3E%E2%98%98%3C/text%3E%3Ctext x='948' y='309' font-size='78' fill='%230f6d3f' transform='rotate(8 948 309)' opacity='.80'%3E%E2%98%98%3C/text%3E%3Ctext x='345' y='501' font-size='96' fill='%23d4a33d' transform='rotate(-12 345 501)' opacity='.64'%3E%E2%98%98%3C/text%3E%3Ctext x='765' y='621' font-size='72' fill='%23fff8df' transform='rotate(3 765 621)' opacity='.70'%3E%E2%98%98%3C/text%3E%3Ctext x='129' y='819' font-size='111' fill='%230f6d3f' transform='rotate(7 129 819)' opacity='.54'%3E%E2%98%98%3C/text%3E%3Ctext x='1017' y='837' font-size='87' fill='%23d4a33d' transform='rotate(-4 1017 837)' opacity='.66'%3E%E2%98%98%3C/text%3E%3C/svg%3E");
+          background-size: 1170px 930px;
+          animation: irishPubShamrockDriftTwo 72s linear infinite;
+        }
+
+        body > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        @keyframes irishPubShamrockDriftOne {
+          from {
+            background-position: 0 0;
+            transform: rotate(1.5deg);
+          }
+          to {
+            background-position: 930px 750px;
+            transform: rotate(1.5deg);
+          }
+        }
+
+        @keyframes irishPubShamrockDriftTwo {
+          from {
+            background-position: 0 0;
+            transform: rotate(-2.5deg);
+          }
+          to {
+            background-position: -1170px 930px;
+            transform: rotate(-2.5deg);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          body::before,
+          body::after {
+            animation: none;
+          }
+        }
+        /* Subtle animated Irish Pub shamrocks: end */`
+      },
+
       classical: {
         font: 'Georgia, "Times New Roman", serif', bg: '#e8dcc0', panel: '#f9f1de',
         ink: '#2d2118', muted: '#6b5948', primary: '#641f2b', secondary: '#b28a3e',
