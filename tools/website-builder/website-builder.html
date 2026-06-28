@@ -434,7 +434,6 @@
       }
     }
 
-
     /* Center the Website Settings modal buttons with a wider gap. */
     .modal_default_buttons,
     .modal_flat_buttons,
@@ -4216,6 +4215,7 @@
               <li><a href="#instructions-generated-site">Using the generated website</a></li>
               <li><a href="#instructions-clear">Clearing the current collection</a></li>
               <li><a href="#instructions-abctools">ABC Transcription Tools compatibility</a></li>
+              <li><a href="#instructions-theme-builder">abcjs-eskin Website Theme Builder</a></li>
               <li><a href="#instructions-launching">Launching from other ABC tools</a></li>
               <li><a href="#instructions-notes">Notes</a></li>
               <li><a href="#instructions-developer-customization">Developer Customization</a></li>
@@ -4452,6 +4452,7 @@
             Custom themes are intended for advanced/developer use. Contact the developer if you need help creating or refining a custom theme.
           </div>
 
+
           <h3 id="instructions-saved-settings">3. Saved settings</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
@@ -4545,6 +4546,19 @@
             Other PDF-only annotations in that block, such as table-of-contents, index, QR-code, PDF-quality,
             and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
           </p>
+          <h3 id="instructions-theme-builder">8. abcjs-eskin Website Theme Builder</h3>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p>
+            The <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b>
+            is a companion tool for creating custom visual themes that can be imported into this Website Builder.
+          </p>
+          <ul>
+            <li>Use the Theme Builder to start from an existing built-in theme, adjust colors, fonts, header decoration, shadows, rounded corners, and optional custom CSS, then export a custom theme file.</li>
+            <li>In this Website Builder, open <b>Website Settings</b> &gt; <b>Manage Settings</b> and choose <b>Import Custom Theme</b> to load the exported theme file.</li>
+            <li>After a successful import, the theme menu switches to <b>Custom - Imported theme name</b>. Click <b>Apply</b> to use the imported theme for exported websites.</li>
+            <li>Imported custom themes are saved in this browser immediately, even if you close the settings dialog without clicking <b>Apply</b>. Resetting all settings removes the imported custom theme.</li>
+          </ul>
+
           <h3 id="instructions-launching">Launching from other ABC tools</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
@@ -6195,7 +6209,6 @@ fiddle: {
         `
       },
 
-
       irishpub: {
         font: 'Georgia, "Times New Roman", serif',
         bg: '#10291a',
@@ -7317,7 +7330,6 @@ fiddle: {
       : "";
 
     const playerAbove = s.playerPosition === "above";
-
 
     const instrumentSelectorFieldMarkup = includeInstrumentSelector
       ? `<div class="site-selector-field">
