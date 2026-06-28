@@ -4345,7 +4345,7 @@
               <ul>
                 <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
                 <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
-                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
+                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
                 <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
                 <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
               </ul>
@@ -7355,6 +7355,7 @@ fiddle: {
             <option value="dadgadGuitar">DADGAD</option>
             <option value="tinWhistle">Tin Whistle</option>
             <option value="irishFlute">Irish Flute</option>
+            <option value="uilleann">Uilleann Pipes</option>
             <option value="accordion">Accordion</option>
             <option value="concertina">Concertina</option>
             <option value="fiddle">Fiddle</option>
@@ -8496,6 +8497,7 @@ ${embeddedCloseMarkup}
       dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12", format: "guitard" },
       tinWhistle: { displayMode: "whistleNotation", program: "78", format: "whistle" },
       irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
+      uilleann: { displayMode: "notation", program: "129", format: "noten" },
       accordion: { displayMode: "notation", program: "21", format: "noten" },
       concertina: { displayMode: "notation", program: "133", format: "noten" },
       fiddle: { displayMode: "notation", program: "110", format: "noten" },
