@@ -4621,6 +4621,7 @@
               <li><a href="#developer-injected-soundfont-midi">Changing injected soundfont and MIDI accompaniment settings</a></li>
               <li><a href="#developer-selector-enabled-sound-settings">Selector-enabled sound settings</a></li>
               <li><a href="#developer-no-selector-sound-settings">Sound settings without the selector</a></li>
+              <li><a href="#developer-background-animation-speed">Changing background animation speed</a></li>
             </ol>
           </div>
  
@@ -4851,6 +4852,17 @@ fiddle: {
             <li>Change <code>%%MIDI bassvol</code> and <code>%%MIDI chordvol</code> to set the bass and chord volumes from <code>0</code> to <code>127</code>.</li>
             <li>For generated guitar and DADGAD guitar sites, keep the injected <code>%%MIDI transpose -12</code> line when you want playback to sound in the expected guitar octave.</li>
           </ul>
+
+          <p id="developer-background-animation-speed"><b>Changing background animation speed</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
+          <p>Some built-in themes include CSS background animation, such as the drifting shamrock layers in the <b>Flying Shamrocks</b> theme. These animations are controlled by normal CSS <code>animation</code> declarations in the generated website CSS.</p>
+          <p>To change the speed in an exported website, search the exported <code>.html</code> file for <code>animation:</code> near the theme's preserved custom CSS. The duration value is usually written in seconds, such as <code>104s</code> or <code>144s</code>. A larger duration makes the animation slower; a smaller duration makes it faster.</p>
+          <p>For example, to make a drifting shamrock layer about half as fast, double the duration:</p>
+          <pre><code>animation: irishPubShamrockDriftOne 144s linear infinite;</code></pre>
+          <p>Set it to double the duration:</p>
+          <pre><code>animation: irishPubShamrockDriftOne 208s linear infinite;</code></pre>
+          <p>If a theme has multiple animated layers, adjust each related <code>animation:</code> line by the same ratio so the layers keep their relative motion. Do not rename the animation unless you also rename the matching <code>@keyframes</code> block.</p>
+          <p>The generated CSS also includes a <code>@media (prefers-reduced-motion: reduce)</code> rule for animated background themes. Leave that rule in place so users who request reduced motion do not get the background animation.</p>
 
           <hr style="margin-top:20px;">
           <h3 id="instructions-tip-jars">Tip Jars</h3>
