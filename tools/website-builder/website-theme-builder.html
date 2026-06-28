@@ -283,7 +283,25 @@
     }
 
     .theme-builder-side-actions {
-      justify-content: flex-end;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .theme-builder-side-actions .website-settings-manage-action {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .theme-builder-file-row .theme-builder-side-actions .theme-builder-instructions-action {
+      grid-column: 2;
+    }
+
+    .theme-builder-built-in-row .theme-builder-side-actions {
+      width: 100%;
     }
 
     .theme-builder-built-in-actions .theme-builder-select {
@@ -315,6 +333,17 @@
       width: 100%;
       max-width: none;
       min-width: 0;
+    }
+
+    #theme-builder-full-preview-action {
+      background: #1d6f7a !important;
+      border-color: #14505a !important;
+    }
+
+    #theme-builder-full-preview-action:hover,
+    #theme-builder-full-preview-action:focus-visible {
+      background: #14505a !important;
+      outline: none !important;
     }
 
     #theme-builder-color-sampler-action {
@@ -683,7 +712,7 @@
       display: inline-block;
       margin-top: 4px;
       padding: 7px 12px;
-      border-radius: 999px;
+      border-radius: var(--theme-preview-radius, 6px);
       font-weight: 750;
       text-decoration: none;
     }
@@ -1098,8 +1127,13 @@
       }
 
       .theme-builder-file-actions,
-      .theme-builder-built-in-actions {
+      .theme-builder-built-in-actions,
+      .theme-builder-side-actions {
         grid-template-columns: 1fr;
+      }
+
+      .theme-builder-file-row .theme-builder-side-actions .theme-builder-instructions-action {
+        grid-column: auto;
       }
 
       .theme-builder-section .modal_default_form_item,
@@ -1715,7 +1749,7 @@
     <h1>abcjs-eskin Website Theme Builder</h1>
     <p>
       Developer tool for building, previewing, saving, and exporting new
-      abcjs-eskin Website Builder themes.
+      abcjs-eskin Website Builder themes
     </p>
   </header>
 
@@ -2754,6 +2788,639 @@
     element.style.setProperty(property, String(value || ""), "important");
   }
 
+  function styleTextForPreviewDocument(value) {
+    return String(value || "").replace(/<\/style/gi, "<\\/style");
+  }
+
+  function extractFullPreviewHeroTextColor(css) {
+    const text = String(css || "");
+    const selectorBlocks = [
+      ...text.matchAll(/\.hero\s+h1\s*\{([^}]*)\}/gi),
+      ...text.matchAll(/\.hero\s*\{([^}]*)\}/gi)
+    ];
+
+    for (let index = selectorBlocks.length - 1; index >= 0; index -= 1) {
+      const declarationBlock = selectorBlocks[index][1] || "";
+      const colorMatch = declarationBlock.match(/(?:^|;)\s*color\s*:\s*([^;]+)\s*;?/i);
+
+      if (colorMatch) {
+        const value = colorMatch[1].trim();
+        if (value && !/^inherit$/i.test(value) && !/^currentColor$/i.test(value)) {
+          return value;
+        }
+      }
+    }
+
+    return "";
+  }
+
+  function fullThemePreviewCss(theme) {
+    const advancedCss = theme.includeBuiltInAdvancedCss
+      ? String(theme.advancedCss || theme.customCss || "")
+      : "";
+    const buttonText = readableTextForBackground(theme.primary || DEFAULT_CUSTOM_THEME.primary);
+    const heroText = extractFullPreviewHeroTextColor(advancedCss) ||
+      "#ffffff";
+
+    return styleTextForPreviewDocument(`
+      :root {
+        --preview-bg: ${theme.bg};
+        --preview-panel: ${theme.panel};
+        --preview-ink: ${theme.ink};
+        --preview-muted: ${theme.muted};
+        --preview-primary: ${theme.primary};
+        --preview-secondary: ${theme.secondary};
+        --preview-accent: ${theme.accent};
+        --preview-line: ${theme.line};
+        --preview-radius: ${theme.radius};
+        --preview-shadow: ${theme.shadow};
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { min-height: 100%; }
+
+      body {
+        margin: 0;
+        color: var(--preview-ink);
+        background: var(--preview-bg);
+        font-family: ${theme.font};
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .page-width {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(42px, 7vw, 76px) 18px;
+        color: ${heroText};
+        background: ${theme.hero};
+        text-align: center;
+      }
+
+      .hero.graphics::before {
+        content: "";
+        position: absolute;
+        left: clamp(72px, 17%, 190px);
+        top: clamp(18px, 13%, 42px);
+        width: clamp(110px, 18vw, 210px);
+        height: clamp(110px, 18vw, 210px);
+        border-radius: 50%;
+        background: var(--preview-accent);
+        opacity: .32;
+        pointer-events: none;
+      }
+
+      .hero .page-width {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.85rem, 3.4vw, 3.15rem);
+        line-height: 1.05;
+      }
+
+      .hero-copy {
+        margin: 12px auto 0;
+        max-width: 46rem;
+        color: ${heroText};
+        font-size: clamp(1.05rem, 2.3vw, 1.55rem);
+        opacity: .92;
+      }
+
+      .theme-preview-header-ornament {
+        position: absolute;
+        z-index: 1;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--preview-accent);
+        font-size: clamp(54px, 9vw, 116px);
+        line-height: 1;
+        opacity: .62;
+        pointer-events: none;
+      }
+
+      .theme-preview-header-ornament.left { left: clamp(24px, 8%, 96px); }
+      .theme-preview-header-ornament.right { right: clamp(24px, 8%, 96px); }
+
+      main {
+        padding: 28px 0 46px;
+      }
+
+      .table-of-contents,
+      .score-panel,
+      .paper {
+        color: var(--preview-ink);
+        background: var(--preview-panel);
+        border: 1px solid var(--preview-line);
+        border-radius: var(--preview-radius);
+        box-shadow: var(--preview-shadow);
+      }
+
+      .table-of-contents {
+        margin: 0 0 30px;
+        padding: clamp(28px, 4vw, 48px);
+      }
+
+      .table-of-contents h2 {
+        margin: 0 0 22px;
+        color: var(--preview-primary);
+        font-size: clamp(1.65rem, 2.8vw, 2.45rem);
+        line-height: 1.1;
+        text-align: center;
+      }
+
+      .toc-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .toc-links a {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+        padding: 13px 16px;
+        color: var(--preview-ink);
+        background: var(--preview-panel);
+        border: 2px solid var(--preview-line);
+        border-radius: var(--preview-radius);
+        text-decoration: none;
+      }
+
+      .toc-links .toc-number {
+        flex: 0 0 auto;
+        display: inline-grid;
+        place-items: center;
+        width: 2.15em;
+        height: 2.15em;
+        color: ${buttonText};
+        background: var(--preview-primary);
+        border: 5px solid color-mix(in srgb, var(--preview-secondary) 42%, #ffffff);
+        border-radius: 999px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .toc-links .toc-title {
+        min-width: 0;
+        overflow: visible;
+        color: inherit;
+        font-weight: 750;
+        line-height: 1.18;
+        white-space: normal;
+        text-overflow: clip;
+      }
+
+      .score-panel {
+        margin: 0 0 0;
+        padding: clamp(24px, 3.4vw, 42px);
+      }
+
+      .tune-top-row {
+        display: grid;
+        grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr);
+        gap: 18px;
+        align-items: center;
+        margin: 0 0 22px;
+      }
+
+      .tune-number {
+        display: grid;
+        place-items: center;
+        width: 3em;
+        height: 3em;
+        margin: 0 auto 16px;
+        color: ${buttonText};
+        background: var(--preview-primary);
+        border: 6px solid color-mix(in srgb, var(--preview-secondary) 38%, #ffffff);
+        border-radius: 999px;
+        font-weight: 800;
+        line-height: 1;
+        float: none;
+        transform: none;
+      }
+
+      .tune-tools-link,
+      .abc-tools-link {
+        justify-self: start;
+      }
+
+      .tune-top-row .back-to-toc {
+        justify-self: end;
+      }
+
+      .tune-header {
+        position: relative;
+        margin: 0 0 22px;
+        text-align: center;
+      }
+
+      .tune-header h2 {
+        margin: 0;
+        padding: 0 clamp(210px, 24vw, 330px);
+        color: var(--preview-ink);
+        font-size: clamp(1.9rem, 3.2vw, 2.95rem);
+        line-height: 1.05;
+        text-align: center;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header {
+        min-height: 76px;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header .back-to-toc {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        white-space: nowrap;
+      }
+
+      .score-panel.has-abc-tools-link .tune-header .abc-tools-link {
+        left: 0;
+        right: auto;
+      }
+
+      .tune-type,
+      .tune-meta {
+        margin: 14px 0 0;
+        color: var(--preview-secondary);
+        font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+        font-weight: 800;
+        line-height: 1.1;
+        text-align: center;
+      }
+
+      .abc-preview-frame {
+        margin: 0 0 20px;
+        padding: 10px;
+        background: #ffffff;
+        border: 2px solid var(--preview-line);
+        border-radius: calc(max(8px, min(16px, var(--preview-radius))));
+      }
+
+      .abc-preview-image {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 auto;
+        background: #fff;
+        border: 0;
+        border-radius: calc(max(4px, min(10px, var(--preview-radius))));
+      }
+
+      .back-to-toc,
+      .tune-tools-link,
+      .abc-tools-link {
+        display: inline-block;
+        padding: 8px 14px;
+        color: ${buttonText};
+        background: var(--preview-primary);
+        border: 2px solid var(--preview-accent);
+        border-radius: var(--preview-radius);
+        font-weight: 750;
+        text-decoration: none;
+      }
+
+      .section-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 88px;
+        color: var(--preview-secondary);
+        font-size: 2rem;
+        line-height: 1;
+        text-align: center;
+      }
+
+      .section-divider span {
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .site-footer {
+        margin-top: 0;
+        padding: 24px 18px;
+        color: ${heroText};
+        background: var(--preview-primary);
+        border-top: 5px solid var(--preview-accent);
+        text-align: center;
+        font-weight: 750;
+      }
+
+      @media (max-width: 760px) {
+        .toc-links {
+          grid-template-columns: 1fr;
+        }
+
+        .tune-header h2 {
+          padding-left: 0;
+          padding-right: 0;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+          min-height: 0;
+          margin-bottom: 18px;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header h2 {
+          order: 3;
+          margin-top: 8px;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header .abc-tools-link,
+        .score-panel.has-abc-tools-link .tune-header .back-to-toc {
+          position: static;
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          text-align: center;
+          white-space: normal;
+          transform: none;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header .abc-tools-link {
+          order: 1;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header .back-to-toc[data-toc-link='true'] {
+          order: 2;
+        }
+
+        .score-panel.has-abc-tools-link .tune-header .tune-type,
+        .score-panel.has-abc-tools-link .tune-header .tune-meta {
+          order: 4;
+        }
+
+        body {
+          font-size: 16px;
+        }
+      }
+
+      ${advancedCss}
+
+      /* Full Screen Preview sizing guard: keep the simulated website typography close
+         to generated-site proportions even when a built-in theme's advanced CSS
+         contains larger showcase typography. */
+      .hero h1 {
+        color: ${heroText} !important;
+        -webkit-text-fill-color: ${heroText} !important;
+        font-size: clamp(1.85rem, 3.4vw, 3.15rem) !important;
+        line-height: 1.08 !important;
+      }
+
+      .hero-copy {
+        color: ${heroText} !important;
+        -webkit-text-fill-color: ${heroText} !important;
+      }
+
+      .table-of-contents h2 {
+        font-size: clamp(1.65rem, 2.8vw, 2.45rem) !important;
+        line-height: 1.12 !important;
+      }
+
+      .tune-header h2 {
+        font-size: clamp(1.9rem, 3.2vw, 2.95rem) !important;
+        line-height: 1.08 !important;
+      }
+
+      .tune-type {
+        font-size: clamp(1.05rem, 1.7vw, 1.45rem) !important;
+      }
+
+      .back-to-toc,
+      .tune-tools-link,
+      .abc-tools-link {
+        padding: 8px 14px !important;
+        font-size: clamp(.9rem, 1.35vw, 1.08rem) !important;
+        line-height: 1.2 !important;
+      }
+
+      /* The Full Screen Preview's ABC Tools button intentionally includes both
+         .back-to-toc and .abc-tools-link so built-in theme button color
+         rules match exported websites as closely as possible. */
+
+      /* Full Screen Preview TOC guard: some advanced theme CSS targets generic
+         .toc-links span elements for number badges or decorative effects.
+         Keep the title span as normal text and the number span as the badge. */
+      .toc-links .toc-title {
+        display: inline !important;
+        min-width: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: var(--preview-ink) !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        font-size: clamp(.98rem, 1.55vw, 1.2rem) !important;
+        font-weight: 750 !important;
+        line-height: 1.18 !important;
+        text-shadow: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
+
+      .toc-links .toc-title::before,
+      .toc-links .toc-title::after {
+        content: none !important;
+        display: none !important;
+      }
+
+      .toc-links .toc-number {
+        flex: 0 0 auto !important;
+        display: inline-grid !important;
+        place-items: center !important;
+        width: 2.15em !important;
+        height: 2.15em !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: ${buttonText} !important;
+        background: var(--preview-primary) !important;
+        border: 5px solid color-mix(in srgb, var(--preview-secondary) 42%, #ffffff) !important;
+        border-radius: 999px !important;
+        box-shadow: none !important;
+        font-size: 1em !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+        text-shadow: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+      }
+
+      .toc-links .toc-number::before,
+      .toc-links .toc-number::after {
+        content: none !important;
+        display: none !important;
+      }
+
+      /* Full Screen Preview tune-number guard: the simulated tune number uses the
+         exported site's .chapter-label class so theme colors apply, but it must
+         remain centered above the tune title in the preview. */
+      .score-panel > .tune-number {
+        display: grid !important;
+        place-items: center !important;
+        width: 3em !important;
+        height: 3em !important;
+        margin: 0 auto 16px !important;
+        float: none !important;
+        transform: none !important;
+      }
+
+      .theme-builder-return-button {
+        position: fixed !important;
+        z-index: 2147483647 !important;
+        top: 14px !important;
+        right: 14px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 230px !important;
+        min-height: 48px !important;
+        padding: 12px 18px !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: #174a8b !important;
+        border: 3px solid #ffffff !important;
+        border-radius: 10px !important;
+        box-shadow: 0 6px 18px rgba(0,0,0,.35) !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        font-size: 17px !important;
+        font-weight: 900 !important;
+        line-height: 1.15 !important;
+        text-align: center !important;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        cursor: pointer !important;
+      }
+
+      .theme-builder-return-button:hover,
+      .theme-builder-return-button:focus-visible {
+        background: #0f3566 !important;
+        outline: 4px solid #f2c14e !important;
+        outline-offset: 2px !important;
+      }
+
+      @media (max-width: 640px) {
+        .theme-builder-return-button {
+          top: 8px !important;
+          right: 8px !important;
+          min-width: 0 !important;
+          max-width: calc(100vw - 16px) !important;
+          min-height: 42px !important;
+          padding: 10px 12px !important;
+          font-size: 15px !important;
+        }
+      }
+    `);
+  }
+
+  function fullThemePreviewDocumentHtml(theme) {
+    const title = escapeHtml(theme.name || "Custom Theme");
+    const ornament = escapeHtml(theme.ornament || "•");
+    const showHeaderOrnaments = !!theme.includeHeaderOrnaments;
+    const heroClass = "hero" + (theme.includeHeaderGraphics ? " graphics" : "");
+    const css = fullThemePreviewCss(theme);
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title} Full Screen Preview</title>
+  <style>${css}</style>
+</head>
+<body>
+  <button class="theme-builder-return-button" type="button" onclick="window.close(); return false;" aria-label="Return to the Theme Builder">Return to the Theme Builder</button>
+  <header class="${heroClass}">
+    ${showHeaderOrnaments ? `<span class="theme-preview-header-ornament left" aria-hidden="true">${ornament}</span>` : ""}
+    ${showHeaderOrnaments ? `<span class="theme-preview-header-ornament right" aria-hidden="true">${ornament}</span>` : ""}
+    <div class="page-width">
+      <h1>${title}</h1>
+      <p class="hero-copy">A full simulated website preview of the custom theme</p>
+    </div>
+  </header>
+
+  <main class="page-width">
+    <section id="table-of-contents" class="table-of-contents paper" aria-labelledby="toc-heading">
+      <h2 id="toc-heading">Table of Contents</h2>
+      <div class="toc-links">
+        <a href="#the-abbey"><span class="toc-number">1</span><span class="toc-title">The Abbey</span></a>
+        <a href="#the-banshee"><span class="toc-number">2</span><span class="toc-title">The Banshee</span></a>
+      </div>
+    </section>
+
+    <section id="the-abbey" class="score-panel paper has-abc-tools-link">
+      <span class="chapter-label tune-number">1</span>
+      <div class="tune-header">
+        <a class="back-to-toc abc-tools-link tune-tools-link" href="#" onclick="return false;">Play in ABC Transcription Tools</a>
+        <h2>The Abbey</h2>
+        <p class="tune-type tune-meta">Reel</p>
+        <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
+      </div>
+      <div class="abc-preview-frame">
+        <img class="abc-preview-image" src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/img/abc_the_abbey.jpg" alt="Rendered notation preview for The Abbey">
+      </div>
+    </section>
+
+    <div class="section-divider" aria-hidden="true"><span>${ornament}</span></div>
+
+    <section id="the-banshee" class="score-panel paper has-abc-tools-link">
+      <span class="chapter-label tune-number">2</span>
+      <div class="tune-header">
+        <a class="back-to-toc abc-tools-link tune-tools-link" href="#" onclick="return false;">Play in ABC Transcription Tools</a>
+        <h2>The Banshee</h2>
+        <p class="tune-type tune-meta">Reel</p>
+        <a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>
+      </div>
+      <div class="abc-preview-frame">
+        <img class="abc-preview-image" src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/img/abc_the_banshee.jpg" alt="Rendered notation preview for The Banshee">
+      </div>
+    </section>
+
+    <div class="section-divider" aria-hidden="true"><span>${ornament}</span></div>
+  </main>
+
+  <footer class="site-footer">Sample website footer</footer>
+</body>
+</html>`;
+  }
+
+  function openFullThemePreview() {
+    const theme = normalizeCustomTheme(getCurrentThemeFromOpenThemeBuilderDialog());
+    updateThemeBuilderPayloadField();
+
+    const previewWindow = window.open("", "_blank");
+    if (!previewWindow) {
+      setStatus("Full Screen Preview could not be opened. Please allow pop-up windows for this page and try again.", true);
+      return;
+    }
+
+    previewWindow.document.open();
+    previewWindow.document.write(fullThemePreviewDocumentHtml(theme));
+    previewWindow.document.close();
+    previewWindow.focus();
+    setStatus("Opened a full simulated website preview in a new window.");
+  }
+
   function updateThemeBuilderPreview() {
     const root = document.getElementById("theme-builder-root");
     if (!root) return;
@@ -2784,12 +3451,16 @@
     // CSS contains !important preview rules.
     updateThemeBuilderPreviewCustomCss(theme);
 
-    const heroText = readableTextForBackground(theme.primary || DEFAULT_CUSTOM_THEME.primary);
+    const advancedCss = theme.includeBuiltInAdvancedCss
+      ? String(theme.advancedCss || theme.customCss || "")
+      : "";
+    const heroText = extractFullPreviewHeroTextColor(advancedCss) || "#ffffff";
     const buttonText = readableTextForBackground(theme.primary || DEFAULT_CUSTOM_THEME.primary);
 
     setThemeBuilderPreviewStyle(preview, "font-family", theme.font);
     setThemeBuilderPreviewStyle(preview, "background", theme.bg);
     setThemeBuilderPreviewStyle(preview, "color", theme.ink);
+    preview.style.setProperty("--theme-preview-radius", theme.radius, "important");
     setThemeBuilderPreviewStyle(hero, "background", theme.hero);
     setThemeBuilderPreviewStyle(hero, "color", heroText);
     hero.style.setProperty("--theme-preview-accent", theme.accent, "important");
@@ -2808,7 +3479,11 @@
       setThemeBuilderPreviewStyle(panel, "box-shadow", theme.shadow);
     });
 
-    if (title) title.textContent = theme.name || "Custom Theme";
+    if (title) {
+      title.textContent = theme.name || "Custom Theme";
+      setThemeBuilderPreviewStyle(title, "color", heroText);
+      title.style.setProperty("-webkit-text-fill-color", heroText, "important");
+    }
     if (subtitle) setThemeBuilderPreviewStyle(subtitle, "color", heroText);
     if (tocHeading) setThemeBuilderPreviewStyle(tocHeading, "color", theme.primary);
     tocLinks.forEach(item => {
@@ -3087,6 +3762,12 @@
       loadBuiltInButton.dataset.initialized = "true";
     }
 
+    const fullPreviewButton = document.getElementById("theme-builder-full-preview-action");
+    if (fullPreviewButton && fullPreviewButton.dataset.initialized !== "true") {
+      fullPreviewButton.addEventListener("click", openFullThemePreview);
+      fullPreviewButton.dataset.initialized = "true";
+    }
+
     initializeThemeBuilderColorSampler();
   }
 
@@ -3101,6 +3782,7 @@
       const ready = document.getElementById("theme-builder-save-action") &&
         document.getElementById("theme-builder-load-action") &&
         document.getElementById("theme-builder-load-built-in-action") &&
+        document.getElementById("theme-builder-full-preview-action") &&
         document.getElementById("theme-builder-color-sampler-action") && layoutReady;
 
       if (!ready && attempts < 40) {
@@ -3216,6 +3898,7 @@
                 '<button id="theme-builder-load-built-in-action" class="website-settings-manage-action" type="button">Load Built-In Theme</button>' +
               '</div>' +
               '<div class="theme-builder-side-actions">' +
+                '<button id="theme-builder-full-preview-action" class="website-settings-manage-action" type="button">Full Screen Preview</button>' +
                 '<button id="theme-builder-color-sampler-action" class="website-settings-manage-action" type="button">Sample Image Color</button>' +
               '</div>' +
               '<input id="theme-builder-color-sampler-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg">' +
@@ -3387,12 +4070,14 @@
           The live preview shows the header, table-of-contents tiles, a sample tune panel,
           a decorative divider, and the footer so you can see the major visual effects before saving the theme.
           On very tall screens, it may also show a second sample tune panel to preview between-tune spacing.
+          Use <b>Full Screen Preview</b> to open a new window with a larger simulated website preview, including dynamic CSS motion and rendered tune images.
         </p>
 
         <h3>Basic workflow</h3>
         <ol>
           <li>Choose a built-in theme from the menu and click <b>Load Built-In Theme</b> to use it as a starting point.</li>
           <li>Edit the theme controls. The live preview updates as you work.</li>
+          <li>Optionally click <b>Full Screen Preview</b> to open a larger simulated website preview in a new window.</li>
           <li>Optionally use <b>Sample Image Color</b> to sample exact colors from a local PNG or JPEG image.</li>
           <li>Click <b>Save Theme File</b> to export the finished theme as a reusable text file.</li>
           <li>Import the saved theme file into the main abcjs-eskin Website Builder, or manually add it to the abcjs-eskin Website Builder source code as a built-in theme.</li>
@@ -3403,6 +4088,7 @@
           <li><b>Load Theme File</b> loads a previously saved Theme Builder theme file. The file should be the JavaScript object-literal format saved by this tool.</li>
           <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This file can be imported by the main abcjs-eskin Website Builder and can also be pasted into the abcjs-eskin Website Builder source code by developers.</li>
           <li><b>Load Built-In Theme</b> copies the settings from a built-in theme into the Theme Builder as a starting point. This replaces the current working theme in the editor.</li>
+          <li><b>Full Screen Preview</b> opens a new window with a larger simulated website preview, including preserved dynamic CSS, rendered tune images, and a <b>Return to the Theme Builder</b> button that closes the preview tab.</li>
           <li><b>Sample Image Color</b> opens a PNG or JPEG image as a color reference. Click a pixel in the image to copy its color as <code>#RRGGBB</code>, then paste it into any color field.</li>
           <li><b>Instructions</b> opens this help dialog.</li>
         </ul>
