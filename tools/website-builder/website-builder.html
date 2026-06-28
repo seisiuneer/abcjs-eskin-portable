@@ -430,6 +430,7 @@
 
       .website-settings-tab-panels {
         height: var(--website-settings-tab-panels-height, calc(100vh - 270px));
+        min-height: 220px;
       }
     }
 
@@ -903,7 +904,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.35";
+  const WEBSITE_BUILDER_VERSION = "1.1.37";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3747,14 +3748,18 @@
       viewportWidth <= 1180 &&
       viewportHeight >= 900 &&
       navigator.maxTouchPoints > 0;
+    const isPhoneLikeViewport = viewportWidth <= 760;
     const settingsDialogTop = isTabletLikeViewport ? 50 : (viewportHeight < 700 ? 12 : 24);
     const settingsDialogBottomGap = isTabletLikeViewport ? 100 : 76;
     const settingsDialogMaxHeight = isTabletLikeViewport ? 1200 : 1060;
+    const settingsDialogMinHeight = isPhoneLikeViewport ? 360 : 620;
+    const settingsTabPanelsMinHeight = isPhoneLikeViewport ? 220 : 330;
+    const settingsDialogChromeAllowance = isPhoneLikeViewport ? 150 : 0;
     const settingsDialogHeight = Math.min(
       settingsDialogMaxHeight,
-      Math.max(620, viewportHeight - settingsDialogTop - settingsDialogBottomGap)
+      Math.max(settingsDialogMinHeight, viewportHeight - settingsDialogTop - settingsDialogBottomGap - settingsDialogChromeAllowance)
     );
-    const settingsTabPanelsHeight = Math.max(330, settingsDialogHeight - 150);
+    const settingsTabPanelsHeight = Math.max(settingsTabPanelsMinHeight, settingsDialogHeight - 150);
 
     const form = [
       {
