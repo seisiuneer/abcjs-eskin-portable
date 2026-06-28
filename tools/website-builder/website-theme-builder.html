@@ -452,11 +452,195 @@
       top: 0;
     }
 
+    @media (min-width: 841px) {
+      .theme-builder-app {
+        margin-top: 10px;
+        margin-bottom: 18px;
+      }
+
+      .theme-builder-root {
+        margin-bottom: 4px;
+      }
+
+      .theme-builder-top-grid {
+        margin-bottom: 8px;
+      }
+
+      .theme-builder-layout {
+        align-items: stretch;
+      }
+
+      .theme-builder-tabs,
+      .theme-builder-preview-card {
+        display: flex;
+        flex-direction: column;
+        min-height: clamp(430px, calc(100vh - 215px), 760px);
+      }
+
+      .theme-builder-tab-panels,
+      .theme-builder-preview-area {
+        flex: 1 1 auto;
+      }
+
+      .theme-builder-preview-area {
+        min-height: clamp(360px, calc(100vh - 285px), 700px);
+      }
+
+      #theme_builder_field_advancedCss {
+        min-height: clamp(125px, 18vh, 300px);
+      }
+    }
+
+    @media (min-width: 841px) and (min-height: 820px) {
+      .theme-builder-tabs,
+      .theme-builder-preview-card {
+        min-height: clamp(610px, calc(100vh - 225px), 900px);
+      }
+
+      .theme-builder-preview-area {
+        min-height: clamp(540px, calc(100vh - 295px), 840px);
+      }
+
+      #theme_builder_field_advancedCss {
+        min-height: clamp(220px, 25vh, 420px);
+      }
+    }
+
+    @media (min-width: 841px) and (min-height: 1000px) {
+      .theme-builder-tabs,
+      .theme-builder-preview-card {
+        min-height: clamp(760px, calc(100vh - 235px), 1100px);
+      }
+
+      .theme-builder-preview-area {
+        min-height: clamp(690px, calc(100vh - 305px), 1040px);
+      }
+
+      #theme_builder_field_advancedCss {
+        min-height: clamp(300px, calc(100vh - 760px), 420px);
+      }
+    }
+
+    @media (min-width: 841px) and (max-height: 760px) {
+      .app-header {
+        padding-top: 9px;
+        padding-bottom: 8px;
+      }
+
+      .app-header h1 {
+        font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+      }
+
+      .app-header p {
+        margin-top: 3px;
+        font-size: .84rem;
+      }
+
+      .theme-builder-app {
+        margin-top: 8px;
+        margin-bottom: 12px;
+      }
+
+      .theme-builder-top-grid,
+      .theme-builder-layout {
+        gap: 12px;
+      }
+
+      .theme-builder-top-grid {
+        margin-bottom: 6px;
+      }
+
+      .theme-builder-file-actions,
+      .theme-builder-built-in-actions {
+        gap: 7px;
+      }
+
+      .theme-builder-file-actions .website-settings-manage-action,
+      .theme-builder-built-in-actions .website-settings-manage-action,
+      .theme-builder-built-in-actions .theme-builder-select,
+      .theme-builder-side-actions .website-settings-manage-action {
+        min-height: 34px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+      }
+
+      .theme-builder-tabs,
+      .theme-builder-preview-card {
+        min-height: clamp(390px, calc(100vh - 185px), 650px);
+      }
+
+      .theme-builder-tab-bar {
+        gap: 5px;
+        padding: 6px 6px 0;
+      }
+
+      .theme-builder-tab-button {
+        min-height: 35px;
+        padding: 6px 8px;
+      }
+
+      .theme-builder-tab-panels {
+        min-height: 0;
+        padding: 8px;
+      }
+
+      .theme-builder-field {
+        margin-bottom: 7px;
+        padding: 7px 9px;
+      }
+
+      .theme-builder-label {
+        margin-bottom: 3px;
+      }
+
+      .theme-builder-input,
+      .theme-builder-select {
+        height: 35px;
+        min-height: 35px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      .theme-builder-checkbox-stack {
+        gap: 7px;
+      }
+
+      .theme-builder-field-note {
+        margin-top: 4px;
+        font-size: .82rem;
+        line-height: 1.25;
+      }
+
+      #theme_builder_field_advancedCss {
+        min-height: clamp(105px, 15vh, 190px);
+      }
+
+      .theme-builder-preview-card {
+        padding: 10px;
+      }
+
+      .theme-builder-preview-area {
+        min-height: clamp(330px, calc(100vh - 250px), 580px);
+      }
+    }
+
     .theme-builder-preview-area {
+      position: relative;
+      isolation: isolate;
       overflow: hidden;
       border: 1px solid #c9d5cc;
       border-radius: 10px;
       background: #e5efe3;
+    }
+
+    .theme-builder-preview-area:not(.theme-builder-preview-custom-css-active)::before,
+    .theme-builder-preview-area:not(.theme-builder-preview-custom-css-active)::after,
+    .theme-builder-preview-area.theme-builder-preview-custom-css-clearing::before,
+    .theme-builder-preview-area.theme-builder-preview-custom-css-clearing::after {
+      content: none !important;
+      display: none !important;
+      animation: none !important;
+      background: none !important;
     }
 
     .theme-preview-hero {
@@ -504,6 +688,23 @@
       text-decoration: none;
     }
 
+    .theme-preview-extra-content {
+      display: none;
+    }
+
+    .theme-preview-footer {
+      margin-top: 14px;
+      padding: 11px 14px;
+      text-align: center;
+      font-weight: 750;
+    }
+
+    @media (min-width: 841px) and (min-height: 1000px) {
+      .theme-preview-extra-content {
+        display: block;
+      }
+    }
+
     .theme-preview-toc {
       margin: 0 0 12px;
       padding: 13px;
@@ -545,10 +746,30 @@
     }
 
     .theme-preview-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
       margin: 14px 0 0;
       text-align: center;
       font-size: 1.7rem;
       line-height: 1;
+      clear: both;
+    }
+
+    .theme-preview-divider .chapter-label {
+      display: inline-grid;
+      place-items: center;
+      float: none !important;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    @media (min-width: 841px) and (min-height: 1000px) {
+      .theme-preview-divider-between-tunes {
+        margin-bottom: 30px;
+      }
     }
 
 
@@ -2438,18 +2659,20 @@
       [/\.hero\s+h1/g, "#theme-preview-title"],
       [/\.hero-copy/g, "#theme-preview-subtitle"],
       [/\.hero/g, "#theme-preview-hero"],
-      [/\.table-of-contents::before/g, "#theme-preview-panel::before"],
-      [/\.score-panel::before/g, "#theme-preview-panel::before"],
-      [/\.table-of-contents/g, "#theme-preview-panel"],
-      [/\.score-panel/g, "#theme-preview-panel"],
-      [/\.paper/g, "#theme-preview-panel"],
-      [/\.tune-header\s+h2/g, "#theme-preview-heading"],
-      [/\.toc-links\s+a/g, "#theme-preview-button, #theme-preview-toc-link-one, #theme-preview-toc-link-two"],
-      [/\.back-to-toc/g, "#theme-preview-button"],
-      [/\.section-divider\s+span/g, "#theme-preview-ornament"],
-      [/\.section-divider/g, "#theme-preview-ornament"],
-      [/\.site-footer/g, "#theme-preview-ornament"],
-      [/\.chapter-label/g, "#theme-preview-ornament"],
+      [/\.table-of-contents::before/g, "#theme-preview-toc::before"],
+      [/\.score-panel::before/g, "#theme-preview-panel-one::before, #theme-preview-panel-two::before"],
+      [/\.table-of-contents/g, "#theme-preview-toc"],
+      [/\.score-panel/g, "#theme-preview-panel-one, #theme-preview-panel-two"],
+      [/\.paper/g, "#theme-preview-toc, #theme-preview-panel-one, #theme-preview-panel-two"],
+      [/\.tune-header\s+h2/g, "#theme-preview-heading-one, #theme-preview-heading-two"],
+      [/\.toc-links\s+a/g, "#theme-preview-button-one, #theme-preview-button-two, #theme-preview-toc-link-one, #theme-preview-toc-link-two"],
+      [/\.back-to-toc/g, "#theme-preview-button-one, #theme-preview-button-two"],
+      [/\.section-divider::before/g, "#theme-preview-divider::before, #theme-preview-divider-two::before"],
+      [/\.section-divider::after/g, "#theme-preview-divider::after, #theme-preview-divider-two::after"],
+      [/\.section-divider\s+span/g, "#theme-preview-ornament, #theme-preview-ornament-two"],
+      [/\.section-divider/g, "#theme-preview-divider, #theme-preview-divider-two"],
+      [/\.site-footer/g, "#theme-preview-footer"],
+      [/\.chapter-label/g, "#theme-preview-ornament, #theme-preview-ornament-two"],
       [/\.toc-links\s+span/g, "#theme-preview-toc-badge-one, #theme-preview-toc-badge-two"]
     ];
 
@@ -2476,13 +2699,27 @@
     const style = document.getElementById("theme-builder-preview-custom-css");
     const preview = document.getElementById("theme-builder-preview-area");
 
+    if (preview) {
+      preview.classList.remove("theme-builder-preview-custom-css-active");
+      preview.classList.add("theme-builder-preview-custom-css-clearing");
+    }
+
     if (style) {
       style.textContent = "";
-      style.remove();
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      } else if (typeof style.remove === "function") {
+        style.remove();
+      }
     }
 
     if (preview) {
-      preview.classList.remove("theme-builder-preview-custom-css-active");
+      // Force iPad/Safari to discard any composited pseudo-element animation
+      // layer from the previous theme before the next theme is displayed.
+      void preview.offsetHeight;
+      requestAnimationFrame(() => {
+        preview.classList.remove("theme-builder-preview-custom-css-clearing");
+      });
     }
   }
 
@@ -2529,16 +2766,17 @@
     const tocHeading = document.getElementById("theme-preview-toc-heading");
     const tocLinks = Array.from(document.querySelectorAll(".theme-preview-toc-link"));
     const tocBadges = Array.from(document.querySelectorAll(".theme-preview-toc-badge"));
-    const panel = document.getElementById("theme-preview-panel");
+    const panels = Array.from(document.querySelectorAll(".theme-preview-panel"));
     const title = document.getElementById("theme-preview-title-text");
     const subtitle = document.getElementById("theme-preview-subtitle");
-    const heading = document.getElementById("theme-preview-heading");
-    const text = document.getElementById("theme-preview-text");
-    const button = document.getElementById("theme-preview-button");
-    const ornament = document.getElementById("theme-preview-ornament");
+    const headings = Array.from(document.querySelectorAll(".tune-header-heading"));
+    const previewTexts = Array.from(document.querySelectorAll(".theme-preview-panel p"));
+    const buttons = Array.from(document.querySelectorAll(".theme-preview-button"));
+    const ornaments = Array.from(document.querySelectorAll(".theme-preview-divider .chapter-label"));
+    const footer = document.getElementById("theme-preview-footer");
     const headerOrnaments = Array.from(document.querySelectorAll(".theme-preview-header-ornament"));
 
-    if (!preview || !hero || !body || !tocPanel || !panel) return;
+    if (!preview || !hero || !body || !tocPanel || !panels.length) return;
 
     // Apply the optional mapped custom CSS first. The normal editable theme
     // controls are then applied as inline !important styles so color/font/
@@ -2562,11 +2800,13 @@
     setThemeBuilderPreviewStyle(tocPanel, "border-color", theme.line);
     setThemeBuilderPreviewStyle(tocPanel, "border-radius", theme.radius);
     setThemeBuilderPreviewStyle(tocPanel, "box-shadow", theme.shadow);
-    setThemeBuilderPreviewStyle(panel, "background", theme.panel);
-    setThemeBuilderPreviewStyle(panel, "color", theme.ink);
-    setThemeBuilderPreviewStyle(panel, "border-color", theme.line);
-    setThemeBuilderPreviewStyle(panel, "border-radius", theme.radius);
-    setThemeBuilderPreviewStyle(panel, "box-shadow", theme.shadow);
+    panels.forEach(panel => {
+      setThemeBuilderPreviewStyle(panel, "background", theme.panel);
+      setThemeBuilderPreviewStyle(panel, "color", theme.ink);
+      setThemeBuilderPreviewStyle(panel, "border-color", theme.line);
+      setThemeBuilderPreviewStyle(panel, "border-radius", theme.radius);
+      setThemeBuilderPreviewStyle(panel, "box-shadow", theme.shadow);
+    });
 
     if (title) title.textContent = theme.name || "Custom Theme";
     if (subtitle) setThemeBuilderPreviewStyle(subtitle, "color", heroText);
@@ -2582,22 +2822,31 @@
       setThemeBuilderPreviewStyle(item, "color", readableTextForBackground(theme.primary || DEFAULT_CUSTOM_THEME.primary));
       setThemeBuilderPreviewStyle(item, "border", "2px solid " + theme.secondary);
     });
-    if (heading) setThemeBuilderPreviewStyle(heading, "color", theme.primary);
-    if (text) setThemeBuilderPreviewStyle(text, "color", theme.muted);
-    if (button) {
-      setThemeBuilderPreviewStyle(button, "background", theme.primary);
-      setThemeBuilderPreviewStyle(button, "color", buttonText);
-      setThemeBuilderPreviewStyle(button, "border", "2px solid " + theme.accent);
+    headings.forEach(item => {
+      setThemeBuilderPreviewStyle(item, "color", theme.primary);
+    });
+    previewTexts.forEach(item => {
+      setThemeBuilderPreviewStyle(item, "color", theme.muted);
+    });
+    buttons.forEach(item => {
+      setThemeBuilderPreviewStyle(item, "background", theme.primary);
+      setThemeBuilderPreviewStyle(item, "color", buttonText);
+      setThemeBuilderPreviewStyle(item, "border", "2px solid " + theme.accent);
+    });
+    if (footer) {
+      setThemeBuilderPreviewStyle(footer, "background", theme.primary);
+      setThemeBuilderPreviewStyle(footer, "color", heroText);
+      setThemeBuilderPreviewStyle(footer, "border-top", "4px solid " + theme.accent);
     }
     headerOrnaments.forEach(item => {
       item.textContent = theme.ornament || "•";
       setThemeBuilderPreviewStyle(item, "color", theme.accent);
       setThemeBuilderPreviewStyle(item, "display", theme.includeHeaderOrnaments ? "block" : "none");
     });
-    if (ornament) {
-      ornament.textContent = theme.ornament || "•";
-      setThemeBuilderPreviewStyle(ornament, "color", theme.secondary);
-    }
+    ornaments.forEach(item => {
+      item.textContent = theme.ornament || "•";
+      setThemeBuilderPreviewStyle(item, "color", theme.secondary);
+    });
 
     updateThemeBuilderPayloadField();
   }
@@ -3059,12 +3308,21 @@
                         '<a id="theme-preview-toc-link-two" class="theme-preview-toc-link" href="#" onclick="return false;"><span id="theme-preview-toc-badge-two" class="theme-preview-toc-badge">2</span><span>The Banshee</span></a>' +
                       '</div>' +
                     '</div>' +
-                    '<div id="theme-preview-panel" class="theme-preview-panel score-panel paper">' +
-                      '<h5 id="theme-preview-heading" class="tune-header-heading">1. Sample Tune</h5>' +
-                      '<p id="theme-preview-text">This shows tune panel, text, muted text, link, border, radius, and shadow colors.</p>' +
-                      '<a id="theme-preview-button" class="theme-preview-button back-to-toc" href="#" onclick="return false;">Play Tune</a>' +
+                    '<div id="theme-preview-panel-one" class="theme-preview-panel score-panel paper">' +
+                      '<h5 id="theme-preview-heading-one" class="tune-header-heading">1. The Abbey</h5>' +
+                      '<p id="theme-preview-text-one">This shows tune panel, text, muted text, link, border, radius, and shadow colors.</p>' +
+                      '<a id="theme-preview-button-one" class="theme-preview-button back-to-toc" href="#" onclick="return false;">Play Tune</a>' +
                     '</div>' +
-                    '<div id="theme-preview-ornament" class="theme-preview-divider section-divider chapter-label">☘</div>' +
+                    '<div id="theme-preview-divider" class="theme-preview-divider theme-preview-divider-between-tunes section-divider"><span id="theme-preview-ornament" class="chapter-label">☘</span></div>' +
+                    '<div id="theme-preview-extra-content" class="theme-preview-extra-content">' +
+                      '<div id="theme-preview-panel-two" class="theme-preview-panel score-panel paper">' +
+                        '<h5 id="theme-preview-heading-two" class="tune-header-heading">2. The Banshee</h5>' +
+                        '<p id="theme-preview-text-two">Second tune preview showing how another tune panel and title appear.</p>' +
+                        '<a id="theme-preview-button-two" class="theme-preview-button back-to-toc" href="#" onclick="return false;">Play Tune</a>' +
+                      '</div>' +
+                      '<div id="theme-preview-divider-two" class="theme-preview-divider section-divider"><span id="theme-preview-ornament-two" class="chapter-label">☘</span></div>' +
+                    '</div>' +
+                    '<div id="theme-preview-footer" class="theme-preview-footer site-footer">Sample website footer</div>' +
                   '</div>' +
                 '</div>' +
               '</aside>' +
@@ -3126,8 +3384,9 @@
         </p>
         <p>
           The controls are organized into three tabs: <b>Theme Basics</b>, <b>Header &amp; Shadows</b>, and <b>Colors</b>.
-          The live preview shows the header, Table-of-contents tiles, a sample tune panel, and the decorative ornament between tunes so you can
-          see the major visual effects before saving the theme.
+          The live preview shows the header, table-of-contents tiles, a sample tune panel,
+          a decorative divider, and the footer so you can see the major visual effects before saving the theme.
+          On very tall screens, it may also show a second sample tune panel to preview between-tune spacing.
         </p>
 
         <h3>Basic workflow</h3>
