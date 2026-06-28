@@ -903,7 +903,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.32";
+  const WEBSITE_BUILDER_VERSION = "1.1.35";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3720,6 +3720,18 @@
     requestAnimationFrame(() => requestAnimationFrame(apply));
   }
 
+  function preserveWindowScrollDuringModalOpen(scrollX, scrollY) {
+    const restoreScroll = () => {
+      window.scrollTo(scrollX, scrollY);
+    };
+
+    restoreScroll();
+    requestAnimationFrame(restoreScroll);
+    setTimeout(restoreScroll, 0);
+    setTimeout(restoreScroll, 80);
+    setTimeout(restoreScroll, 250);
+  }
+
   async function openSettings() {
     if (!window.DayPilot || !DayPilot.Modal) {
       setStatus("DayPilot.Modal could not be loaded.", true);
@@ -3730,10 +3742,17 @@
 
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 900;
-    const settingsDialogTop = viewportHeight < 700 ? 12 : 24;
+    const isTabletLikeViewport =
+      viewportWidth >= 761 &&
+      viewportWidth <= 1180 &&
+      viewportHeight >= 900 &&
+      navigator.maxTouchPoints > 0;
+    const settingsDialogTop = isTabletLikeViewport ? 50 : (viewportHeight < 700 ? 12 : 24);
+    const settingsDialogBottomGap = isTabletLikeViewport ? 100 : 76;
+    const settingsDialogMaxHeight = isTabletLikeViewport ? 1200 : 1060;
     const settingsDialogHeight = Math.min(
-      1060,
-      Math.max(620, viewportHeight - settingsDialogTop - 76)
+      settingsDialogMaxHeight,
+      Math.max(620, viewportHeight - settingsDialogTop - settingsDialogBottomGap)
     );
     const settingsTabPanelsHeight = Math.max(330, settingsDialogHeight - 150);
 
@@ -3926,6 +3945,9 @@
       }
     ];
 
+    const preModalScrollX = window.scrollX || window.pageXOffset || 0;
+    const preModalScrollY = window.scrollY || window.pageYOffset || 0;
+
     const modalPromise = DayPilot.Modal.form(form, { ...state.settings }, {
       title: "Website Settings",
       width: Math.min(1040, Math.max(720, viewportWidth - 28)),
@@ -3936,6 +3958,7 @@
       cancelText: "Cancel"
     });
 
+    preserveWindowScrollDuringModalOpen(preModalScrollX, preModalScrollY);
     scheduleWebsiteSettingsTabs();
     const result = await modalPromise;
 
@@ -3970,10 +3993,17 @@
 
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 900;
-    const instructionsDialogTop = viewportHeight < 700 ? 12 : 24;
+    const isTabletLikeViewport =
+      viewportWidth >= 761 &&
+      viewportWidth <= 1180 &&
+      viewportHeight >= 900 &&
+      navigator.maxTouchPoints > 0;
+    const instructionsDialogTop = isTabletLikeViewport ? 50 : (viewportHeight < 700 ? 12 : 24);
+    const instructionsDialogBottomGap = isTabletLikeViewport ? 100 : 76;
+    const instructionsDialogMaxHeight = isTabletLikeViewport ? 1200 : 1060;
     const instructionsDialogHeight = Math.min(
-      1060,
-      Math.max(360, viewportHeight - instructionsDialogTop - 76)
+      instructionsDialogMaxHeight,
+      Math.max(360, viewportHeight - instructionsDialogTop - instructionsDialogBottomGap)
     );
     const instructionsScrollMax = Math.max(220, instructionsDialogHeight - 150);
 
@@ -4638,12 +4668,17 @@ fiddle: {
       </div>
     `;
 
+    const preModalScrollX = window.scrollX || window.pageXOffset || 0;
+    const preModalScrollY = window.scrollY || window.pageYOffset || 0;
+
     const instructionsModal = DayPilot.Modal.alert(instructionsHtml, {
       width: Math.min(900, Math.max(560, viewportWidth - 100)),
       height: instructionsDialogHeight,
       top: instructionsDialogTop,
       okText: "Close"
     });
+
+    preserveWindowScrollDuringModalOpen(preModalScrollX, preModalScrollY);
 
     if (targetAnchorId) {
       let attempts = 0;
