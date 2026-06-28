@@ -2452,6 +2452,13 @@
       text = text.replace(pattern, replacement);
     });
 
+    // Theme Builder previews must stay inside the preview card. Some built-in
+    // theme CSS uses fixed body pseudo-elements for full-page animated
+    // backgrounds; when mapped to the preview, convert those fixed layers to
+    // absolute layers so they are clipped by the preview frame and disappear
+    // cleanly when another theme is selected.
+    text = text.replace(/\bposition\s*:\s*fixed\s*;/gi, "position: absolute;");
+
     return addImportantToPreviewCss(text);
   }
 
