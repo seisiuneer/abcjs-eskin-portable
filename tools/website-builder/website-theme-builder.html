@@ -2262,6 +2262,11 @@
     const modalRoot = getOpenThemeBuilderModalRoot();
     if (!modalRoot) return false;
 
+    // Prevent preview-only advanced CSS from the previously loaded built-in
+    // theme from remaining visible while the next theme's fields are being
+    // copied into the editor.
+    clearThemeBuilderPreviewCustomCss();
+
     const normalized = normalizeCustomTheme(theme);
     CUSTOM_THEME_FIELDS.forEach(fieldId => {
       const field = findThemeBuilderField(modalRoot, fieldId);
@@ -2459,18 +2464,38 @@
     // cleanly when another theme is selected.
     text = text.replace(/\bposition\s*:\s*fixed\s*;/gi, "position: absolute;");
 
+    // Scope preview-only advanced CSS to an active preview class. This prevents
+    // any old preview CSS from matching after another theme is loaded, even if a
+    // browser delays removing the old style element.
+    text = text.replace(/#theme-builder-preview-area/g, "#theme-builder-preview-area.theme-builder-preview-custom-css-active");
+
     return addImportantToPreviewCss(text);
+  }
+
+  function clearThemeBuilderPreviewCustomCss() {
+    const style = document.getElementById("theme-builder-preview-custom-css");
+    const preview = document.getElementById("theme-builder-preview-area");
+
+    if (style) {
+      style.textContent = "";
+      style.remove();
+    }
+
+    if (preview) {
+      preview.classList.remove("theme-builder-preview-custom-css-active");
+    }
   }
 
   function updateThemeBuilderPreviewCustomCss(theme) {
     const styleId = "theme-builder-preview-custom-css";
+    const preview = document.getElementById("theme-builder-preview-area");
     let style = document.getElementById(styleId);
     const css = theme && theme.includeBuiltInAdvancedCss
       ? customCssForThemeBuilderPreview(theme.advancedCss || theme.customCss || "")
       : "";
 
     if (!css) {
-      if (style) style.remove();
+      clearThemeBuilderPreviewCustomCss();
       return;
     }
 
@@ -2481,6 +2506,10 @@
     }
 
     style.textContent = css;
+
+    if (preview) {
+      preview.classList.add("theme-builder-preview-custom-css-active");
+    }
   }
 
   function setThemeBuilderPreviewStyle(element, property, value) {
