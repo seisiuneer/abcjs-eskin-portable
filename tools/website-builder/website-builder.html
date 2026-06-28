@@ -904,7 +904,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.37";
+  const WEBSITE_BUILDER_VERSION = "1.1.38";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2536,6 +2536,8 @@
 
     let newTuneCount = 0;
     let settingsCount = 0;
+    let customThemeCount = 0;
+    let unsupportedCount = 0;
 
     for (const file of incoming) {
       const text = await file.text();
@@ -2549,8 +2551,33 @@
         resetWebsiteExportFilenameDefaultForSettings(state.settings);
         saveSettings();
         applySettingsValuesInOpenSettingsDialog(state.settings, "website_settings_manage");
-      } else {
+        continue;
+      }
+
+      const customThemeValidation = fileIsCustomThemeDropCandidate(file)
+        ? validateCustomThemeFileText(text)
+        : { theme: null, errors: null, looksLikeTheme: false };
+
+      if (customThemeValidation.theme) {
+        customThemeCount += 1;
+        applyCustomTheme(customThemeValidation.theme, file.name, {
+          forceThemeSelection: true,
+          applyToCurrentSettings: true,
+          statusMode: "silent"
+        });
+        continue;
+      }
+
+      if (customThemeValidation.looksLikeTheme) {
+        unsupportedCount += 1;
+        console.warn("Dropped custom theme file did not pass validation.", customThemeValidation.errors);
+        continue;
+      }
+
+      if (fileIsABCFileDropCandidate(file)) {
         newTuneCount += appendAbcTextSource(text, file.name, file.size);
+      } else {
+        unsupportedCount += 1;
       }
     }
 
@@ -2560,8 +2587,14 @@
     if (settingsCount) {
       statusParts.push(`applied ${settingsCount} settings file${settingsCount === 1 ? "" : "s"}`);
     }
-    if (newTuneCount || !settingsCount) {
+    if (customThemeCount) {
+      statusParts.push(`loaded and applied ${customThemeCount} custom theme${customThemeCount === 1 ? "" : "s"}`);
+    }
+    if (newTuneCount || (!settingsCount && !customThemeCount && !unsupportedCount)) {
       statusParts.push(`loaded ${newTuneCount} tune${newTuneCount === 1 ? "" : "s"}`);
+    }
+    if (unsupportedCount) {
+      statusParts.push(`ignored ${unsupportedCount} unsupported or invalid file${unsupportedCount === 1 ? "" : "s"}`);
     }
 
     setStatus(statusParts.length
@@ -2570,8 +2603,16 @@
     fileInput.value = "";
   }
 
+  function fileIsABCFileDropCandidate(file) {
+    return /\.(abc|txt)$/i.test((file && file.name) || "");
+  }
+
+  function fileIsCustomThemeDropCandidate(file) {
+    return /\.(txt|js|json)$/i.test((file && file.name) || "");
+  }
+
   function fileIsSupportedDropType(file) {
-    return /\.(abc|txt|json)$/i.test((file && file.name) || "");
+    return /\.(abc|txt|json|js)$/i.test((file && file.name) || "");
   }
 
   function droppedFilesFromEvent(event) {
@@ -2616,7 +2657,7 @@
 
       const droppedFiles = droppedFilesFromEvent(event);
       if (!droppedFiles.length) {
-        setStatus("Drop one or more .abc files, ABC .txt files, or website settings .txt/.json files.", true);
+        setStatus("Drop one or more .abc files, ABC .txt files, website settings .txt/.json files, or custom theme .txt/.js/.json files.", true);
         return;
       }
 
@@ -3444,7 +3485,53 @@
 
   function settingsDropFilesFromEvent(event) {
     return Array.from((event.dataTransfer && event.dataTransfer.files) || [])
-      .filter(fileIsSettingsDropCandidate);
+      .filter(file => fileIsSettingsDropCandidate(file) || fileIsCustomThemeDropCandidate(file));
+  }
+
+  async function loadDroppedSettingsOrThemeFileIntoOpenDialog(file) {
+    if (!file) return false;
+
+    const text = await file.text();
+    const droppedSettings = fileIsSettingsDropCandidate(file)
+      ? tryParseWebsiteSettingsText(text)
+      : null;
+
+    if (droppedSettings) {
+      return loadWebsiteSettingsFileIntoOpenDialog(file, { tabId: null, showAlert: true });
+    }
+
+    const customThemeValidation = fileIsCustomThemeDropCandidate(file)
+      ? validateCustomThemeFileText(text)
+      : { theme: null, errors: null, looksLikeTheme: false };
+
+    if (customThemeValidation.theme) {
+      applyCustomTheme(customThemeValidation.theme, file.name, {
+        forceThemeSelection: false,
+        applyToCurrentSettings: false,
+        statusMode: "settings-dialog"
+      });
+
+      await DayPilot.Modal.alert(
+        '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
+          'Custom theme was successfully loaded from:<br>' +
+          '<div style="margin-top:8px;font-weight:700;">' + escapeHtml(file.name) + '</div><br>' +
+          '<div style="font-weight:750;margin:0 0 18px;">' +
+            escapeHtml(customThemeValidation.theme.name) +
+          '</div>' +
+          'The custom theme was saved, but the theme menu was left unchanged.<br><br>' +
+          'Choose <b>Custom</b> and click <b>Apply</b> to use it,<br>' +
+          'or leave the current theme selection as-is.' +
+        '</div>',
+        { title: "Custom Theme Loaded", okText: "OK", top: 150 }
+      );
+      return true;
+    }
+
+    if (customThemeValidation.looksLikeTheme) {
+      throw new Error(customThemeValidation.errors.join("\n") || "The dropped custom theme file is invalid.");
+    }
+
+    throw new Error("Drop a saved Website Builder settings .txt/.json file or a custom theme .txt/.js/.json file onto the settings dialog.");
   }
 
   function initializeWebsiteSettingsDialogDropZone() {
@@ -3483,15 +3570,22 @@
       event.stopPropagation();
       clearDropHighlight();
 
-      const settingsFiles = settingsDropFilesFromEvent(event);
-      if (!settingsFiles.length) {
-        setStatus("Drop a saved Website Builder settings .txt or .json file onto the settings dialog.", true);
+      const droppedFiles = settingsDropFilesFromEvent(event);
+      if (!droppedFiles.length) {
+        setStatus("Drop a saved Website Builder settings .txt/.json file or a custom theme .txt/.js/.json file onto the settings dialog.", true);
         return;
       }
 
-      loadWebsiteSettingsFileIntoOpenDialog(settingsFiles[0], { tabId: null, showAlert: true }).catch(error => {
+      loadDroppedSettingsOrThemeFileIntoOpenDialog(droppedFiles[0]).catch(async error => {
         console.error(error);
         setStatus(error && error.message ? error.message : String(error), true);
+        if (window.DayPilot && DayPilot.Modal) {
+          await DayPilot.Modal.alert(
+            "The dropped file could not be loaded.<br><br>" +
+            escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
+            { title: "Invalid Dropped File", okText: "OK" }
+          );
+        }
       });
     });
 
@@ -3515,54 +3609,148 @@
     }
   }
 
+  function validateCustomThemeFileText(text) {
+    let parsed;
+
+    try {
+      parsed = parseCustomThemeFileText(text);
+    } catch (error) {
+      return {
+        theme: null,
+        errors: null,
+        looksLikeTheme: false
+      };
+    }
+
+    const themeFieldNames = [
+      "name", "font", "bg", "panel", "ink", "muted", "primary", "secondary",
+      "accent", "line", "hero", "radius", "shadow", "ornament",
+      "customCss", "advancedCss"
+    ];
+
+    const looksLikeTheme =
+      parsed &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed) &&
+      themeFieldNames.some(field => Object.prototype.hasOwnProperty.call(parsed, field));
+
+    const validation = validateCustomTheme(parsed);
+
+    return {
+      theme: validation.theme,
+      errors: validation.errors,
+      looksLikeTheme
+    };
+  }
+
+  function applyCustomTheme(theme, sourceName, options = {}) {
+    const forceThemeSelection = options.forceThemeSelection !== false;
+    const applyToCurrentSettings = options.applyToCurrentSettings === true;
+    const statusMode = options.statusMode || "default";
+
+    state.customTheme = theme;
+    saveCustomTheme(state.customTheme);
+    updateOpenSettingsCustomThemeOption();
+
+    const themeField = findWebsiteSettingsField(getOpenWebsiteSettingsModalRoot(), "theme");
+    if (forceThemeSelection && themeField) {
+      themeField.value = "custom";
+      themeField.dataset.customThemePreviousValue = "custom";
+      themeField.dispatchEvent(new Event("input", { bubbles: true }));
+      themeField.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    if (applyToCurrentSettings) {
+      state.settings = settingsWithInstrumentSelectorRequiredSoundInjection({
+        ...state.settings,
+        theme: "custom"
+      });
+      saveSettings();
+      applySettingsValuesInOpenSettingsDialog(state.settings, null);
+      renderState();
+    }
+
+    if (statusMode === "silent") {
+      return;
+    }
+
+    if (statusMode === "settings-dialog") {
+      setStatus(`Loaded custom theme from ${sourceName}: ${state.customTheme.name}. Theme selection unchanged.`);
+      return;
+    }
+
+    if (applyToCurrentSettings) {
+      setStatus(`Loaded and applied custom theme from ${sourceName}: ${state.customTheme.name}.`);
+    } else {
+      setStatus(`Imported custom theme: ${state.customTheme.name}. Click Apply to use it.`);
+    }
+  }
+
+  async function loadCustomThemeFile(file, options = {}) {
+    if (!file) return false;
+
+    const showAlert = options.showAlert !== false;
+
+    try {
+      const text = await file.text();
+      const validation = validateCustomThemeFileText(text);
+
+      if (!validation.theme) {
+        if (validation.looksLikeTheme) {
+          throw new Error(validation.errors.join("\n") || "The selected custom theme file is invalid.");
+        }
+        throw new Error("The selected file is not a valid custom theme file.");
+      }
+
+      applyCustomTheme(validation.theme, file.name, options);
+
+      if (showAlert) {
+        const forceThemeSelection = options.forceThemeSelection !== false;
+        const applyToCurrentSettings = options.applyToCurrentSettings === true;
+        const message = applyToCurrentSettings
+          ? 'The Custom theme is now selected and saved as the current tool theme.'
+          : forceThemeSelection
+            ? 'The theme menu has been set to <b>Custom</b>.<br><br>Click <b>Apply</b> to use it,<br>or <b>Cancel</b> to leave the current applied theme unchanged.'
+            : 'The custom theme was saved, but the theme menu was left unchanged.';
+
+        await DayPilot.Modal.alert(
+          '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
+            'Custom theme was successfully loaded.<br><br>' +
+            '<div style="font-weight:750;margin:0 0 24px;">' +
+              escapeHtml(state.customTheme.name) +
+            '</div>' +
+            message +
+          '</div>',
+          { title: "Custom Theme Loaded", okText: "OK", top: 150 }
+        );
+      }
+
+      return true;
+    } catch (error) {
+      console.warn("Unable to import custom theme file.", error);
+
+      if (showAlert && window.DayPilot && DayPilot.Modal) {
+        await DayPilot.Modal.alert(
+          "The selected custom theme file could not be loaded.<br><br>" +
+          escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
+          { title: "Invalid Custom Theme File", okText: "OK" }
+        );
+      }
+
+      setStatus("The selected custom theme file could not be loaded.", true);
+      return false;
+    }
+  }
+
   async function importCustomThemeFromFile() {
     const file = await selectSettingsFile(".txt,.js,.json,text/plain,application/json,text/javascript,application/javascript");
     if (!file) return;
 
-    try {
-      const text = await file.text();
-      const parsed = parseCustomThemeFileText(text);
-      const validation = validateCustomTheme(parsed);
-
-      if (!validation.theme) {
-        throw new Error(validation.errors.join("\n"));
-      }
-
-      state.customTheme = validation.theme;
-      saveCustomTheme(state.customTheme);
-      updateOpenSettingsCustomThemeOption();
-
-      const themeField = findWebsiteSettingsField(getOpenWebsiteSettingsModalRoot(), "theme");
-      if (themeField) {
-        themeField.value = "custom";
-        themeField.dataset.customThemePreviousValue = "custom";
-        themeField.dispatchEvent(new Event("input", { bubbles: true }));
-        themeField.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-
-      setStatus(`Imported custom theme: ${state.customTheme.name}. Click Apply to use it.`);
-
-      await DayPilot.Modal.alert(
-        '<div style="text-align:center;line-height:1.45;max-width:760px;margin:0 auto;">' +
-          'Custom theme was successfully loaded.<br><br>' +
-          '<div style="font-weight:750;margin:0 0 24px;">' +
-            escapeHtml(state.customTheme.name) +
-          '</div>' +
-          'The theme menu has been set to <b>Custom</b>.<br><br>' +
-          'Click <b>Apply</b> to use it,<br>' +
-          'or <b>Cancel</b> to leave the current applied theme unchanged.' +
-        '</div>',
-        { title: "Custom Theme Loaded", okText: "OK", top: 150 }
-      );
-    } catch (error) {
-      console.warn("Unable to import custom theme file.", error);
-      await DayPilot.Modal.alert(
-        "The selected custom theme file could not be loaded.<br><br>" +
-        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-        { title: "Invalid Custom Theme File", okText: "OK" }
-      );
-      setStatus("The selected custom theme file could not be loaded.", true);
-    }
+    await loadCustomThemeFile(file, {
+      forceThemeSelection: true,
+      applyToCurrentSettings: false,
+      showAlert: true
+    });
   }
 
   function lowerResetConfirmationDialog() {
@@ -4050,7 +4238,7 @@
           <ol>
             <li>Click <b>Open ABC Files</b>.</li>
             <li>Select one or more <code>.abc</code> or text files.</li>
-            <li>On desktop computers, you can also drag and drop one or more <code>.abc</code> or <code>.txt</code> files onto the <b>Loaded Tunes</b> box. Dropped ABC files are added to the current collection. Dropped Website Builder settings files saved as <code>.txt</code> or <code>.json</code> are recognized by their JSON settings content and applied immediately instead of being treated as tunes.</li>
+            <li>On desktop computers, you can also drag and drop one or more <code>.abc</code> or <code>.txt</code> files onto the <b>Loaded Tunes</b> box. Dropped ABC files are added to the current collection. Dropped Website Builder settings files saved as <code>.txt</code> or <code>.json</code> are recognized by their JSON settings content and applied immediately instead of being treated as tunes. Dropped custom theme files saved as <code>.txt</code>, <code>.js</code>, or <code>.json</code> are validated, saved as the current custom theme, and immediately select the <b>Custom</b> theme for the tool.</li>
             <li>Every ABC record beginning with an <code>X:</code> field is treated as a separate tune.</li>
             <li>The loaded file and tune lists show what will be included in the exported website.</li>
           </ol>
@@ -4245,7 +4433,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li><b>Load Settings</b> opens a saved settings file and loads those values into the settings dialog. Loading a settings file does not apply those settings to the tool. Click <b>Apply</b> to use the loaded settings, or <b>Cancel</b> to leave the currently applied settings unchanged. When loaded settings are applied, the default exported website filename is reset from the loaded website title.</li>
-            <li>On desktop computers, you can also drag a saved Website Builder settings <code>.txt</code> or <code>.json</code> file onto any tab in the settings dialog. The dropped settings are loaded into the dialog and the visible controls are refreshed, but the live website settings are not changed until you click <b>Apply</b>.</li>
+            <li>On desktop computers, you can also drag a saved Website Builder settings <code>.txt</code> or <code>.json</code> file, or a custom theme <code>.txt</code>, <code>.js</code>, or <code>.json</code> file, onto any tab in the settings dialog. Dropped settings are loaded into the dialog and the visible controls are refreshed, but the live website settings are not changed until you click <b>Apply</b>. Dropped custom themes are validated and saved as the current custom theme, but the theme menu is left unchanged.</li>
             <li><b>Save Settings</b> prompts for a filename and saves the settings currently displayed in the settings dialog in the file, even if those settings changes have not been applied yet. Saving a settings file does not apply those settings to the tool.</li>
             <li><b>Import Custom Theme</b> loads a custom theme file generated by the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html"  target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b> tool. After import, the theme menu switches to <b>Custom - Imported theme name</b>.</li>
             <li>Imported custom themes are saved immediately in the browser, even if you close the settings dialog without clicking <b>Apply</b>. Click <b>Apply</b> to use the imported custom theme for exported websites, or <b>Cancel</b> to leave the currently applied theme unchanged.</li>
@@ -4261,7 +4449,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Website settings are stored in this browser using <code>localStorage</code> when
-            <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog, including by drag and drop onto the settings dialog, does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
+            <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog, including by drag and drop onto the settings dialog, does not update the browser's stored settings unless you click <b>Apply</b>. Dropping a custom theme file onto the settings dialog saves the custom theme immediately, but does not change the selected website theme unless you choose <b>Custom</b> and click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
           </p>
 
           <h3 id="instructions-build-save">4. Build and save the website</h3>
