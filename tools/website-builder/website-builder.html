@@ -1009,6 +1009,12 @@
     { id: "show", name: "Show" }
   ];
 
+  const INSTRUMENT_SELECTOR_OPTIONS = [
+    { id: "hide", name: "Hide" },
+    { id: "show", name: "Show" },
+    { id: "showBackupOnly", name: "Show (add Bass & Chords Only)" }
+  ];
+
   const TABLE_OF_CONTENTS_OPTIONS = [
     { id: "show", name: "Show" },
     { id: "showSearch", name: "Show (include search bar)" },
@@ -1743,7 +1749,7 @@
   function instrumentSelectorRequiresSoundInjection(settings) {
     return String(
       (settings && settings.instrumentSelector) || DEFAULT_SETTINGS.instrumentSelector
-    ) === "show";
+    ) !== "hide";
   }
 
   function settingsWithInstrumentSelectorRequiredSoundInjection(settings) {
@@ -2719,7 +2725,7 @@
       `${state.settings.includeTuneHeading ? "Tune titles and meta text shown" : "Tune titles and meta text hidden"} · ` +
       `${state.settings.tuneNumbers === "hide" ? "Tune numbers hidden" : "Tune numbers shown"} · ` +
       `${state.settings.includeSectionHeaderNumbers === "hide" ? "Section header numbers hidden" : "Section header numbers shown"} · ` +
-      `${state.settings.instrumentSelector === "show" ? "Display/Instrument selector shown" : "Display/Instrument selector hidden"} · ` +
+      `${state.settings.instrumentSelector === "hide" ? "Display/Instrument selector hidden" : escapeHtml(optionName(INSTRUMENT_SELECTOR_OPTIONS, state.settings.instrumentSelector || DEFAULT_SETTINGS.instrumentSelector)) + " Display/Instrument selector"} · ` +
       `${state.settings.showStringInstrumentTablatureNames === "show" ? "Stringed tablature names shown" : "Stringed tablature names hidden"} · ` +
       `${escapeHtml(optionName(ABC_TOOLS_LINK_OPTIONS, state.settings.abcToolsLinks || "disabled"))} · ` +
       `${escapeHtml(optionName(DEPLOYMENT_TARGET_OPTIONS, state.settings.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget))} deployment target · ` +
@@ -3294,7 +3300,7 @@
     const allowedValues = {
       theme: optionIds(THEME_OPTIONS),
       displayMode: optionIds(DISPLAY_OPTIONS),
-      instrumentSelector: optionIds(HIDE_SHOW_OPTIONS),
+      instrumentSelector: optionIds(INSTRUMENT_SELECTOR_OPTIONS),
       showStringInstrumentTablatureNames: optionIds(HIDE_SHOW_OPTIONS),
       cursorColor: optionIds(CURSOR_COLOR_OPTIONS),
       soundfont: optionIds(SOUNDFONT_OPTIONS),
@@ -4098,7 +4104,7 @@
         name: "Display/Instrument selector dropdown",
         id: "instrumentSelector",
         type: "select",
-        options: HIDE_SHOW_OPTIONS
+        options: INSTRUMENT_SELECTOR_OPTIONS
       },
       {
         name: "Large tune collection grouping",
@@ -4343,9 +4349,13 @@
             </li>
             <li id="instructions-setting-instrument-selector"><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
               <ul>
+                <li><b>Show</b> includes the standard display and melody-instrument choices.</li>
+                <li><b>Show (add Bass & Chords Only)</b> behaves like <b>Show</b> and also adds a final <b>Bass & Chords Only</b> selector choice.</li>
                 <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
                 <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
                 <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
+                <li>With <b>Show (add Bass & Chords Only)</b>, the user can also choose <b>Bass & Chords Only</b> from the bottom of the instrument selector.</li>
+                <li><b>Bass & Chords Only</b> mutes the melody and only plays the bass and chords. If this instrument is selected and there are no chords in a tune, that tune will play only silence.</li>
                 <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
                 <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
               </ul>
@@ -4409,7 +4419,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-configure">Back to Configure website</a></p>
           <ul>
             <li id="instructions-setting-inject-sound-settings">Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
-                directives in every tune with the selected values. This is also enabled automatically in the exported website whenever <b>Display/Instrument selector dropdown</b> is set to <b>Show</b>.</li>
+                directives in every tune with the selected values. This is also enabled automatically in the exported website whenever <b>Display/Instrument selector dropdown</b> is set to <b>Show</b> or <b>Show (add Bass & Chords Only)</b>.</li>
             <li id="instructions-setting-soundfont"><b>Soundfont</b> selects the soundfont collection used by the injected playback settings.</li>
             <li id="instructions-setting-melody-program"><b>Melody instrument</b> selects the main MIDI program used for tune melody playback. When the Display/Instrument selector is shown, the selector's first choice uses this selected melody instrument and injects that same MIDI program for playback.</li>
             <li id="instructions-setting-bass-program"><b>Bass instrument</b> selects the MIDI program used for generated bass accompaniment. Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>
@@ -4494,7 +4504,7 @@
           <ul>
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed.</li>
-            <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. The selected value is remembered for that generated website.</li>
+            <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
             <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>If the generated website includes both a table of contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed table of contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
             <li>Click the notation itself to pause or resume playback.</li>
@@ -4734,6 +4744,10 @@ fiddle: {
   program: &quot;110&quot;,
   format: &quot;noten&quot;
 }</code></pre>
+          <p>The builder's <b>Show (add Bass & Chords Only)</b> setting automatically adds this option at the end of the generated selector:</p>
+          <pre><code>&lt;option value=&quot;backupOnly&quot;&gt;Bass & Chords Only&lt;/option&gt;</code></pre>
+          <p>It also adds this matching selector entry. The previous entry in <code>instrumentChoices</code> must end with a trailing comma before adding <code>backupOnly</code>:</p>
+          <pre><code>backupOnly: { displayMode: &quot;notation&quot;, program: &quot;mute&quot;, format: &quot;noten&quot; }</code></pre>
 
           <p id="developer-changing-instrument-sound"><b>Changing the instrument sound</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -4826,6 +4840,7 @@ fiddle: {
             <li>Change <code>program: &quot;141&quot;</code> to another instrument program to change the melody sound for that selector choice.</li>
             <li>For guitar-family selector choices, keep <code>transpose: &quot;-12&quot;</code> if the playback should sound one octave lower.</li>
             <li>If you add a new selector entry, set its <code>program</code> value there as well.</li>
+            <li>The built-in <code>backupOnly</code> selector entry uses <code>program: &quot;mute&quot;</code> to mute the melody and leave only bass and chord playback. If a tune has no chords, this choice will play only silence for that tune.</li>
           </ul>
 
           <p id="developer-no-selector-sound-settings"><b>Exported websites without the Display / Instrument selector</b></p>
@@ -7253,7 +7268,9 @@ fiddle: {
     const tuneGroups = largeCollectionPlan.groups;
     const firstTuneGroupId = tuneGroups.length ? tuneGroups[0].id : "group-1";
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
-    const includeInstrumentSelector = String(s.instrumentSelector || DEFAULT_SETTINGS.instrumentSelector) === "show";
+    const instrumentSelectorMode = String(s.instrumentSelector || DEFAULT_SETTINGS.instrumentSelector);
+    const includeInstrumentSelector = instrumentSelectorMode !== "hide";
+    const includeBackupOnlyInstrument = instrumentSelectorMode === "showBackupOnly";
     const showStringInstrumentTablatureNames = String(s.showStringInstrumentTablatureNames || DEFAULT_SETTINGS.showStringInstrumentTablatureNames) === "show";
     const selectorDefaultProgram = normalizeMidiValue(s.melodyProgram);
     const selectorDefaultInstrumentName = genericInstrumentNameForProgram(s.melodyProgram);
@@ -7373,6 +7390,7 @@ fiddle: {
             <option value="fiddle">Fiddle</option>
             <option value="harp">Harp</option>
             <option value="hammeredDulcimer">Hammered Dulcimer</option>
+            ${includeBackupOnlyInstrument ? `<option value="backupOnly">Bass & Chords Only</option>` : ""}
           </select>
         </div>`
       : "";
@@ -8514,7 +8532,8 @@ ${embeddedCloseMarkup}
       concertina: { displayMode: "notation", program: "133", format: "noten" },
       fiddle: { displayMode: "notation", program: "110", format: "noten" },
       harp: { displayMode: "notation", program: "46", format: "noten" },
-      hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }
+      hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }${includeBackupOnlyInstrument ? `,
+      backupOnly: { displayMode: "notation", program: "mute", format: "noten" }` : ""}
     };
 
     function stringedTablatureLabel(name) {
