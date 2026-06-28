@@ -1431,9 +1431,11 @@
     }
 
     .instructions-modal-content {
+      max-width: 100%;
       color: #17241c;
       font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       text-align: left;
+      overflow-wrap: break-word;
     }
 
     .instructions-modal-content > h2 {
@@ -1444,8 +1446,9 @@
     }
 
     .instructions-scroll-area {
-      max-height: min(650px, calc(100vh - 230px));
+      max-height: var(--instructions-scroll-max, min(760px, calc(100vh - 320px)));
       overflow-y: auto;
+      overflow-x: hidden;
       overscroll-behavior: contain;
       scrollbar-gutter: stable;
       padding: 4px 18px 12px 4px;
@@ -1678,7 +1681,7 @@
       .toolbar .instructions-button { margin-left: 0; }
       .button { width: 100%; }
       .instructions-scroll-area {
-        max-height: calc(100vh - 210px);
+        max-height: var(--instructions-scroll-max, calc(100vh - 320px));
         padding-right: 10px;
       }
     }
@@ -4055,7 +4058,23 @@
       return;
     }
 
-    const instructionsHtml = `    <div class="instructions-modal-content">
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 900;
+    const isTabletLikeViewport =
+      viewportWidth >= 761 &&
+      viewportWidth <= 1180 &&
+      viewportHeight >= 900 &&
+      navigator.maxTouchPoints > 0;
+    const instructionsDialogTop = isTabletLikeViewport ? 50 : (viewportHeight < 700 ? 12 : 24);
+    const instructionsDialogBottomGap = isTabletLikeViewport ? 100 : 76;
+    const instructionsDialogMaxHeight = isTabletLikeViewport ? 1200 : 1060;
+    const instructionsDialogHeight = Math.min(
+      instructionsDialogMaxHeight,
+      Math.max(360, viewportHeight - instructionsDialogTop - instructionsDialogBottomGap)
+    );
+    const instructionsScrollMax = Math.max(220, instructionsDialogHeight - 150);
+
+    const instructionsHtml = `    <div class="instructions-modal-content" style="--instructions-scroll-max:${instructionsScrollMax}px;">
       <h2>Instructions</h2>
       <div class="instructions-scroll-area">
         <h3>Overview</h3>
@@ -4190,8 +4209,9 @@
     DayPilot.Modal.alert(instructionsHtml, {
       title: "Theme Builder Instructions",
       okText: "OK",
-      width: Math.min(860, Math.max(520, window.innerWidth - 50)),
-      top: 50
+      width: Math.min(860, Math.max(520, viewportWidth - 50)),
+      height: instructionsDialogHeight,
+      top: instructionsDialogTop
     });
   }
 
