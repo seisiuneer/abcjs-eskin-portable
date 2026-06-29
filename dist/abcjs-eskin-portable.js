@@ -2140,6 +2140,46 @@ var tunebook = {};
 
           gHideDynamics = false;
           gHideDynamics = ScanTuneForHideDynamics(theCurrentTuneABC);
+
+          // Automatically enable Paul Rosen's gchord implementation when the
+          // tune contains either a discrete %%MIDI gchord directive or an
+          // inline [I:MIDI ... gchord ...] directive. Default to disabled
+          // for each tune so the setting does not leak from a previous tune.
+          gUseGChord = false;
+
+          var searchRegExp = /%%MIDI gchord\b/;
+
+          var gchordRequested = searchRegExp.test(theCurrentTuneABC);
+
+          if (gchordRequested) {
+            //console.log("Using discrete gchord");
+            gUseGChord = true;
+          }
+
+          if (!gUseGChord) {
+
+            searchRegExp = /\[I:\s*MIDI[\s=]+gchord\s.*\]/;
+
+            gchordRequested = searchRegExp.test(theCurrentTuneABC);
+
+            if (gchordRequested) {
+              //console.log("Using inline gchord");
+              gUseGChord = true;
+            }
+          }
+
+          // Automatically allow lowercase chord names when explicitly requested
+          // by the tune. Default to disabled for each tune so the setting does
+          // not leak from a previous tune.
+          gAllowLowercaseChords = false;
+
+          searchRegExp = /^%allow_lowercase_chords.*$/gm;
+
+          var lowercaseChordsRequested = searchRegExp.test(theCurrentTuneABC);
+
+          if (lowercaseChordsRequested) {
+            gAllowLowercaseChords = true;
+          }
           
           // If showing whistle tab, allow checking for transpose params
           if (gAllowWhistleTabTranspose){
