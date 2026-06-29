@@ -8828,10 +8828,8 @@ ${embeddedCloseMarkup}
         applyTuneGroup(groupId);
         await renderAllWorks(currentInstrumentChoiceId());
 
-        const target = targetId ? document.getElementById(targetId) : null;
-        if (target) {
+        if (targetId && scrollToTargetIdAfterLayout(targetId)) {
           stopAllPlayback();
-          target.scrollIntoView({ behavior: "auto", block: "start" });
           history.replaceState(null, "", "#" + targetId);
         }
       }
@@ -8932,6 +8930,67 @@ ${embeddedCloseMarkup}
       applyTocFilter();
     }
 
+
+    function getHashTargetId() {
+      const hash = window.location.hash || "";
+      if (hash.length <= 1) return "";
+      try {
+        return decodeURIComponent(hash.slice(1));
+      } catch (error) {
+        return hash.slice(1);
+      }
+    }
+
+    function groupIdForTargetId(targetId) {
+      if (!targetId) return "";
+      const target = document.getElementById(targetId);
+      if (!target) return "";
+      const groupPanel = target.closest ? target.closest("[data-group-panel='true']") : target;
+      const groupId = groupPanel && groupPanel.dataset ? groupPanel.dataset.group : "";
+      return groupId ? validTuneGroupId(groupId) : "";
+    }
+
+    function scrollToTargetIdAfterLayout(targetId) {
+      const target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return false;
+
+      const scrollNow = () => {
+        const currentTarget = document.getElementById(targetId);
+        if (!currentTarget || currentTarget.hidden) return;
+        currentTarget.scrollIntoView({ behavior: "auto", block: "start" });
+      };
+
+      scrollNow();
+      requestAnimationFrame(() => {
+        scrollNow();
+        requestAnimationFrame(scrollNow);
+      });
+      setTimeout(scrollNow, 120);
+      setTimeout(scrollNow, 500);
+      return true;
+    }
+
+    function scrollToCurrentHashAfterLayout() {
+      return scrollToTargetIdAfterLayout(getHashTargetId());
+    }
+
+    async function navigateToHashTarget() {
+      const targetId = getHashTargetId();
+      if (!targetId) return false;
+
+      const targetGroupId = groupIdForTargetId(targetId);
+      if (targetGroupId && targetGroupId !== activeTuneGroupId) {
+        const selector = document.getElementById("site-tune-group-selector");
+        if (selector) selector.value = targetGroupId;
+        saveTuneGroup(targetGroupId);
+        applyTuneGroup(targetGroupId);
+        await renderAllWorks(currentInstrumentChoiceId());
+      }
+
+      stopAllPlayback();
+      return scrollToTargetIdAfterLayout(targetId);
+    }
+
     function installNavigation() {
       installTableOfContentsSearch();
 
@@ -8940,11 +8999,10 @@ ${embeddedCloseMarkup}
           event.preventDefault();
           stopAllPlayback();
 
-          const target = document.getElementById("table-of-contents");
-          if (!target) return;
-
-          target.scrollIntoView({ behavior: "auto", block: "start" });
-          history.replaceState(null, "", "#table-of-contents");
+          const targetId = "table-of-contents";
+          if (scrollToTargetIdAfterLayout(targetId)) {
+            history.replaceState(null, "", "#" + targetId);
+          }
         });
       });
 
@@ -8954,9 +9012,7 @@ ${embeddedCloseMarkup}
           stopAllPlayback();
           const href = link.getAttribute("href") || "";
           const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
-          const target = targetId ? document.getElementById(targetId) : null;
-          if (target) {
-            target.scrollIntoView({ behavior: "auto", block: "start" });
+          if (targetId && scrollToTargetIdAfterLayout(targetId)) {
             history.replaceState(null, "", "#" + targetId);
           }
         });
@@ -8967,6 +9023,10 @@ ${embeddedCloseMarkup}
           event.preventDefault();
           openABCTranscriptionToolsLink(link);
         });
+      });
+
+      window.addEventListener("hashchange", () => {
+        void navigateToHashTarget();
       });
     }
 
@@ -9357,12 +9417,13 @@ ${embeddedCloseMarkup}
       applyTocFilter();
     }
 
-    function initializeTuneGroupSelector() {
+    function initializeTuneGroupSelector(preferredGroupId) {
       if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
 
       const selector = document.getElementById("site-tune-group-selector");
-      const savedGroupId = loadSavedTuneGroup();
+      const savedGroupId = validTuneGroupId(preferredGroupId || loadSavedTuneGroup());
       activeTuneGroupId = savedGroupId;
+      if (preferredGroupId) saveTuneGroup(savedGroupId);
       if (!selector) return savedGroupId;
 
       selector.value = savedGroupId;
@@ -9433,11 +9494,16 @@ ${embeddedCloseMarkup}
       ABCJS.eskinConfig.setIrishRolls(true);
       ABCJS.eskinConfig.setCustomGMSounds(true);
       ABCJS.eskinConfig.setPlayerDefaults(100, false);
-      const savedTuneGroupId = initializeTuneGroupSelector();
+
+      const initialHashTargetId = getHashTargetId();
+      const initialHashGroupId = groupIdForTargetId(initialHashTargetId);
+      const savedTuneGroupId = initializeTuneGroupSelector(initialHashGroupId);
       applyTuneGroup(savedTuneGroupId);
       installNavigation();
+
       const savedInstrumentChoiceId = initializeInstrumentSelector();
       await renderAllWorks(savedInstrumentChoiceId);
+      if (initialHashTargetId) scrollToCurrentHashAfterLayout();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
