@@ -7271,6 +7271,7 @@ fiddle: {
     const instrumentSelectorMode = String(s.instrumentSelector || DEFAULT_SETTINGS.instrumentSelector);
     const includeInstrumentSelector = instrumentSelectorMode !== "hide";
     const includeBackupOnlyInstrument = instrumentSelectorMode === "showBackupOnly";
+    const externalLibraryCacheBuster = Date.now();
     const showStringInstrumentTablatureNames = String(s.showStringInstrumentTablatureNames || DEFAULT_SETTINGS.showStringInstrumentTablatureNames) === "show";
     const selectorDefaultProgram = normalizeMidiValue(s.melodyProgram);
     const selectorDefaultInstrumentName = genericInstrumentNameForProgram(s.melodyProgram);
@@ -7716,7 +7717,7 @@ fiddle: {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title}</title>
 
-  <link rel="stylesheet" href="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-audio.css">
+  <link rel="stylesheet" href="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-audio.css?cb=${externalLibraryCacheBuster}">
 
   <style>
     /*
@@ -8457,9 +8458,9 @@ ${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-ins
 ${embeddedCloseMarkup}
   ${abcBlocks}
 
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js"><\/script>
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js"><\/script>
-  ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/pako.min.js"><\/script>\n  ' : ''}<script>
+  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js?cb=${externalLibraryCacheBuster}"><\/script>
+  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js?cb=${externalLibraryCacheBuster}"><\/script>
+  ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/pako.min.js?cb=' + externalLibraryCacheBuster + '"><\/script>\n  ' : ''}<script>
   (() => {
     "use strict";
 
