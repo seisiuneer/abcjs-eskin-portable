@@ -4503,7 +4503,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
-            <li>Use the player controls to start, pause, restart, and change playback speed.</li>
+            <li>Use the player controls to start, pause, restart, and change playback speed. Click or tap the tempo percentage field in any tune's player to open a small tempo entry dialog. Enter a value from 5 to 400, then choose <b>Apply</b> to update that tune's play controller or <b>Cancel</b> to leave it unchanged.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
             <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>If the generated website includes both a table of contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed table of contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
@@ -4695,8 +4695,8 @@
           <p id="developer-website-title"><b>Website title</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the main title at the top of the exported website:</p>
-          <p><code>h1 { margin:0; font-size:clamp(1.8rem,4.2vw,3.0rem); line-height:1.08; }</code></p>
-          <p>For example, change <code>3.0rem</code> to <code>2.5rem</code> to make the website title smaller.</p>
+          <p><code>h1 { margin:0; font-size:clamp(1.8rem,4.2vw,2.6rem); line-height:1.08; }</code></p>
+          <p>For example, change <code>2.6rem</code> to <code>2.3rem</code> to make the website title smaller.</p>
 
           <p id="developer-table-of-contents-title"><b>Table of Contents title</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -7577,7 +7577,7 @@ fiddle: {
       margin:0 auto !important;
       color:inherit !important;
       font-family:inherit !important;
-      font-size:clamp(1.8rem,4.2vw,3.0rem) !important;
+      font-size:clamp(1.8rem,4.2vw,2.6rem) !important;
       font-weight:700 !important;
       line-height:1.08 !important;
       text-align:center !important;
@@ -7767,10 +7767,10 @@ fiddle: {
       margin:0;
       /*
         Font size customization: website title at the top of the exported website.
-        To make it smaller or larger, change the last clamp() value, 3.0rem.
+        To make it smaller or larger, change the last clamp() value, 2.6rem.
         The first value is the minimum size; the middle value controls responsive scaling.
       */
-      font-size:clamp(1.8rem,4.2vw,3.0rem);
+      font-size:clamp(1.8rem,4.2vw,2.6rem);
       line-height:1.08;
     }
     /*
@@ -8170,6 +8170,117 @@ fiddle: {
     .abcjs-inline-audio .abcjs-midi-progress-background {
       background-color:${controllerSliderColor} !important;
     }
+    .tempo-entry-overlay {
+      position:fixed;
+      inset:0;
+      z-index:11000;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:25vh 14px 14px;
+      background:rgba(0,0,0,.24);
+    }
+    .tempo-entry-overlay[hidden] {
+      display:none;
+    }
+    .tempo-entry-overlay {
+      cursor:default;
+    }
+    .tempo-entry-dialog {
+      width:min(340px, calc(100vw - 28px));
+      padding:20px 18px 18px;
+      color:var(--ink);
+      background:#fff;
+      background-color:#fff;
+      background-image:none;
+      border:1px solid color-mix(in srgb,var(--line) 78%,white);
+      border-radius:calc(var(--radius) * .65);
+      box-shadow:0 10px 30px rgba(0,0,0,.24);
+      font:16px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    .tempo-entry-dialog h2 {
+      margin:0 0 22px;
+      color:var(--ink);
+      font-size:1.22rem;
+      line-height:1.15;
+      text-align:center;
+    }
+    .tempo-entry-field-row {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin:0 auto;
+    }
+    .tempo-entry-field-row label {
+      flex:0 0 auto;
+      font-weight:800;
+    }
+    .tempo-entry-field-row input {
+      flex:0 0 88px;
+      width:88px;
+      min-height:40px;
+      padding:6px 8px;
+      color:var(--ink);
+      background:#fff;
+      border:1px solid color-mix(in srgb,var(--line) 84%,white);
+      border-radius:calc(var(--radius) / 2);
+      font:inherit;
+      font-size:1.08rem;
+      text-align:center;
+    }
+    .tempo-entry-field-row input:focus {
+      outline:2px solid color-mix(in srgb,var(--primary) 22%,transparent);
+      outline-offset:1px;
+    }
+    .tempo-entry-error {
+      min-height:1.25em;
+      margin:8px 0 0;
+      color:#a00000;
+      font-size:.88rem;
+      font-weight:800;
+      text-align:center;
+    }
+    .tempo-entry-actions {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:6px;
+    }
+    .tempo-entry-actions button {
+      appearance:none;
+      min-width:96px;
+      min-height:40px;
+      padding:7px 14px;
+      border-radius:calc(var(--radius) / 2);
+      border:1px solid color-mix(in srgb,var(--line) 88%,white);
+      font:inherit;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .tempo-entry-apply {
+      color:${controllerTextColor};
+      background:var(--primary);
+      border-color:color-mix(in srgb,var(--accent) 55%,var(--primary));
+    }
+    .tempo-entry-cancel {
+      color:var(--ink);
+      background:#fff;
+      background-color:#fff;
+      background-image:none;
+    }
+    .tempo-entry-actions button:hover,
+    .tempo-entry-actions button:focus-visible {
+      outline:2px solid color-mix(in srgb,var(--primary) 24%,transparent);
+      outline-offset:2px;
+    }
+    .abcjs-inline-audio input.abcjs-midi-tempo[data-tempo-dialog-installed="true"],
+    .abcjs-inline-audio input.abcjs-midi-current-tempo[data-tempo-dialog-installed="true"],
+    .abcjs-inline-audio .abcjs-midi-current-tempo input[data-tempo-dialog-installed="true"],
+    .abcjs-inline-audio .abcjs-midi-current-tempo-wrapper input[data-tempo-dialog-installed="true"],
+    .abcjs-inline-audio .abcjs-tempo-wrapper input[data-tempo-dialog-installed="true"] {
+      cursor:pointer;
+    }
     /*
       Mobile card spacing customization: these rules make tune cards and header
       controls fit narrow screens. Adjust mobile padding here separately from the
@@ -8247,6 +8358,17 @@ fiddle: {
         white-space:normal;
         text-align:center;
       }
+    }
+    .tempo-entry-dialog {
+      background:#fff !important;
+      background-color:#fff !important;
+      background-image:none !important;
+      backdrop-filter:none !important;
+    }
+    .tempo-entry-cancel {
+      background:#fff !important;
+      background-color:#fff !important;
+      background-image:none !important;
     }
     /*
       Print CSS customization: these rules apply only when the exported website is
@@ -8992,6 +9114,203 @@ ${embeddedCloseMarkup}
       return scrollToTargetIdAfterLayout(targetId);
     }
 
+    let activeTempoInput = null;
+
+    function tempoEntryValue(value) {
+      const text = String(value == null ? "" : value).trim();
+      if (!text) return null;
+
+      const parsed = Number(text);
+      if (!Number.isFinite(parsed)) return null;
+
+      const rounded = Math.round(parsed);
+      if (rounded < 5 || rounded > 400) return null;
+      return rounded;
+    }
+
+    function currentTempoValue(tempoInput) {
+      const fromInput = tempoEntryValue(tempoInput ? tempoInput.value : "");
+      if (fromInput !== null) return fromInput;
+      return 100;
+    }
+
+    function ensureTempoEntryDialog() {
+      let overlay = document.getElementById("tempo-entry-overlay");
+      if (overlay) return overlay;
+
+      overlay = document.createElement("div");
+      overlay.id = "tempo-entry-overlay";
+      overlay.className = "tempo-entry-overlay";
+      overlay.hidden = true;
+      overlay.innerHTML =
+        '<div class="tempo-entry-dialog" role="dialog" aria-modal="true" aria-labelledby="tempo-entry-title">' +
+          '<h2 id="tempo-entry-title">Set Tempo Percentage</h2>' +
+          '<div class="tempo-entry-field-row">' +
+            '<label for="tempo-entry-input">Tempo percentage:</label>' +
+            '<input id="tempo-entry-input" type="number" inputmode="numeric" min="5" max="400" step="1" autocomplete="off">' +
+          '</div>' +
+          '<p id="tempo-entry-error" class="tempo-entry-error" aria-live="polite"></p>' +
+          '<div class="tempo-entry-actions">' +
+            '<button type="button" class="tempo-entry-apply" id="tempo-entry-apply">Apply</button>' +
+            '<button type="button" class="tempo-entry-cancel" id="tempo-entry-cancel">Cancel</button>' +
+          '</div>' +
+        '</div>';
+
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector("#tempo-entry-input");
+      const applyButton = overlay.querySelector("#tempo-entry-apply");
+      const cancelButton = overlay.querySelector("#tempo-entry-cancel");
+
+      cancelButton.addEventListener("click", closeTempoEntryDialog);
+      applyButton.addEventListener("click", applyTempoEntryDialog);
+
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          applyTempoEntryDialog();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          closeTempoEntryDialog();
+        }
+      });
+
+      return overlay;
+    }
+
+    function openTempoEntryDialog(tempoInput) {
+      if (!tempoInput) return;
+
+      const overlay = ensureTempoEntryDialog();
+      const input = overlay.querySelector("#tempo-entry-input");
+      activeTempoInput = tempoInput;
+      input.value = String(currentTempoValue(tempoInput));
+      overlay.hidden = false;
+
+      /*
+        iOS only opens the on-screen keyboard when focus happens directly
+        inside the trusted tap/click handler. Do the first focus/select
+        synchronously, then repeat on the next frames only as a layout fallback.
+      */
+      input.focus({ preventScroll: true });
+      input.select();
+
+      requestAnimationFrame(() => {
+        input.focus({ preventScroll: true });
+        input.select();
+        requestAnimationFrame(() => {
+          input.focus({ preventScroll: true });
+          input.select();
+        });
+      });
+    }
+
+    function closeTempoEntryDialog() {
+      const overlay = document.getElementById("tempo-entry-overlay");
+      if (overlay) overlay.hidden = true;
+      activeTempoInput = null;
+    }
+
+    function applyTempoEntryDialog() {
+      const overlay = document.getElementById("tempo-entry-overlay");
+      if (!overlay || !activeTempoInput) return;
+
+      const input = overlay.querySelector("#tempo-entry-input");
+      const tempoValue = tempoEntryValue(input ? input.value : "");
+
+      if (tempoValue === null) {
+        closeTempoEntryDialog();
+        return;
+      }
+
+      activeTempoInput.value = String(tempoValue);
+      activeTempoInput.dispatchEvent(new Event("input", { bubbles: true }));
+      activeTempoInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+      closeTempoEntryDialog();
+    }
+
+    function findTempoInput(audioElement) {
+      if (!audioElement) return null;
+
+      return audioElement.querySelector(
+        "input.abcjs-midi-tempo," +
+        "input.abcjs-midi-current-tempo," +
+        ".abcjs-midi-tempo input," +
+        ".abcjs-midi-current-tempo input," +
+        ".abcjs-midi-current-tempo-wrapper input," +
+        ".abcjs-tempo-wrapper input," +
+        "input[type='number']," +
+        "input[type='text']"
+      );
+    }
+
+    function installTempoEntryDialog(audioElement) {
+      if (!audioElement) return false;
+
+      const tempoInput = findTempoInput(audioElement);
+      if (!tempoInput || tempoInput.dataset.tempoDialogInstalled === "true") return Boolean(tempoInput);
+
+      tempoInput.dataset.tempoDialogInstalled = "true";
+      tempoInput.readOnly = true;
+      tempoInput.setAttribute("readonly", "readonly");
+      tempoInput.setAttribute("inputmode", "numeric");
+      tempoInput.setAttribute("aria-label", "Open tempo percentage dialog");
+      tempoInput.title = "Click to set tempo percentage";
+
+      const openDialog = event => {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        openTempoEntryDialog(tempoInput);
+      };
+
+      tempoInput.addEventListener("pointerdown", openDialog);
+      tempoInput.addEventListener("mousedown", openDialog);
+      tempoInput.addEventListener("touchstart", openDialog, { passive: false });
+      tempoInput.addEventListener("focus", openDialog);
+      tempoInput.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      tempoInput.addEventListener("beforeinput", event => {
+        event.preventDefault();
+      });
+      tempoInput.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          openDialog(event);
+        } else if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
+          event.preventDefault();
+        }
+      });
+
+      return true;
+    }
+
+    function installTempoEntryDialogWhenReady(audioElement) {
+      if (!audioElement) return;
+
+      if (installTempoEntryDialog(audioElement)) return;
+
+      let attempts = 0;
+      const retry = () => {
+        attempts += 1;
+        if (installTempoEntryDialog(audioElement) || attempts >= 20) return;
+        setTimeout(retry, 50);
+      };
+
+      requestAnimationFrame(retry);
+
+      if (typeof MutationObserver === "function") {
+        const observer = new MutationObserver(() => {
+          if (installTempoEntryDialog(audioElement)) observer.disconnect();
+        });
+        observer.observe(audioElement, { childList: true, subtree: true });
+        setTimeout(() => observer.disconnect(), 2000);
+      }
+    }
+
     function installNavigation() {
       installTableOfContentsSearch();
 
@@ -9261,6 +9580,7 @@ ${embeddedCloseMarkup}
         const controller = new ABCJS.synth.SynthController();
         controller.load(cssIdSelector(audioId), createCursorControl(paperId, work.key), playerOptions);
         await controller.setTune(rendered[0], false, synthOptions);
+        installTempoEntryDialogWhenReady(audioElement);
         controllers.set(work.key, controller);
 
         if (paper) {
