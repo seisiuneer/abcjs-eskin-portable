@@ -1046,6 +1046,16 @@
       font-size: .9rem;
     }
 
+    .theme-builder-color-sampler-filename {
+      display: inline-block;
+      margin-left: .45em;
+      color: #675454;
+      font-size: .9em;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+      vertical-align: baseline;
+    }
+
     .theme-builder-color-sampler-hide {
       appearance: none;
       padding: 5px 10px;
@@ -4146,6 +4156,8 @@
       return;
     }
 
+    setThemeBuilderSamplerFilename(file);
+
     const context = canvas.getContext("2d", { willReadFrequently: true });
     const reader = new FileReader();
 
@@ -4235,6 +4247,15 @@
     if (swatch) swatch.style.backgroundColor = hex;
   }
 
+function setThemeBuilderSamplerFilename(file) {
+    const filenameElement = document.getElementById("theme-builder-color-sampler-filename");
+    if (!filenameElement) return;
+
+    const filename = String((file && file.name) || "").trim();
+    filenameElement.textContent = filename ? filename : "";
+    filenameElement.title = filename;
+  }
+
   function initializeThemeBuilderColorSampler() {
     const action = document.getElementById("theme-builder-color-sampler-action");
     const fileInput = document.getElementById("theme-builder-color-sampler-file");
@@ -4263,6 +4284,7 @@
       panel.hidden = true;
       fileInput.value = "";
       autoGenerateFileInput.value = "";
+      setThemeBuilderSamplerFilename(null);
     });
 
     fileInput.addEventListener("change", () => {
@@ -4467,7 +4489,7 @@
             '</div>' +
             '<div id="theme-builder-color-sampler-panel" class="theme-builder-color-sampler" hidden>' +
               '<div class="theme-builder-color-sampler-head">' +
-                '<strong>Image color sampler</strong>' +
+                '<strong>Image color sampler <span id="theme-builder-color-sampler-filename" class="theme-builder-color-sampler-filename"></span></strong>' +
                 '<button id="theme-builder-color-sampler-hide-action" class="theme-builder-color-sampler-hide" type="button">Hide</button>' +
               '</div>' +
               '<div class="theme-builder-color-sampler-canvas-wrap">' +
