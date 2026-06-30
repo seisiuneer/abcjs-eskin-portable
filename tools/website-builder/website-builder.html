@@ -2067,6 +2067,101 @@
     return contrastWithBlack > contrastWithWhite ? "#000000" : "#ffffff";
   }
 
+
+  function hexToRgbValues(color) {
+    const hexColor = normalizeHexColor(color);
+    if (!hexColor) return null;
+
+    return [1, 3, 5].map(index =>
+      parseInt(hexColor.slice(index, index + 2), 16)
+    );
+  }
+
+  function relativeLuminanceForHex(color) {
+    const rgb = hexToRgbValues(color);
+    if (!rgb) return null;
+
+    const linear = rgb.map(value => {
+      const channel = value / 255;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : Math.pow((channel + 0.055) / 1.055, 2.4);
+    });
+
+    return 0.2126 * linear[0] +
+      0.7152 * linear[1] +
+      0.0722 * linear[2];
+  }
+
+  function contrastRatioForHex(colorA, colorB) {
+    const luminanceA = relativeLuminanceForHex(colorA);
+    const luminanceB = relativeLuminanceForHex(colorB);
+
+    if (luminanceA === null || luminanceB === null) return 0;
+
+    const lighter = Math.max(luminanceA, luminanceB);
+    const darker = Math.min(luminanceA, luminanceB);
+
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
+  function colorDistanceForHex(colorA, colorB) {
+    const rgbA = hexToRgbValues(colorA);
+    const rgbB = hexToRgbValues(colorB);
+
+    if (!rgbA || !rgbB) return Infinity;
+
+    return Math.sqrt(rgbA.reduce((sum, value, index) =>
+      sum + Math.pow(value - rgbB[index], 2), 0
+    ));
+  }
+
+  function repeatButtonHighlightColors(theme) {
+    const primary = normalizeHexColor(theme && theme.primary) || "#424242";
+    const accent = normalizeHexColor(theme && theme.accent);
+    const panel = normalizeHexColor(theme && theme.panel);
+    const ink = normalizeHexColor(theme && theme.ink);
+    const primaryRgb = hexToRgbValues(primary) || [66, 66, 66];
+
+    const activeBackground = Math.max(...primaryRgb) >= 74
+      ? mixHexColors(primary, "#000000", 0.34)
+      : mixHexColors(primary, "#ffffff", 0.30);
+
+    const candidates = [
+      ["accent", accent],
+      ["panel", panel],
+      ["white", "#ffffff"],
+      ["ink", ink],
+      ["black", "#000000"]
+    ].filter(candidate => candidate[1]);
+
+    const accentContrast = accent
+      ? contrastRatioForHex(activeBackground, accent)
+      : 0;
+
+    let activeForeground = accent && accentContrast >= 3
+      ? accent
+      : "#ffffff";
+
+    if (!accent || accentContrast < 3) {
+      activeForeground = candidates.reduce((best, candidate) => {
+        const bestContrast = contrastRatioForHex(activeBackground, best);
+        const candidateContrast = contrastRatioForHex(activeBackground, candidate[1]);
+        return candidateContrast > bestContrast ? candidate[1] : best;
+      }, activeForeground);
+    }
+
+    const activeRing = colorDistanceForHex(activeForeground, "#ffffff") < 12
+      ? mixHexColors(primary, "#ffffff", 0.55)
+      : mixHexColors(activeForeground, "#ffffff", 0.18);
+
+    return {
+      activeBackground,
+      activeForeground,
+      activeRing
+    };
+  }
+
   function extractCssProperty(css, selector, propertyName) {
     const selectorText = String(selector || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const propertyText = String(propertyName || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -7225,6 +7320,7 @@ fiddle: {
     const t = themeCss(s.theme);
     const controllerTextColor = readableTextForBackground(t.primary);
     const controllerSliderColor = mixHexColors(t.primary, "#ffffff", 0.18);
+    const repeatHighlightColors = repeatButtonHighlightColors(t);
     const embeddedBackToTocTextColor =
       extractCssProperty(t.customCss, ".back-to-toc", "color") || "#ffffff";
     const embeddedAbcToolsTextColor =
@@ -7709,6 +7805,36 @@ fiddle: {
       max-width:100% !important;
     }`
       : "";
+
+    const repeatButtonHighlightCss = `
+    /*
+      Play bar repeat button highlight customization: these values are generated
+      from the selected website theme so the repeat/loop ON state remains clear
+      on Safari and other browsers without using an overly strong highlight.
+      The background shorthand needs !important because the shared abcjs audio CSS
+      sets .abcjs-btn background:none !important.
+    */
+    .abcjs-inline-audio {
+      --abcjs-repeat-active-bg:${repeatHighlightColors.activeBackground};
+      --abcjs-repeat-active-fg:${repeatHighlightColors.activeForeground};
+      --abcjs-repeat-active-ring:${repeatHighlightColors.activeRing};
+    }
+    .abcjs-inline-audio button.abcjs-midi-loop.abcjs-btn.abcjs-pushed,
+    .abcjs-inline-audio .abcjs-midi-loop.abcjs-pushed {
+      background:var(--abcjs-repeat-active-bg) !important;
+      border-color:var(--abcjs-repeat-active-fg) !important;
+      box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,.38),
+        0 0 0 1px var(--abcjs-repeat-active-ring) !important;
+      box-sizing:border-box;
+    }
+    .abcjs-inline-audio button.abcjs-midi-loop.abcjs-btn.abcjs-pushed g,
+    .abcjs-inline-audio button.abcjs-midi-loop.abcjs-btn.abcjs-pushed path,
+    .abcjs-inline-audio .abcjs-midi-loop.abcjs-pushed g,
+    .abcjs-inline-audio .abcjs-midi-loop.abcjs-pushed path {
+      fill:var(--abcjs-repeat-active-fg) !important;
+      stroke:var(--abcjs-repeat-active-fg) !important;
+    }`;
 
     return `<!doctype html>
 <html lang="en">
@@ -8450,6 +8576,7 @@ fiddle: {
       .score-panel { break-inside:avoid; page-break-inside:avoid; }
     }
     ${customThemeCss}
+${repeatButtonHighlightCss}
     ${whistleTabCss}
 ${embeddedDeploymentCss}    .abc-tools-link {
       left:0;
