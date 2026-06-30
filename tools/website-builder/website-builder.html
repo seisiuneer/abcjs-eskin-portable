@@ -4503,7 +4503,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
             <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
-            <li>Use the player controls to start, pause, restart, and change playback speed. Click or tap the tempo percentage field in any tune's player to open a small tempo entry dialog. Enter a value from 5 to 400, then choose <b>Apply</b> to update that tune's play controller or <b>Cancel</b> to leave it unchanged.</li>
+            <li>Use the player controls to start, pause, restart, and change playback speed. Click or tap the tempo percentage field in any tune's player to open a small tempo entry dialog. Enter a value from 5 to 400 or choose one of the preset percentages to preload the entry field, then choose <b>Apply</b> to update that tune's play controller or <b>Cancel</b> to leave it unchanged.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
             <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>If the generated website includes both a table of contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed table of contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
@@ -8187,7 +8187,7 @@ fiddle: {
       cursor:default;
     }
     .tempo-entry-dialog {
-      width:min(340px, calc(100vw - 28px));
+      width:min(430px, calc(100vw - 28px));
       padding:20px 18px 18px;
       color:var(--ink);
       background:#fff;
@@ -8207,6 +8207,7 @@ fiddle: {
     }
     .tempo-entry-field-row {
       display:flex;
+      flex-wrap:wrap;
       align-items:center;
       justify-content:center;
       gap:10px;
@@ -8215,6 +8216,7 @@ fiddle: {
     .tempo-entry-field-row label {
       flex:0 0 auto;
       font-weight:800;
+      white-space:nowrap;
     }
     .tempo-entry-field-row input {
       flex:0 0 88px;
@@ -8229,7 +8231,36 @@ fiddle: {
       font-size:1.08rem;
       text-align:center;
     }
-    .tempo-entry-field-row input:focus {
+    .tempo-entry-preset {
+      -webkit-appearance:none;
+      appearance:none;
+      flex:0 0 124px;
+      width:124px;
+      height:40px;
+      min-height:40px;
+      padding:6px 34px 6px 12px;
+      color:var(--ink);
+      -webkit-text-fill-color:var(--ink);
+      background-color:color-mix(in srgb,var(--panel, #fff) 92%,white);
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+        linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) 17px,
+        calc(100% - 12px) 17px;
+      background-size:6px 6px, 6px 6px;
+      background-repeat:no-repeat;
+      border:1px solid color-mix(in srgb,var(--line) 84%,white);
+      border-radius:calc(var(--radius) / 2);
+      box-sizing:border-box;
+      font:inherit;
+      font-size:.98rem;
+      font-weight:750;
+      line-height:1.2;
+      cursor:pointer;
+    }
+    .tempo-entry-field-row input:focus,
+    .tempo-entry-preset:focus {
       outline:2px solid color-mix(in srgb,var(--primary) 22%,transparent);
       outline-offset:1px;
     }
@@ -8273,6 +8304,36 @@ fiddle: {
     .tempo-entry-actions button:focus-visible {
       outline:2px solid color-mix(in srgb,var(--primary) 24%,transparent);
       outline-offset:2px;
+    }
+    @media (max-width: 420px) {
+      .tempo-entry-field-row {
+        gap:8px;
+      }
+      .tempo-entry-field-row label {
+        font-size:.95rem;
+      }
+      .tempo-entry-field-row input {
+        flex-basis:82px;
+        width:82px;
+      }
+      .tempo-entry-preset {
+        flex-basis:112px;
+        width:112px;
+        padding-left:10px;
+        padding-right:30px;
+        background-position:
+          calc(100% - 17px) 17px,
+          calc(100% - 11px) 17px;
+      }
+    }
+    @media (max-width: 340px) {
+      .tempo-entry-field-row {
+        max-width:250px;
+      }
+      .tempo-entry-preset {
+        flex-basis:124px;
+        width:124px;
+      }
     }
     .abcjs-inline-audio input.abcjs-midi-tempo[data-tempo-dialog-installed="true"],
     .abcjs-inline-audio input.abcjs-midi-current-tempo[data-tempo-dialog-installed="true"],
@@ -9148,6 +9209,10 @@ ${embeddedCloseMarkup}
           '<div class="tempo-entry-field-row">' +
             '<label for="tempo-entry-input">Tempo percentage:</label>' +
             '<input id="tempo-entry-input" type="number" inputmode="numeric" min="5" max="400" step="1" autocomplete="off">' +
+            '<select id="tempo-entry-preset" class="tempo-entry-preset" aria-label="Preset tempo percentage">' +
+              '<option value="">Preset</option>' +
+              '<option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="70">70</option><option value="80">80</option><option value="90">90</option><option value="100">100</option><option value="125">125</option><option value="150">150</option><option value="175">175</option><option value="200">200</option>' +
+            '</select>' +
           '</div>' +
           '<p id="tempo-entry-error" class="tempo-entry-error" aria-live="polite"></p>' +
           '<div class="tempo-entry-actions">' +
@@ -9159,11 +9224,23 @@ ${embeddedCloseMarkup}
       document.body.appendChild(overlay);
 
       const input = overlay.querySelector("#tempo-entry-input");
+      const preset = overlay.querySelector("#tempo-entry-preset");
       const applyButton = overlay.querySelector("#tempo-entry-apply");
       const cancelButton = overlay.querySelector("#tempo-entry-cancel");
 
       cancelButton.addEventListener("click", closeTempoEntryDialog);
       applyButton.addEventListener("click", applyTempoEntryDialog);
+
+      preset.addEventListener("change", () => {
+        if (!preset.value) return;
+        input.value = preset.value;
+        input.focus({ preventScroll: true });
+        input.select();
+      });
+
+      input.addEventListener("input", () => {
+        if (preset && preset.value !== input.value) preset.value = "";
+      });
 
       input.addEventListener("keydown", event => {
         if (event.key === "Enter") {
@@ -9183,8 +9260,10 @@ ${embeddedCloseMarkup}
 
       const overlay = ensureTempoEntryDialog();
       const input = overlay.querySelector("#tempo-entry-input");
+      const preset = overlay.querySelector("#tempo-entry-preset");
       activeTempoInput = tempoInput;
       input.value = String(currentTempoValue(tempoInput));
+      if (preset) preset.value = "";
       overlay.hidden = false;
 
       /*
