@@ -963,6 +963,12 @@
     { id: "red", name: "Red" }
   ];
 
+  const CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS = [
+    { id: "small", name: "Small" },
+    { id: "medium", name: "Medium" },
+    { id: "large", name: "Large" }
+  ];
+
   const ABC_TOOLS_LINK_OPTIONS = [
     { id: "disabled", name: "Disabled" },
     { id: "player", name: "Add Open in Player buttons" },
@@ -1683,6 +1689,7 @@
     instrumentSelector: "show",
     showStringInstrumentTablatureNames: "hide",
     cursorColor: "green",
+    cursorAutoscrollGuardBand: "medium",
     showTuneDividers: "show",
     includeTableOfContents: "showSearch",
     injectSoundSettings: true,
@@ -1765,6 +1772,10 @@
 
     if (!optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS).has(String(normalized.largeCollectionGroupingBatchSize || ""))) {
       normalized.largeCollectionGroupingBatchSize = DEFAULT_SETTINGS.largeCollectionGroupingBatchSize;
+    }
+
+    if (!optionIds(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS).has(String(normalized.cursorAutoscrollGuardBand || ""))) {
+      normalized.cursorAutoscrollGuardBand = DEFAULT_SETTINGS.cursorAutoscrollGuardBand;
     }
 
     const groupingMode = String(normalized.largeCollectionGrouping || "");
@@ -2810,6 +2821,7 @@
       `${escapeHtml(themeName(state.settings.theme))} · ` +
       `${escapeHtml(optionName(DISPLAY_OPTIONS, state.settings.displayMode))} · ` +
       `${escapeHtml(optionName(CURSOR_COLOR_OPTIONS, state.settings.cursorColor))} play cursor · ` +
+      `${escapeHtml(optionName(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS, state.settings.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand))} playback autoscroll view ahead · ` +
       `${state.settings.injectSoundSettings ? "Injected sound and MIDI settings" : "Original tune sound settings"} · ` +
       `Player ${state.settings.playerPosition} notation · ` +
       `Notation ${state.settings.notationWidth}% of page body · ` +
@@ -3122,7 +3134,7 @@
         "tuneOrder", "instrumentSelector",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "abcToolsLinks", "showStringInstrumentTablatureNames",
-        "titleArticleReverser", "deploymentTarget"
+        "titleArticleReverser", "cursorAutoscrollGuardBand", "deploymentTarget"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -3154,7 +3166,7 @@
       });
     });
 
-    if (moved < 31) return false;
+    if (moved < 32) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3201,6 +3213,7 @@
     theme: "instructions-setting-theme",
     displayMode: "instructions-setting-display-mode",
     cursorColor: "instructions-setting-cursor-color",
+    cursorAutoscrollGuardBand: "instructions-setting-cursor-autoscroll-guard-band",
     playerPosition: "instructions-setting-player-position",
     notationWidth: "instructions-setting-notation-width",
     bodyWidth: "instructions-setting-body-width",
@@ -3398,6 +3411,7 @@
       instrumentSelector: optionIds(INSTRUMENT_SELECTOR_OPTIONS),
       showStringInstrumentTablatureNames: optionIds(HIDE_SHOW_OPTIONS),
       cursorColor: optionIds(CURSOR_COLOR_OPTIONS),
+      cursorAutoscrollGuardBand: optionIds(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS),
       soundfont: optionIds(SOUNDFONT_OPTIONS),
       melodyProgram: optionIds(GM_INSTRUMENT_OPTIONS),
       bassProgram: optionIds(GM_INSTRUMENT_OPTIONS),
@@ -4232,6 +4246,12 @@
         options: TITLE_ARTICLE_REVERSE_OPTIONS
       },
       {
+        name: "Playback autoscroll view ahead",
+        id: "cursorAutoscrollGuardBand",
+        type: "select",
+        options: CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS
+      },
+      {
         name: "Deployment target",
         id: "deploymentTarget",
         type: "select",
@@ -4499,6 +4519,14 @@
                 <li>The supported article set is also used when sorting titles for large tune collection grouping.</li>
                 <li>The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website.</li>
                 <li>The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
+              </ul>
+            </li>
+            <li id="instructions-setting-cursor-autoscroll-guard-band"><b>Playback autoscroll view ahead</b> controls how much upcoming music the generated website tries to keep visible below the playback cursor while the music autoscrolls.
+              <ul>
+                <li><b>Small</b> keeps the cursor visible with a compact view-ahead area.</li>
+                <li><b>Medium</b> is the default and keeps more upcoming music visible below the cursor.</li>
+                <li><b>Large</b> keeps the most upcoming music visible below the cursor.</li>
+                <li><b>Medium</b> or <b>Large</b> can be helpful for classical scores or other music where the player needs to see upcoming music near the bottom of the screen.</li>
               </ul>
             </li>
             <li id="instructions-setting-deployment-target"><b>Deployment target</b> controls whether the exported HTML is optimized as a complete standalone page or as HTML that may be pasted directly into another website builder or content-management page.
@@ -7609,6 +7637,14 @@ fiddle: {
       red: "#ff2020"
     };
     const cursorColor = JSON.stringify(cursorColors[s.cursorColor] || cursorColors.green);
+    const cursorAutoscrollGuardBands = {
+      small: { top: 72, bottom: 82 },
+      medium: { top: 80, bottom: 180 },
+      large: { top: 90, bottom: 280 }
+    };
+    const cursorAutoscrollGuardBand =
+      cursorAutoscrollGuardBands[String(s.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand)] ||
+      cursorAutoscrollGuardBands.medium;
     const customThemeCss = embeddedDeployment
       ? scopeCssBodyRulesForEmbeddedDeployment(t.customCss || "")
       : (t.customCss || "");
@@ -8801,6 +8837,12 @@ ${embeddedCloseMarkup}
     const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
     const cursorColor = ${cursorColor};
     /*
+      Playback autoscroll view ahead customization:
+      top and bottom are viewport guard-band sizes in pixels. Increase bottom
+      if you want more upcoming notation to remain visible below the playback cursor.
+    */
+    const cursorAutoscrollGuardBand = ${JSON.stringify(cursorAutoscrollGuardBand)};
+    /*
       JavaScript default sound settings customization:
       These are the default sound settings exported from the Website Builder.
       They are used before a visitor changes the Display / Instrument selector
@@ -9558,8 +9600,10 @@ ${embeddedCloseMarkup}
 
     function keepCursorVisible(cursor, paper) {
       const cursorRect = cursor.getBoundingClientRect();
-      const viewportTop = 72;
-      const viewportBottom = window.innerHeight - 82;
+      const guardTop = Number(cursorAutoscrollGuardBand.top) || 72;
+      const guardBottom = Number(cursorAutoscrollGuardBand.bottom) || 82;
+      const viewportTop = guardTop;
+      const viewportBottom = Math.max(viewportTop + 80, window.innerHeight - guardBottom);
 
       if (cursorRect.top < viewportTop) {
         window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
