@@ -336,24 +336,35 @@
     }
 
     #theme-builder-full-preview-action {
-      background: #1d6f7a !important;
-      border-color: #14505a !important;
-    }
-
-    #theme-builder-full-preview-action:hover,
-    #theme-builder-full-preview-action:focus-visible {
-      background: #14505a !important;
-      outline: none !important;
-    }
-
-    #theme-builder-color-sampler-action {
       background: #6b2f8f !important;
       border-color: #52206f !important;
     }
 
+    #theme-builder-full-preview-action:hover,
+    #theme-builder-full-preview-action:focus-visible {
+      background: #52206f !important;
+      outline: none !important;
+    }
+
+    #theme-builder-color-sampler-action {
+      background: #2f9f95 !important;
+      border-color: #247a72 !important;
+    }
+
     #theme-builder-color-sampler-action:hover,
     #theme-builder-color-sampler-action:focus-visible {
-      background: #52206f !important;
+      background: #247a72 !important;
+      outline: none !important;
+    }
+
+    #theme-builder-auto-generate-action {
+      background: #2f9f95 !important;
+      border-color: #247a72 !important;
+    }
+
+    #theme-builder-auto-generate-action:hover,
+    #theme-builder-auto-generate-action:focus-visible {
+      background: #247a72 !important;
       outline: none !important;
     }
 
@@ -470,6 +481,46 @@
       border-radius: 5px !important;
       background: #fff !important;
       cursor: pointer;
+    }
+
+    .theme-builder-gradient-swap-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 9px 12px;
+      align-items: center;
+      grid-column: 1 / -1;
+    }
+
+    .theme-builder-gradient-swap-row .theme-builder-field {
+      margin-bottom: 0;
+    }
+
+    .theme-builder-gradient-swap-button {
+      appearance: none;
+      align-self: center;
+      justify-self: center;
+      width: 52px;
+      height: 52px;
+      margin-top: 21px;
+      padding: 0;
+      color: #0d4c2f;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      font: inherit;
+      font-size: 2.25rem;
+      font-weight: 850;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .theme-builder-gradient-swap-button:hover,
+    .theme-builder-gradient-swap-button:focus-visible {
+      color: #176b43;
+      background: transparent;
+      outline: none;
+      transform: scale(1.08);
     }
 
     .theme-builder-wide-field {
@@ -1017,8 +1068,11 @@
     }
 
     .theme-builder-color-sampler-canvas-wrap {
-      max-height: 260px;
+      height: clamp(320px, 38vh, 480px);
+      min-height: 220px;
+      max-height: 480px;
       overflow: auto;
+      resize: vertical;
       border: 1px solid #c9d5cc;
       border-radius: 8px;
       background:
@@ -1128,8 +1182,16 @@
 
       .theme-builder-file-actions,
       .theme-builder-built-in-actions,
-      .theme-builder-side-actions {
+      .theme-builder-side-actions,
+      .theme-builder-gradient-swap-row {
         grid-template-columns: 1fr;
+      }
+
+      .theme-builder-gradient-swap-button {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 9px;
+        border-radius: 0;
       }
 
       .theme-builder-file-row .theme-builder-side-actions .theme-builder-instructions-action {
@@ -1972,6 +2034,38 @@
   }
 
 
+
+  function headerTextColorForGradient(beginColor, endColor) {
+    const begin = normalizeHexColor(beginColor) || DEFAULT_CUSTOM_THEME.heroBegin;
+    const end = normalizeHexColor(endColor) || begin;
+    const midpoint = mixHexColors(begin, end, 0.5);
+    const midpointRgb = htmlHexToRgb(midpoint);
+    const midpointLuminance = relativeLuminanceFromRgb(
+      midpointRgb.red,
+      midpointRgb.green,
+      midpointRgb.blue
+    );
+
+    // For image-generated themes, favor white on medium-dark headers.
+    // The normal maximum-contrast test switches to black surprisingly early,
+    // which can look wrong on photographic or shaded gradients.
+    return midpointLuminance < 0.42 ? "#ffffff" : "#000000";
+  }
+
+  function imageGeneratedHeaderTextCss(color) {
+    const textColor = normalizeHexColor(color) || "#ffffff";
+
+    return [
+      "/* Auto-generated from image: keep the website title and subtitle readable over the header gradient. */",
+      ".hero,",
+      ".hero h1,",
+      ".hero-copy {",
+      `  color: ${textColor};`,
+      `  -webkit-text-fill-color: ${textColor};`,
+      "}"
+    ].join("\n");
+  }
+
   function hexToRgba(color, alpha) {
     const hex = normalizeHexColor(color);
     if (!hex) return color;
@@ -2797,13 +2891,15 @@
 
   function extractFullPreviewHeroTextColor(css) {
     const text = String(css || "");
-    const selectorBlocks = [
-      ...text.matchAll(/\.hero\s+h1\s*\{([^}]*)\}/gi),
-      ...text.matchAll(/\.hero\s*\{([^}]*)\}/gi)
-    ];
+    const selectorBlocks = [...text.matchAll(/([^{}]+)\{([^}]*)\}/g)];
 
     for (let index = selectorBlocks.length - 1; index >= 0; index -= 1) {
-      const declarationBlock = selectorBlocks[index][1] || "";
+      const selector = selectorBlocks[index][1] || "";
+      if (!/(^|[,\s])\.hero(?:\s|,|$)|(^|[,\s])\.hero\s+h1(?:\s|,|$)|(^|[,\s])\.hero-copy(?:\s|,|$)/i.test(selector)) {
+        continue;
+      }
+
+      const declarationBlock = selectorBlocks[index][2] || "";
       const colorMatch = declarationBlock.match(/(?:^|;)\s*color\s*:\s*([^;]+)\s*;?/i);
 
       if (colorMatch) {
@@ -2816,6 +2912,7 @@
 
     return "";
   }
+
 
   function fullThemePreviewCss(theme) {
     const advancedCss = theme.includeBuiltInAdvancedCss
@@ -3487,7 +3584,10 @@
       setThemeBuilderPreviewStyle(title, "color", heroText);
       title.style.setProperty("-webkit-text-fill-color", heroText, "important");
     }
-    if (subtitle) setThemeBuilderPreviewStyle(subtitle, "color", heroText);
+    if (subtitle) {
+      setThemeBuilderPreviewStyle(subtitle, "color", heroText);
+      subtitle.style.setProperty("-webkit-text-fill-color", heroText, "important");
+    }
     if (tocHeading) setThemeBuilderPreviewStyle(tocHeading, "color", theme.primary);
     tocLinks.forEach(item => {
       setThemeBuilderPreviewStyle(item, "background", theme.panel);
@@ -3578,6 +3678,32 @@
     });
   }
 
+  function initializeThemeBuilderGradientSwap() {
+    const modalRoot = getOpenThemeBuilderModalRoot();
+    const button = document.getElementById("theme-builder-gradient-swap-action");
+    if (!modalRoot || !button || button.dataset.swapReady === "true") return;
+
+    button.addEventListener("click", () => {
+      const beginField = findThemeBuilderField(modalRoot, "heroBegin");
+      const endField = findThemeBuilderField(modalRoot, "heroEnd");
+      if (!beginField || !endField) return;
+
+      const beginValue = beginField.value;
+      beginField.value = endField.value;
+      endField.value = beginValue;
+
+      updateHeroCssFieldFromGradient(modalRoot);
+      [beginField, endField].forEach(field => {
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      syncThemeBuilderColorPickers(true);
+      updateThemeBuilderPreview();
+    });
+
+    button.dataset.swapReady = "true";
+  }
+
   function initializeThemeBuilderLayout() {
     const root = document.getElementById("theme-builder-root");
     const modalRoot = getOpenThemeBuilderModalRoot();
@@ -3594,6 +3720,7 @@
     });
 
     syncThemeBuilderColorPickers();
+    initializeThemeBuilderGradientSwap();
     updateThemeBuilderPreview();
     root.dataset.layoutReady = "true";
     return CUSTOM_THEME_FIELDS.every(fieldId => !!findThemeBuilderField(modalRoot, fieldId));
@@ -3610,6 +3737,460 @@
       rgbComponentToHex(red) +
       rgbComponentToHex(green) +
       rgbComponentToHex(blue);
+  }
+
+  function htmlHexToRgb(color) {
+    const hex = normalizeHexColor(color);
+    if (!hex) return { red: 0, green: 0, blue: 0 };
+    return {
+      red: parseInt(hex.slice(1, 3), 16),
+      green: parseInt(hex.slice(3, 5), 16),
+      blue: parseInt(hex.slice(5, 7), 16)
+    };
+  }
+
+  function relativeLuminanceFromRgb(red, green, blue) {
+    const channels = [red, green, blue].map(value => {
+      const channel = Math.max(0, Math.min(255, Number(value) || 0)) / 255;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : Math.pow((channel + 0.055) / 1.055, 2.4);
+    });
+
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  }
+
+  function colorStatsFromRgb(red, green, blue) {
+    const r = Math.max(0, Math.min(255, Number(red) || 0)) / 255;
+    const g = Math.max(0, Math.min(255, Number(green) || 0)) / 255;
+    const b = Math.max(0, Math.min(255, Number(blue) || 0)) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    const lightness = (max + min) / 2;
+    const saturation = delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1));
+    let hue = 0;
+
+    if (delta !== 0) {
+      if (max === r) hue = ((g - b) / delta) % 6;
+      else if (max === g) hue = (b - r) / delta + 2;
+      else hue = (r - g) / delta + 4;
+      hue = Math.round(hue * 60);
+      if (hue < 0) hue += 360;
+    }
+
+    return {
+      hue,
+      saturation,
+      lightness,
+      luminance: relativeLuminanceFromRgb(red, green, blue)
+    };
+  }
+
+  function clampByte(value) {
+    return Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
+  }
+
+  function mixRgbColors(color, mixWith, amount) {
+    const base = typeof color === "string" ? htmlHexToRgb(color) : color;
+    const target = typeof mixWith === "string" ? htmlHexToRgb(mixWith) : mixWith;
+    const ratio = Math.max(0, Math.min(1, Number(amount) || 0));
+
+    return rgbToHtmlHex(
+      clampByte(base.red + (target.red - base.red) * ratio),
+      clampByte(base.green + (target.green - base.green) * ratio),
+      clampByte(base.blue + (target.blue - base.blue) * ratio)
+    );
+  }
+
+  function colorDistance(first, second) {
+    return Math.sqrt(
+      Math.pow(first.red - second.red, 2) +
+      Math.pow(first.green - second.green, 2) +
+      Math.pow(first.blue - second.blue, 2)
+    );
+  }
+
+  function hueDistance(firstHue, secondHue) {
+    const distance = Math.abs((Number(firstHue) || 0) - (Number(secondHue) || 0));
+    return Math.min(distance, 360 - distance);
+  }
+
+  function avoidSolidWhitePageBackground(color, tintColor) {
+    const hex = normalizeHexColor(color);
+    const tint = normalizeHexColor(tintColor) || DEFAULT_CUSTOM_THEME.bg;
+
+    if (!hex) return DEFAULT_CUSTOM_THEME.bg;
+
+    const rgb = htmlHexToRgb(hex);
+    const stats = colorStatsFromRgb(rgb.red, rgb.green, rgb.blue);
+
+    // Auto-generated themes should avoid plain white or almost-white page
+    // backgrounds. Keep the background light, but force a visible image-based
+    // tint whenever the detected background is too pale or too neutral.
+    if (stats.lightness >= 0.88 || (stats.lightness >= 0.82 && stats.saturation <= 0.14)) {
+      let tinted = mixRgbColors(tint, "#ffffff", 0.76);
+      let tintedRgb = htmlHexToRgb(tinted);
+      let tintedStats = colorStatsFromRgb(tintedRgb.red, tintedRgb.green, tintedRgb.blue);
+
+      // Some source images produce very pale beige/cream tints. Pull those a
+      // little farther toward the image color so the result reads as tinted,
+      // not white, while remaining a light page background.
+      if (tintedStats.lightness >= 0.92 || tintedStats.saturation <= 0.10) {
+        tinted = mixRgbColors(tint, "#ffffff", 0.66);
+        tintedRgb = htmlHexToRgb(tinted);
+        tintedStats = colorStatsFromRgb(tintedRgb.red, tintedRgb.green, tintedRgb.blue);
+      }
+
+      // Avoid accidentally creating a mid/dark background from a very dark
+      // tint color. Keep the page background comfortably light while still
+      // retaining a visible image-based tint.
+      if (tintedStats.lightness < 0.90) {
+        tinted = mixRgbColors(tinted, "#ffffff", 0.62);
+        tintedRgb = htmlHexToRgb(tinted);
+        tintedStats = colorStatsFromRgb(tintedRgb.red, tintedRgb.green, tintedRgb.blue);
+      }
+
+      // Final guard: if the first lightening pass still leaves the page color
+      // feeling too dense, lift it again. This favors a softer pastel page
+      // background without falling back to plain white.
+      if (tintedStats.lightness < 0.88) {
+        tinted = mixRgbColors(tinted, "#ffffff", 0.38);
+      }
+
+      return tinted;
+    }
+
+    return hex;
+  }
+
+  function analyzeImagePalette(image) {
+    const sourceWidth = Math.max(1, image.naturalWidth || image.width || 1);
+    const sourceHeight = Math.max(1, image.naturalHeight || image.height || 1);
+    const maxAnalysisSize = 180;
+    const scale = Math.min(1, maxAnalysisSize / Math.max(sourceWidth, sourceHeight));
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+    const analysisCanvas = document.createElement("canvas");
+    const analysisContext = analysisCanvas.getContext("2d", { willReadFrequently: true });
+
+    analysisCanvas.width = width;
+    analysisCanvas.height = height;
+    analysisContext.drawImage(image, 0, 0, width, height);
+
+    const pixels = analysisContext.getImageData(0, 0, width, height).data;
+    const buckets = new Map();
+
+    for (let index = 0; index < pixels.length; index += 4) {
+      const alpha = pixels[index + 3];
+      if (alpha < 180) continue;
+
+      const red = pixels[index];
+      const green = pixels[index + 1];
+      const blue = pixels[index + 2];
+      const stats = colorStatsFromRgb(red, green, blue);
+
+      // Ignore almost-white, almost-black, and very flat gray pixels while
+      // building the accent palette. They are still available as fallbacks via
+      // the light/dark scans below.
+      const quantizedRed = red >> 4;
+      const quantizedGreen = green >> 4;
+      const quantizedBlue = blue >> 4;
+      const key = `${quantizedRed},${quantizedGreen},${quantizedBlue}`;
+      let bucket = buckets.get(key);
+
+      if (!bucket) {
+        bucket = { red: 0, green: 0, blue: 0, count: 0 };
+        buckets.set(key, bucket);
+      }
+
+      bucket.red += red;
+      bucket.green += green;
+      bucket.blue += blue;
+      bucket.count += 1;
+    }
+
+    const colors = Array.from(buckets.values())
+      .filter(bucket => bucket.count > 0)
+      .map(bucket => {
+        const red = Math.round(bucket.red / bucket.count);
+        const green = Math.round(bucket.green / bucket.count);
+        const blue = Math.round(bucket.blue / bucket.count);
+        return {
+          red,
+          green,
+          blue,
+          count: bucket.count,
+          hex: rgbToHtmlHex(red, green, blue),
+          ...colorStatsFromRgb(red, green, blue)
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    if (!colors.length) return null;
+
+    const totalPixelCount = width * height;
+    const usefulColors = colors.filter(color =>
+      color.lightness > 0.07 && color.lightness < 0.94 &&
+      (color.saturation > 0.08 || color.count > totalPixelCount * 0.02)
+    );
+    const rankedAccentColors = (usefulColors.length ? usefulColors : colors)
+      .slice()
+      .sort((a, b) =>
+        (b.count * (0.20 + Math.pow(b.saturation, 1.85)) * Math.max(0.25, 1 - Math.abs(0.50 - b.lightness) * 0.85)) -
+        (a.count * (0.20 + Math.pow(a.saturation, 1.85)) * Math.max(0.25, 1 - Math.abs(0.50 - a.lightness) * 0.85))
+      );
+
+    // Strongly favor real colors over large neutral/background regions.
+    // These are the most frequently found colorful buckets, ranked by a
+    // count-weighted colorfulness score. The first two entries drive the
+    // top header gradient for image-generated themes.
+    const colorfulRankedColors = colors
+      .filter(color =>
+        color.saturation >= 0.20 &&
+        color.lightness >= 0.10 &&
+        color.lightness <= 0.84 &&
+        color.count >= Math.max(2, totalPixelCount * 0.0008)
+      )
+      .slice()
+      .sort((a, b) =>
+        (b.count * Math.pow(b.saturation, 2.15) * Math.max(0.22, 1 - Math.abs(b.lightness - 0.46) * 0.75)) -
+        (a.count * Math.pow(a.saturation, 2.15) * Math.max(0.22, 1 - Math.abs(a.lightness - 0.46) * 0.75))
+      );
+
+    const colorfulHueGroups = new Map();
+
+    rankedAccentColors.forEach(color => {
+      // If a clearly colorful hue family covers a meaningful part of the
+      // image, prefer it for the primary theme color instead of letting large
+      // beige/cream/background areas dominate the generated theme.
+      if (
+        color.saturation < 0.24 ||
+        color.lightness < 0.08 ||
+        color.lightness > 0.82
+      ) {
+        return;
+      }
+
+      const hueBin = Math.round(color.hue / 45) * 45 % 360;
+      let group = colorfulHueGroups.get(hueBin);
+
+      if (!group) {
+        group = {
+          hueBin,
+          count: 0,
+          weightedSaturation: 0,
+          weightedLightness: 0,
+          score: 0,
+          colors: []
+        };
+        colorfulHueGroups.set(hueBin, group);
+      }
+
+      const lightnessWeight = Math.max(0.18, 1 - Math.abs(color.lightness - 0.42) * 1.25);
+      const colorfulness = Math.pow(color.saturation, 1.55) * lightnessWeight;
+
+      group.count += color.count;
+      group.weightedSaturation += color.saturation * color.count;
+      group.weightedLightness += color.lightness * color.count;
+      group.score += color.count * colorfulness;
+      group.colors.push(color);
+    });
+
+    const dominantColorfulGroup = Array.from(colorfulHueGroups.values())
+      .map(group => ({
+        ...group,
+        averageSaturation: group.weightedSaturation / Math.max(1, group.count),
+        averageLightness: group.weightedLightness / Math.max(1, group.count)
+      }))
+      .filter(group =>
+        group.count >= totalPixelCount * 0.035 &&
+        group.averageSaturation >= 0.25
+      )
+      .sort((a, b) => b.score - a.score)[0] || null;
+
+    const primaryCandidates = dominantColorfulGroup
+      ? dominantColorfulGroup.colors
+        .slice()
+        .sort((a, b) =>
+          (b.count * Math.pow(b.saturation, 1.85) * Math.max(0.2, 1 - Math.abs(b.lightness - 0.42))) -
+          (a.count * Math.pow(a.saturation, 1.85) * Math.max(0.2, 1 - Math.abs(a.lightness - 0.42)))
+        )
+      : (colorfulRankedColors.length ? colorfulRankedColors : rankedAccentColors);
+
+    const primary = primaryCandidates.find(color =>
+      color.lightness >= 0.12 && color.lightness <= 0.76 && color.saturation >= 0.18
+    ) || colorfulRankedColors.find(color =>
+      color.lightness >= 0.12 && color.lightness <= 0.80 && color.saturation >= 0.16
+    ) || rankedAccentColors.find(color =>
+      color.lightness >= 0.16 && color.lightness <= 0.72 && color.saturation >= 0.14
+    ) || rankedAccentColors[0] || colors[0];
+
+    const secondary = colorfulRankedColors.find(color =>
+      color.hex !== primary.hex &&
+      color.lightness >= 0.12 && color.lightness <= 0.82 &&
+      (hueDistance(color.hue, primary.hue) >= 16 || colorDistance(color, primary) >= 58)
+    ) || rankedAccentColors.find(color =>
+      color.hex !== primary.hex &&
+      color.lightness >= 0.18 && color.lightness <= 0.78 &&
+      (hueDistance(color.hue, primary.hue) >= 24 || colorDistance(color, primary) >= 82)
+    ) || rankedAccentColors.find(color => color.hex !== primary.hex) || primary;
+
+    const accent = rankedAccentColors.find(color =>
+      color.hex !== primary.hex && color.hex !== secondary.hex &&
+      color.saturation >= 0.18 && color.lightness >= 0.28 && color.lightness <= 0.86
+    ) || secondary;
+
+    const lightCandidate = colors.slice().sort((a, b) => {
+      const aScore = a.lightness - Math.abs(a.saturation - 0.18) * 0.18 + Math.log(a.count + 1) * 0.012;
+      const bScore = b.lightness - Math.abs(b.saturation - 0.18) * 0.18 + Math.log(b.count + 1) * 0.012;
+      return bScore - aScore;
+    })[0];
+
+    const darkCandidate = colors.slice().sort((a, b) => {
+      const aScore = (1 - a.lightness) + a.saturation * 0.12 + Math.log(a.count + 1) * 0.012;
+      const bScore = (1 - b.lightness) + b.saturation * 0.12 + Math.log(b.count + 1) * 0.012;
+      return bScore - aScore;
+    })[0];
+
+    const primaryHex = primary.hex;
+    const secondaryHex = secondary.hex;
+    const accentHex = accent.hex;
+    const lightHex = lightCandidate.hex;
+    const darkHex = darkCandidate.hex;
+    const initialBg = mixRgbColors(lightHex, "#ffffff", lightCandidate.lightness > 0.72 ? 0.32 : 0.68);
+    const bgTintSource = colorfulRankedColors.find(color =>
+      color.lightness >= 0.18 && color.lightness <= 0.78 && color.saturation >= 0.24
+    ) || primary || accent;
+    const bg = avoidSolidWhitePageBackground(initialBg, (bgTintSource && bgTintSource.hex) || accentHex || primaryHex);
+    const panel = mixRgbColors(lightHex, "#ffffff", lightCandidate.lightness > 0.72 ? 0.72 : 0.86);
+    const panelRgb = htmlHexToRgb(panel);
+    const panelIsLight = relativeLuminanceFromRgb(panelRgb.red, panelRgb.green, panelRgb.blue) > 0.58;
+    const ink = panelIsLight
+      ? mixRgbColors(darkHex, "#000000", 0.28)
+      : "#ffffff";
+    const muted = panelIsLight
+      ? mixRgbColors(ink, panel, 0.42)
+      : mixRgbColors(ink, panel, 0.35);
+    const gradientStartColor = colorfulRankedColors[0] || primary;
+    const gradientEndColor = colorfulRankedColors.find(color =>
+      color.hex !== gradientStartColor.hex &&
+      (hueDistance(color.hue, gradientStartColor.hue) >= 12 || colorDistance(color, gradientStartColor) >= 48)
+    ) || secondary;
+    const heroBegin = gradientStartColor.hex;
+    const heroEnd = gradientEndColor.hex;
+    const heroTextColor = headerTextColorForGradient(heroBegin, heroEnd);
+    const line = mixRgbColors(primaryHex, panel, 0.58);
+    const shadowColor = mixRgbColors(primaryHex, "#000000", 0.38);
+
+    return normalizeCustomTheme({
+      ...getCurrentThemeFromOpenThemeBuilderDialog(),
+      name: "Image-Generated Theme",
+      font: DEFAULT_CUSTOM_THEME.font,
+      bg,
+      panel,
+      ink,
+      muted,
+      primary: primaryHex,
+      secondary: secondaryHex,
+      accent: accentHex,
+      line,
+      heroBegin,
+      heroEnd,
+      hero: `linear-gradient(135deg,${heroBegin},${heroEnd})`,
+      shadowColor,
+      shadow: `0 12px 28px ${hexToRgba(shadowColor, .16)}`,
+      includeHeaderOrnaments: true,
+      includeHeaderGraphics: true,
+      includeBuiltInAdvancedCss: true,
+      advancedCss: imageGeneratedHeaderTextCss(heroTextColor)
+    });
+  }
+
+  function applyAutoGeneratedThemeFromImage(image, file) {
+    const theme = analyzeImagePalette(image);
+    if (!theme) {
+      setThemeBuilderColorSamplerStatus("The image could not be analyzed for theme colors.", true);
+      return;
+    }
+
+    const baseName = String((file && file.name) || "").replace(/\.[^.]+$/, "").trim();
+    theme.name = "Image-Generated Theme";
+    applyThemeValuesInOpenThemeBuilderDialog(theme);
+    setThemeBuilderColorSamplerStatus("Generated a custom theme from this image. Click the image to sample exact colors for manual refinements.");
+    setStatus("Generated an image-based custom theme. Review and adjust the detected colors as needed.");
+  }
+
+  function setThemeBuilderSamplerHeightForLoadedImage() {
+    const wrap = document.querySelector(".theme-builder-color-sampler-canvas-wrap");
+    const canvas = document.getElementById("theme-builder-color-sampler-canvas");
+    if (!wrap || !canvas) return;
+
+    const viewportMax = 480;
+    const minHeight = 220;
+    const canvasRect = canvas.getBoundingClientRect();
+    const desiredHeight = Math.ceil(canvasRect.height || canvas.height || minHeight);
+    const fittedHeight = Math.max(minHeight, Math.min(viewportMax, desiredHeight));
+
+    wrap.style.height = fittedHeight + "px";
+  }
+
+  function loadImageFileIntoThemeBuilderSampler(file, options = {}) {
+    const panel = document.getElementById("theme-builder-color-sampler-panel");
+    const canvas = document.getElementById("theme-builder-color-sampler-canvas");
+    if (!panel || !canvas || !file) return;
+
+    if (!/^image\/(png|jpeg)$/i.test(file.type) && !/\.(png|jpe?g)$/i.test(file.name || "")) {
+      setThemeBuilderColorSamplerStatus("Please choose a PNG or JPEG image.", true);
+      panel.hidden = false;
+      return;
+    }
+
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => {
+      const image = new Image();
+
+      image.addEventListener("load", () => {
+        const naturalWidth = Math.max(1, image.naturalWidth || image.width || 1);
+        const naturalHeight = Math.max(1, image.naturalHeight || image.height || 1);
+        const maxSamplerSize = 1400;
+        const scale = Math.min(1, maxSamplerSize / Math.max(naturalWidth, naturalHeight));
+        const width = Math.max(1, Math.round(naturalWidth * scale));
+        const height = Math.max(1, Math.round(naturalHeight * scale));
+
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        context.clearRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+        panel.hidden = false;
+        requestAnimationFrame(setThemeBuilderSamplerHeightForLoadedImage);
+        setThemeBuilderSampledColor("#------");
+
+        if (options.autoGenerate) {
+          applyAutoGeneratedThemeFromImage(image, file);
+        } else {
+          setThemeBuilderColorSamplerStatus("Click the image to copy a color.");
+        }
+      });
+
+      image.addEventListener("error", () => {
+        panel.hidden = false;
+        setThemeBuilderColorSamplerStatus("The selected image could not be loaded.", true);
+      });
+
+      image.src = String(reader.result || "");
+    });
+
+    reader.addEventListener("error", () => {
+      panel.hidden = false;
+      setThemeBuilderColorSamplerStatus("The selected image could not be read.", true);
+    });
+
+    reader.readAsDataURL(file);
   }
 
   async function copyTextToClipboard(text) {
@@ -3657,11 +4238,13 @@
   function initializeThemeBuilderColorSampler() {
     const action = document.getElementById("theme-builder-color-sampler-action");
     const fileInput = document.getElementById("theme-builder-color-sampler-file");
+    const autoGenerateAction = document.getElementById("theme-builder-auto-generate-action");
+    const autoGenerateFileInput = document.getElementById("theme-builder-auto-generate-file");
     const panel = document.getElementById("theme-builder-color-sampler-panel");
     const canvas = document.getElementById("theme-builder-color-sampler-canvas");
     const hideAction = document.getElementById("theme-builder-color-sampler-hide-action");
 
-    if (!action || !fileInput || !panel || !canvas || !hideAction) return;
+    if (!action || !fileInput || !autoGenerateAction || !autoGenerateFileInput || !panel || !canvas || !hideAction) return;
     if (action.dataset.initialized === "true") return;
 
     const context = canvas.getContext("2d", { willReadFrequently: true });
@@ -3671,54 +4254,27 @@
       fileInput.click();
     });
 
+    autoGenerateAction.addEventListener("click", () => {
+      autoGenerateFileInput.value = "";
+      autoGenerateFileInput.click();
+    });
+
     hideAction.addEventListener("click", () => {
       panel.hidden = true;
       fileInput.value = "";
+      autoGenerateFileInput.value = "";
     });
 
     fileInput.addEventListener("change", () => {
       const file = fileInput.files && fileInput.files[0];
       if (!file) return;
+      loadImageFileIntoThemeBuilderSampler(file, { autoGenerate: false });
+    });
 
-      if (!/^image\/(png|jpeg)$/i.test(file.type) && !/\.(png|jpe?g)$/i.test(file.name || "")) {
-        setThemeBuilderColorSamplerStatus("Please choose a PNG or JPEG image.", true);
-        panel.hidden = false;
-        return;
-      }
-
-      const reader = new FileReader();
-
-      reader.addEventListener("load", () => {
-        const image = new Image();
-
-        image.addEventListener("load", () => {
-          const width = Math.max(1, image.naturalWidth || image.width || 1);
-          const height = Math.max(1, image.naturalHeight || image.height || 1);
-
-          canvas.width = width;
-          canvas.height = height;
-          canvas.style.width = width + "px";
-          canvas.style.height = height + "px";
-          context.clearRect(0, 0, width, height);
-          context.drawImage(image, 0, 0);
-          panel.hidden = false;
-          setThemeBuilderColorSamplerStatus("Click the image to copy a color.");
-        });
-
-        image.addEventListener("error", () => {
-          panel.hidden = false;
-          setThemeBuilderColorSamplerStatus("The selected image could not be loaded.", true);
-        });
-
-        image.src = String(reader.result || "");
-      });
-
-      reader.addEventListener("error", () => {
-        panel.hidden = false;
-        setThemeBuilderColorSamplerStatus("The selected image could not be read.", true);
-      });
-
-      reader.readAsDataURL(file);
+    autoGenerateFileInput.addEventListener("change", () => {
+      const file = autoGenerateFileInput.files && autoGenerateFileInput.files[0];
+      if (!file) return;
+      loadImageFileIntoThemeBuilderSampler(file, { autoGenerate: true });
     });
 
     canvas.addEventListener("click", async event => {
@@ -3786,6 +4342,7 @@
         document.getElementById("theme-builder-load-action") &&
         document.getElementById("theme-builder-load-built-in-action") &&
         document.getElementById("theme-builder-full-preview-action") &&
+        document.getElementById("theme-builder-auto-generate-action") &&
         document.getElementById("theme-builder-color-sampler-action") && layoutReady;
 
       if (!ready && attempts < 40) {
@@ -3892,8 +4449,10 @@
                 '<button id="theme-builder-save-action" class="website-settings-manage-action" type="button">Save Theme File</button>' +
               '</div>' +
               '<div class="theme-builder-side-actions">' +
+                '<button id="theme-builder-full-preview-action" class="website-settings-manage-action" type="button">Full Screen Preview</button>' +
                 '<button id="instructions-button" class="website-settings-manage-action theme-builder-instructions-action" type="button">Instructions</button>' +
               '</div>' +
+              '<input id="theme-builder-auto-generate-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg">' +
             '</div>' +
             '<div class="theme-builder-top-grid theme-builder-built-in-row">' +
               '<div class="theme-builder-built-in-actions">' +
@@ -3901,7 +4460,7 @@
                 '<button id="theme-builder-load-built-in-action" class="website-settings-manage-action" type="button">Load Built-In Theme</button>' +
               '</div>' +
               '<div class="theme-builder-side-actions">' +
-                '<button id="theme-builder-full-preview-action" class="website-settings-manage-action" type="button">Full Screen Preview</button>' +
+                '<button id="theme-builder-auto-generate-action" class="website-settings-manage-action" type="button">Generate from Image</button>' +
                 '<button id="theme-builder-color-sampler-action" class="website-settings-manage-action" type="button">Sample Image Color</button>' +
               '</div>' +
               '<input id="theme-builder-color-sampler-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg">' +
@@ -3954,8 +4513,11 @@
                   '</section>' +
                   '<section id="theme_builder_layout_panel" class="theme-builder-tab-panel" role="tabpanel">' +
                     '<div class="theme-builder-grid">' +
-                      colorFieldHtml("Header background begin color", "heroBegin") +
-                      colorFieldHtml("Header background end color", "heroEnd") +
+                      '<div class="theme-builder-gradient-swap-row">' +
+                        colorFieldHtml("Header background begin color", "heroBegin") +
+                        '<button id="theme-builder-gradient-swap-action" class="theme-builder-gradient-swap-button" type="button" title="Swap header gradient colors" aria-label="Swap header gradient begin and end colors">⇄</button>' +
+                        colorFieldHtml("Header background end color", "heroEnd") +
+                      '</div>' +
                       textFieldHtml("Header background CSS", "hero", "theme-builder-wide-field") +
                       colorFieldHtml("Panel shadow color", "shadowColor") +
                       textFieldHtml("Border radius", "radius") +
@@ -4079,10 +4641,10 @@
       <div class="instructions-scroll-area">
         <h3>Overview</h3>
         <p>
-          The abcjs-eskin Website Theme Builder is a tool for creating, previewing, loading, and saving custom themes
+          The <b>abcjs-eskin Website Theme Builder</b> is a tool for creating, previewing, loading, and saving custom themes
           for the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Builder</a></b>.
           Use it to design a custom theme, save the custom theme file, then import that file into
-          the main abcjs-eskin Website Builder or copy it into the abcjs-eskin Website Builder source code as a new built-in theme.
+          the main <b>abcjs-eskin Website Builder</b> or copy it into the <b>abcjs-eskin Website Builder</b> source code as a new built-in theme.
         </p>
         <p>
           The controls are organized into three tabs: <b>Theme Basics</b>, <b>Header &amp; Shadows</b>, and <b>Colors</b>.
@@ -4098,19 +4660,21 @@
         <ol>
           <li>Choose a built-in theme from the menu and click <b>Load Built-In Theme</b> to use it as a starting point.</li>
           <li>Edit the theme controls. The live preview updates as you work.</li>
+          <li>Optionally click <b>Generate from Image</b> to create an image-based custom theme from a local PNG or JPEG image.</li>
           <li>Optionally click <b>Full Screen Preview</b> to open a larger simulated website preview in a new window.</li>
           <li>Optionally use <b>Sample Image Color</b> to sample exact colors from a local PNG or JPEG image.</li>
           <li>Click <b>Save Theme File</b> to export the finished theme as a reusable text file.</li>
-          <li>Import the saved theme file into the main abcjs-eskin Website Builder, or manually add it to the abcjs-eskin Website Builder source code as a built-in theme.</li>
+          <li>Import the saved theme file into the main <b>abcjs-eskin Website Builder</b>, or manually add it to the <b>abcjs-eskin Website Builder</b> source code as a built-in theme.</li>
         </ol>
 
         <h3>Top buttons</h3>
         <ul>
           <li><b>Load Theme File</b> loads a previously saved Theme Builder theme file. The file should be the JavaScript object-literal format saved by this tool.</li>
-          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This file can be imported by the main abcjs-eskin Website Builder and can also be pasted into the abcjs-eskin Website Builder source code by developers.</li>
+          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This file can be imported by the main <b>abcjs-eskin Website Builder</b> and can also be pasted into the <b>abcjs-eskin Website Builder</b> source code by developers.</li>
           <li><b>Load Built-In Theme</b> copies the settings from a built-in theme into the Theme Builder as a starting point. This replaces the current working theme in the editor.</li>
           <li><b>Full Screen Preview</b> opens a new window with a larger simulated website preview, including preserved dynamic CSS, rendered tune images, and a <b>Return to the Theme Builder</b> button that closes the preview tab.</li>
-          <li><b>Sample Image Color</b> opens a PNG or JPEG image as a color reference. Click a pixel in the image to copy its color as <code>#RRGGBB</code>, then paste it into any color field.</li>
+          <li><b>Generate from Image</b> opens a PNG or JPEG image, analyzes its detected color palette in your browser, applies a new custom theme, and opens the same image in the color sampler for fine-tuning.</li>
+          <li><b>Sample Image Color</b> opens a PNG or JPEG image as a color reference without replacing the current theme. Click a pixel in the image to copy its color as <code>#RRGGBB</code>, then paste it into any color field.</li>
           <li><b>Instructions</b> opens this help dialog.</li>
         </ul>
         <div class="instructions-note">
@@ -4121,10 +4685,10 @@
 
         <h3>Theme Basics tab</h3>
         <ul>
-          <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this tool. When you integrate the theme into the abcjs-eskin Website Builder source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
-          <li><b>Ornament character</b> sets the decorative character used for the decorative ornament between tunes in the generated abcjs-eskin Website Builder site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
-          <li><b>Font stack</b> controls the main website font family used by the generated abcjs-eskin Website Builder page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
-          <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the generated website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is imported into or pasted into the main abcjs-eskin Website Builder.</li>
+          <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this tool. When you integrate the theme into the <b>abcjs-eskin Website Builder</b> source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
+          <li><b>Ornament character</b> sets the decorative character used for the decorative ornament between tunes in the generated <b>abcjs-eskin Website Builder</b> site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
+          <li><b>Font stack</b> controls the main website font family used by the generated <b>abcjs-eskin Website Builder</b> page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
+          <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the generated website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is imported into or pasted into the main <b>abcjs-eskin Website Builder</b>.</li>
           <li><b>Show simple highlight geometric graphics in the header</b> adds a simple decorative highlight shape behind part of the header. When saved, the generated CSS for this graphic is also included in <code>customCss</code>.</li>
           <li><b>Preserve special built-in theme CSS</b> includes the contents of <b>Additional custom CSS</b> in the saved theme file. This is most useful after loading a built-in theme that has decorative CSS not represented by the normal Theme Builder controls.</li>
           <li><b>Additional custom CSS</b> is advanced CSS appended to generated websites when <b>Preserve special built-in theme CSS</b> is enabled. It can be edited by hand for custom effects not covered by the normal fields. When you load a built-in theme with special CSS, this field may be filled automatically. When you save a theme, generated header ornament/header graphic CSS and this advanced CSS are combined into the saved theme's <code>customCss</code> field.</li>
@@ -4134,6 +4698,7 @@
         <ul>
           <li><b>Header background begin color</b> sets the first color used by the default header gradient. It affects the generated website's large top hero/header area.</li>
           <li><b>Header background end color</b> sets the second color used by the default header gradient.</li>
+          <li>Use the <b>⇄</b> swap button between the two header background color controls to reverse the gradient direction and immediately update the live preview.</li>
           <li><b>Header background CSS</b> is the actual CSS background value used for the generated website header. For a normal two-color gradient, it is usually something like <code>linear-gradient(135deg,#0b4b2c,#16834e)</code>. You can edit this directly for more complex gradients or background effects.</li>
           <li><b>Panel shadow color</b> is used to build the default panel shadow. It affects the perceived shadow color around table-of-contents tiles, tune panels, and other card-like areas.</li>
           <li><b>Border radius</b> controls the rounded-corner amount for major panels, table-of-contents tiles, buttons, and card-like elements in the generated website. Use values such as <code>0</code>, <code>6px</code>, <code>10px</code>, or <code>18px</code>.</li>
@@ -4152,14 +4717,31 @@
           <li><b>Line/border color</b> controls borders and dividing lines around table-of-contents tiles, tune panels, and other boxed areas.</li>
         </ul>
 
-        <h3>Sample Image Color</h3>
+        <h3>Generate from Image</h3>
         <p>
-          Click <b>Sample Image Color</b> and open a local PNG or JPEG image. The image appears in a temporary sampler panel.
-          Click any pixel in the image to capture its color. The sampled color is shown as a hex value that can be selected,
-          copied, and pasted into any color field.
+          Click <b>Generate from Image</b> and open a local PNG or JPEG image to build a new custom theme from the image's detected color palette.
+          The tool samples the image in your browser, chooses a readable moderately light tinted page background, panel color, text color, header gradient,
+          accent colors, border color, and panel shadow color, then applies those values to the Theme Builder controls. It also automatically enables
+          Additional custom CSS that sets the exported website header title and subtitle text to white on dark or medium-dark image headers, or black on light image headers.
+        </p>
+        <p>
+          The selected image is also loaded into the image color sampler automatically. After generation, click exact colors in the
+          original image to copy their <code>#RRGGBB</code> values, then paste them into any color field for manual refinement.
         </p>
         <div class="instructions-note">
-          The image is used only in your browser for color sampling. It is not embedded in the saved theme file.
+          Typography matching is intentionally not attempted. The generated theme uses the normal default Theme Builder font family so the
+          result stays predictable and easy to edit.
+        </div>
+
+        <h3>Sample Image Color</h3>
+        <p>
+          Click <b>Sample Image Color</b> and open a local PNG or JPEG image when you only want to sample colors without replacing the current
+          theme values. The image appears in a temporary sampler panel. Click any pixel in the image to capture its color. The sampled color
+          is shown as a hex value that can be selected, copied, and pasted into any color field. The image preview area can be resized vertically.
+        </p>
+        <div class="instructions-note">
+          Images opened for auto-generation or color sampling are used only in your browser. They are not uploaded anywhere and are not embedded
+          in the saved theme file.
         </div>
 
         <h3>Advanced CSS</h3>
@@ -4170,8 +4752,8 @@
         </p>
         <ul>
           <li>The normal exported theme fields include values such as <code>font</code>, <code>bg</code>, <code>panel</code>, <code>ink</code>, <code>muted</code>, <code>primary</code>, <code>secondary</code>, <code>accent</code>, <code>line</code>, <code>hero</code>, <code>radius</code>, <code>shadow</code>, and <code>ornament</code>.</li>
-          <li>The saved theme may also include <code>customCss</code>. This field carries advanced CSS plus any generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics after the theme is imported into or pasted into the main abcjs-eskin Website Builder.</li>
-          <li>The saved theme may include Theme Builder-only helper fields such as <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code>. Leave them in place. They are harmless in the main abcjs-eskin Website Builder and useful if the saved theme file is loaded back into this tool later.</li>
+          <li>The saved theme may also include <code>customCss</code>. This field carries advanced CSS plus any generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics after the theme is imported into or pasted into the main <b>abcjs-eskin Website Builder</b>.</li>
+          <li>The saved theme may include Theme Builder-only helper fields such as <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code>. Leave them in place. They are harmless in the main <b>abcjs-eskin Website Builder</b> and useful if the saved theme file is loaded back into this tool later.</li>
         </ul>
 
         <h3>Using the exported theme in the abcjs-eskin Website Builder</h3>
@@ -4184,13 +4766,13 @@
 
         <h3>Adding a saved theme to the abcjs-eskin Website Builder source code</h3>
         <p>
-          A theme file saved by this tool is intentionally formatted so it can be copied into the main abcjs-eskin Website Builder source code with minimal editing. The saved file contains the theme object only; you choose the built-in theme id when you paste it into the source.
+          A theme file saved by this tool is intentionally formatted so it can be copied into the main <b>abcjs-eskin Website Builder</b> source code with minimal editing. The saved file contains the theme object only; you choose the built-in theme id when you paste it into the source.
         </p>
         <ol>
           <li>In this tool, finish the theme and click <b>Save Theme File</b>.</li>
           <li>Open the saved theme file in a plain text editor. It should contain a JavaScript object literal beginning with <code>{</code> and ending with <code>}</code>.</li>
           <li>Choose a new internal theme id for the main tool, such as <code>swedish</code>, <code>french</code>, or <code>mynewtheme</code>. Use a simple lowercase id with no spaces.</li>
-          <li>Open the main abcjs-eskin Website Builder HTML source file.</li>
+          <li>Open the main <b>abcjs-eskin Website Builder</b> HTML source file.</li>
           <li>Find the <code>THEME_OPTIONS</code> array near the top of the script.</li>
           <li>Add a new entry for the theme, usually before the final <code>custom</code> entry. For example:<br/><code>{ id: &quot;mynewtheme&quot;, name: &quot;My New Theme&quot; },</code></li>
           <li>Find <code>function themeCss(theme)</code>.</li>
@@ -4198,8 +4780,8 @@
           <li>Paste the saved theme object into the <code>themes</code> object using the same id you added to <code>THEME_OPTIONS</code>. For example:<br/><code>mynewtheme: { ...saved theme object contents... },</code></li>
           <li>If the saved theme file already begins with <code>{</code>, keep that object intact and add only the id label before it. For example, paste it as <code>mynewtheme: </code> followed by the complete saved object.</li>
           <li>Check commas carefully. The previous built-in theme entry must end with a comma, and the new pasted theme entry should also end with a comma unless it is the last entry in the <code>themes</code> object.</li>
-          <li>If the saved theme includes a <code>customCss</code> template string, paste it unchanged, including the backticks. Do not convert it to quoted text. This field may contain optional advanced CSS and/or the generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics in the main abcjs-eskin Website Builder. Leave the <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code> fields in place if present; they are harmless in the main Website Builder and preserve exact Theme Builder state if the file is loaded again later.</li>
-          <li>Save the main abcjs-eskin Website Builder source and reload it in the browser. The new display name should appear in the <b>Music genre visual theme</b> list.</li>
+          <li>If the saved theme includes a <code>customCss</code> template string, paste it unchanged, including the backticks. Do not convert it to quoted text. This field may contain optional advanced CSS and/or the generated CSS needed to reproduce Theme Builder header ornaments and geometric header graphics in the main <b>abcjs-eskin Website Builder</b>. Leave the <code>includeHeaderOrnaments</code>, <code>includeHeaderGraphics</code>, <code>includeBuiltInAdvancedCss</code>, and <code>advancedCss</code> fields in place if present; they are harmless in the main Website Builder and preserve exact Theme Builder state if the file is loaded again later.</li>
+          <li>Save the main <b>abcjs-eskin Website Builder</b> source and reload it in the browser. The new display name should appear in the <b>Music genre visual theme</b> list.</li>
         </ol>
         <div class="instructions-note">
           The id in <code>THEME_OPTIONS</code> and the property name in the <code>themes</code> object must match exactly. The display name can contain spaces and punctuation; the internal id should stay short, simple, and JavaScript-safe.
