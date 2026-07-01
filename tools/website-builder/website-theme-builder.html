@@ -369,13 +369,13 @@
     }
 
     .theme-builder-instructions-action {
-      background: #174a8b !important;
-      border-color: #0f3566 !important;
+      background: #4f565b !important;
+      border-color: #3d4449 !important;
     }
 
     .theme-builder-instructions-action:hover,
     .theme-builder-instructions-action:focus-visible {
-      background: #0f3566 !important;
+      background: #3d4449 !important;
       outline: none !important;
     }
 
@@ -2253,11 +2253,26 @@
     return safeName;
   }
 
+  function addThemePostfixToFilename(filename) {
+    const safeName = ensureTxtExtension(filename);
+    const extensionMatch = safeName.match(/\.txt$/i);
+    const extension = extensionMatch ? extensionMatch[0] : ".txt";
+    const baseName = extensionMatch
+      ? safeName.slice(0, -extension.length)
+      : safeName;
+
+    if (/-theme$/i.test(baseName)) {
+      return baseName + extension;
+    }
+
+    return `${baseName}-theme${extension}`;
+  }
+
   function themeNameToFilename(themeName, fallback = "custom-theme.txt") {
     let safeName = String(themeName || "").trim();
 
     if (!safeName) {
-      return ensureTxtExtension(fallback);
+      return addThemePostfixToFilename(fallback);
     }
 
     safeName = safeName
@@ -2265,8 +2280,7 @@
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/&/g, " and ")
       .replace(/[^a-z0-9]+/gi, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase();
+      .replace(/^-+|-+$/g, "");
 
     if (!safeName) {
       safeName = String(themeName || "custom-theme")
@@ -2275,7 +2289,7 @@
         .replace(/^-+|-+$/g, "");
     }
 
-    return ensureTxtExtension(safeName || fallback);
+    return addThemePostfixToFilename(safeName || fallback);
   }
 
   async function promptThemeFilename(themeName) {
@@ -4745,6 +4759,7 @@
         </ul>
 
         <h3>Generate from Image</h3>
+
         <p>
           Click <b>Generate from Image</b> and open a local PNG or JPEG image to build a new custom theme from the image's detected color palette.
           The tool samples the image in your browser, chooses a readable moderately light tinted page background, panel color, text color, header gradient,
@@ -4759,6 +4774,8 @@
           Typography matching is intentionally not attempted. The generated theme uses the normal default Theme Builder font family so the
           result stays predictable and easy to edit.
         </div>
+
+        <p style="text-align: center;"><a href="https://youtu.be/nOVZH35zMD0" target="_blank">Generate from Image Demo Video on YouTube</a></p>
 
         <h3>Sample Image Color</h3>
         <p>
