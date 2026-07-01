@@ -5060,6 +5060,7 @@
                 <li><b>Large</b> keeps still more upcoming music visible below the cursor.</li>
                 <li><b>Larger</b> and <b>Extra Large</b> use progressively larger view-ahead areas.</li>
                 <li><b>Medium</b>, <b>Large</b>, <b>Larger</b>, or <b>Extra Large</b> can be helpful for classical scores or other music where the player needs to see upcoming music near the bottom of the screen.</li>
+                <li>On very short screens, such as phone landscape orientation, generated websites use a centered cursor fallback to reduce up/down autoscroll bouncing with tall cursors.</li>
               </ul>
             </li>
             <li id="instructions-setting-string-instrument-tablature-names"><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation.
@@ -10257,8 +10258,20 @@ ${embeddedCloseMarkup}
       const guardBottom = Number(cursorAutoscrollGuardBand.bottom) || 82;
       const viewportTop = guardTop;
       const viewportBottom = Math.max(viewportTop + 80, window.innerHeight - guardBottom);
+      const usableViewportHeight = viewportBottom - viewportTop;
+      const cursorHeight = Math.max(0, cursorRect.height || (cursorRect.bottom - cursorRect.top));
+      const useShortViewportCentering = window.innerHeight < 430 || usableViewportHeight < cursorHeight + 40;
 
-      if (cursorRect.top < viewportTop) {
+      if (useShortViewportCentering) {
+        const targetY = Math.round(window.innerHeight * 0.45);
+        const cursorCenterY = cursorRect.top + (cursorHeight / 2);
+        const deltaY = cursorCenterY - targetY;
+        const deadZone = Math.max(22, Math.min(44, Math.round(window.innerHeight * 0.08)));
+
+        if (Math.abs(deltaY) > deadZone) {
+          window.scrollBy({ top: deltaY, behavior: "smooth" });
+        }
+      } else if (cursorRect.top < viewportTop) {
         window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
       } else if (cursorRect.bottom > viewportBottom) {
         window.scrollBy({ top: cursorRect.bottom - viewportBottom + 18, behavior: "smooth" });
