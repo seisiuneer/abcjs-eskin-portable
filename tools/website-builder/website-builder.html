@@ -993,7 +993,7 @@
     <p>
       Load one or more ABC files, choose a visual style and notation format,
       then export a complete multi-tune website with embedded ABC, playback,
-      and table-of-contents navigation.
+      and Table of Contents navigation.
     </p>
   </header>
 
@@ -1040,7 +1040,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.41";
+  const WEBSITE_BUILDER_VERSION = "1.1.42";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1171,6 +1171,11 @@
     { id: "showSearch", name: "Show (include search bar)" },
     { id: "showSearchAll", name: "Show (include search bar and search all button)" },
     { id: "hide", name: "Hide" }
+  ];
+
+  const TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "enabled", name: "Enabled" }
   ];
 
   const SOUNDFONT_OPTIONS = [
@@ -1851,6 +1856,7 @@
     includeSectionHeaderNumbers: "hide",
     abcToolsLinks: "disabled",
     tuneDisplay: "multiple",
+    tableOfContentsBottomButtons: "disabled",
     titleArticleReverser: "postfixToPrefix",
     largeCollectionGrouping: "disabled",
     tuneOrder: "preserve",
@@ -1905,6 +1911,21 @@
     ) !== "hide";
   }
 
+  function tableOfContentsOptionsForTuneDisplay(tuneDisplay) {
+    return TABLE_OF_CONTENTS_OPTIONS;
+  }
+
+  function sanitizeTableOfContentsForTuneDisplay(settings) {
+    if (!settings || typeof settings !== "object") return settings;
+
+    if (String(settings.tuneDisplay || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
+        String(settings.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
+      settings.includeTableOfContents = "show";
+    }
+
+    return settings;
+  }
+
   function settingsWithInstrumentSelectorRequiredSoundInjection(settings) {
     const normalized = { ...DEFAULT_SETTINGS, ...(settings || {}) };
 
@@ -1928,6 +1949,14 @@
       normalized.tuneDisplay = DEFAULT_SETTINGS.tuneDisplay;
     }
 
+    if (!optionIds(TABLE_OF_CONTENTS_OPTIONS).has(String(normalized.includeTableOfContents || ""))) {
+      normalized.includeTableOfContents = DEFAULT_SETTINGS.includeTableOfContents;
+    }
+
+    if (!optionIds(TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS).has(String(normalized.tableOfContentsBottomButtons || ""))) {
+      normalized.tableOfContentsBottomButtons = DEFAULT_SETTINGS.tableOfContentsBottomButtons;
+    }
+
     const groupingMode = String(normalized.largeCollectionGrouping || "");
 
     if (String(normalized.includeTableOfContents || "") === "showSearchAll" && groupingMode === "disabled") {
@@ -1939,6 +1968,8 @@
     } else if (groupingMode === "manualSectionHeaders") {
       normalized.tuneOrder = "preserve";
     }
+
+    sanitizeTableOfContentsForTuneDisplay(normalized);
 
     return normalized;
   }
@@ -3018,17 +3049,14 @@
     saveProjectButton.disabled = !hasTunes;
     clearButton.disabled = !hasTunes;
 
-    const playableTuneCount = state.tunes.filter(tune => !tune.isSectionHeader).length;
-    const forceBasicTableOfContentsForSingleTuneMode =
-      String(state.settings.tuneDisplay || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
-      playableTuneCount > 1 &&
-      String(state.settings.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) === "hide";
-    const tableOfContentsPreviewText = forceBasicTableOfContentsForSingleTuneMode
-      ? "Basic table of contents forced for single-tune mode"
-      : state.settings.includeTableOfContents === "hide"
-        ? "Table of contents hidden"
-        : state.settings.includeTableOfContents === "showSearch"
-          ? "Table of contents shown with search bar"
+    state.settings = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
+
+    const tableOfContentsPreviewText = state.settings.includeTableOfContents === "hide"
+      ? "Table of contents hidden"
+      : state.settings.includeTableOfContents === "showSearch"
+        ? "Table of contents shown with search bar"
+        : state.settings.includeTableOfContents === "showSearchAll"
+          ? "Table of contents shown with search bar and search all button"
           : "Table of contents shown";
 
     const textAndContentPreviewParts = [
@@ -3069,6 +3097,9 @@
       state.settings.showStringInstrumentTablatureNames === "show"
         ? "Stringed tablature names shown"
         : "Stringed tablature names hidden",
+      state.settings.tableOfContentsBottomButtons === "enabled"
+        ? "Additional table of contents buttons below tunes"
+        : "No additional table of contents buttons below tunes",
       escapeHtml(optionName(TITLE_ARTICLE_REVERSE_OPTIONS, state.settings.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser)) + " title article reverser",
       escapeHtml(optionName(DEPLOYMENT_TARGET_OPTIONS, state.settings.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget)) + " deployment target"
     ];
@@ -3294,6 +3325,35 @@
     enforceLargeCollectionControls();
   }
 
+  function updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField) {
+    if (!tuneDisplayField || !tableOfContentsField) return;
+
+    if (String(tuneDisplayField.value || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
+        String(tableOfContentsField.value || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
+      tableOfContentsField.value = "show";
+    }
+  }
+
+  function initializeTableOfContentsTuneDisplayDialogControls() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    if (!modalRoot) return;
+
+    const tuneDisplayField = findWebsiteSettingsField(modalRoot, "tuneDisplay");
+    const tableOfContentsField = findWebsiteSettingsField(modalRoot, "includeTableOfContents");
+    if (!tuneDisplayField || !tableOfContentsField || tuneDisplayField.dataset.tableOfContentsGuard === "true") return;
+
+    const syncTableOfContentsOptions = () => {
+      updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField);
+    };
+
+    tuneDisplayField.addEventListener("change", syncTableOfContentsOptions);
+    tuneDisplayField.addEventListener("input", syncTableOfContentsOptions);
+    tableOfContentsField.addEventListener("change", syncTableOfContentsOptions);
+    tableOfContentsField.addEventListener("input", syncTableOfContentsOptions);
+    tuneDisplayField.dataset.tableOfContentsGuard = "true";
+    syncTableOfContentsOptions();
+  }
+
   function updateOpenSettingsCustomThemeOption(customTheme = null) {
     const modalRoot = getOpenWebsiteSettingsModalRoot();
     if (!modalRoot) return;
@@ -3377,7 +3437,7 @@
         "instrumentSelector", "abcToolsLinks",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "cursorAutoscrollGuardBand", "showStringInstrumentTablatureNames",
-        "titleArticleReverser", "deploymentTarget"
+        "tableOfContentsBottomButtons", "titleArticleReverser", "deploymentTarget"
       ],
       website_settings_playback_inject: [
         "injectSoundSettings"
@@ -3409,12 +3469,13 @@
       });
     });
 
-    if (moved < 33) return false;
+    if (moved < 34) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
     initializeWebsiteSettingsManageActions();
     initializeLargeCollectionGroupingDialogControls();
+    initializeTableOfContentsTuneDisplayDialogControls();
     initializeCustomThemeSelectionGuard();
     addWebsiteSettingsHelpButtons(modalRoot);
     initializeWebsiteSettingsDialogDropZone();
@@ -3453,6 +3514,7 @@
     includeTuneHeading: "instructions-setting-include-tune-heading",
     includeCollectionIntro: "instructions-setting-include-collection-intro",
     collectionIntro: "instructions-setting-collection-intro",
+
     theme: "instructions-setting-theme",
     displayMode: "instructions-setting-display-mode",
     cursorColor: "instructions-setting-cursor-color",
@@ -3471,8 +3533,10 @@
     largeCollectionGroupingBatchSize: "instructions-setting-large-collection-grouping-batch-size",
     cursorAutoscrollGuardBand: "instructions-setting-cursor-autoscroll-guard-band",
     showStringInstrumentTablatureNames: "instructions-setting-string-instrument-tablature-names",
+    tableOfContentsBottomButtons: "instructions-setting-table-of-contents-bottom-buttons",
     titleArticleReverser: "instructions-setting-title-article-reverser",
     deploymentTarget: "instructions-setting-deployment-target",
+
     injectSoundSettings: "instructions-setting-inject-sound-settings",
     soundfont: "instructions-setting-soundfont",
     melodyProgram: "instructions-setting-melody-program",
@@ -3579,12 +3643,14 @@
 
     if (!tabsRoot || !modalRoot) return false;
 
+    const normalizedSettings = settingsWithInstrumentSelectorRequiredSoundInjection(settings);
+
     Object.entries(DEFAULT_SETTINGS).forEach(([fieldId, defaultValue]) => {
       const field = findWebsiteSettingsField(modalRoot, fieldId);
       if (!field) return;
 
-      const value = Object.prototype.hasOwnProperty.call(settings, fieldId)
-        ? settings[fieldId]
+      const value = Object.prototype.hasOwnProperty.call(normalizedSettings, fieldId)
+        ? normalizedSettings[fieldId]
         : defaultValue;
 
       if (field.type === "checkbox") {
@@ -3596,6 +3662,8 @@
       field.dispatchEvent(new Event("input", { bubbles: true }));
       field.dispatchEvent(new Event("change", { bubbles: true }));
     });
+
+    initializeTableOfContentsTuneDisplayDialogControls();
 
     if (tabId) activateWebsiteSettingsTab(tabId);
 
@@ -3622,7 +3690,7 @@
       current[fieldId] = field.type === "checkbox" ? !!field.checked : String(field.value);
     });
 
-    return { ...DEFAULT_SETTINGS, ...current };
+    return settingsWithInstrumentSelectorRequiredSoundInjection({ ...DEFAULT_SETTINGS, ...current });
   }
 
   function optionIds(options) {
@@ -3671,6 +3739,7 @@
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
       tuneDisplay: optionIds(TUNE_DISPLAY_OPTIONS),
+      tableOfContentsBottomButtons: optionIds(TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS),
       titleArticleReverser: optionIds(TITLE_ARTICLE_REVERSE_OPTIONS),
       largeCollectionGrouping: new Set([...optionIds(LARGE_COLLECTION_GROUPING_OPTIONS), "rhythmTagHundred"]),
       tuneOrder: optionIds(TUNE_ORDER_OPTIONS),
@@ -4731,7 +4800,7 @@
         name: "Include table of contents",
         id: "includeTableOfContents",
         type: "select",
-        options: TABLE_OF_CONTENTS_OPTIONS
+        options: tableOfContentsOptionsForTuneDisplay(state.settings.tuneDisplay)
       },
       {
         name: "Show decorative ornament between tunes",
@@ -4801,6 +4870,12 @@
         id: "cursorAutoscrollGuardBand",
         type: "select",
         options: CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS
+      },
+      {
+        name: "Table of contents buttons also below tunes",
+        id: "tableOfContentsBottomButtons",
+        type: "select",
+        options: TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS
       },
       {
         name: "Automatically reverse title articles",
@@ -4917,9 +4992,9 @@
           <p>
             This tool builds a complete standalone music website from one or more ABC files.
             Each tune is embedded directly in the exported HTML and is rendered and played by
-            the <code>abcjs-eskin-portable</code> JavaScript library. The generated site can include a display/instrument selector, large tunebook navigation, table of contents,
+            the <code>abcjs-eskin-portable</code> JavaScript library. The generated site can include a display/instrument selector, large tunebook navigation, Table of Contents,
             individual tune sections, T:* style section headers, playback controls, cursor tracking, autoscroll, decorative 
-            ornaments between tunes, and links back to the table of contents.
+            ornaments between tunes, and links back to the Table of Contents.
           </p>
           
           <p style="text-align: center;"><a href="https://youtu.be/aR65uUj2TvQ" target="_blank">abcjs-eskin Website Builder Zoom Webinar Video</a></p>
@@ -5010,14 +5085,15 @@
             <li id="instructions-setting-player-position"><b>Player controller position</b> places the player controls above or below the notation.</li>
             <li id="instructions-setting-notation-width"><b>Notation width relative to page body</b> controls how much of the page width is used by both the notation and its player.</li>
             <li id="instructions-setting-body-width"><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
-            <li id="instructions-setting-include-table-of-contents"><b>Include table of contents</b> controls whether the exported site includes the tune-navigation table of contents.
+            <li id="instructions-setting-include-table-of-contents"><b>Include table of contents</b> controls whether the exported site includes the tune-navigation Table of Contents.
               <ul>
-                <li><b>Show</b> displays the table of contents.</li>
-                <li><b>Show (include search bar)</b> is the default and adds a search box directly below the table of contents heading in the generated website. Typing in the search box immediately filters the table of contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
+                <li><b>Show</b> displays the Table of Contents.</li>
+                <li><b>Show (include search bar)</b> is the default and adds a search box directly below the Table of Contents heading in the generated website. Typing in the search box immediately filters the Table of Contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
                 <li><b>Show (include search bar and search all button)</b> adds the same search box plus a small <b>Search all sections</b> button inside the search area. <b>Search all sections</b> is only available on generated websites that also have a <b>Tune Section</b> selector. It searches all tune sections, shows a custom styled result list of up to 50 matching tune entries with their tune section names, and reports when only the first matches are shown. Choosing a result switches the <b>Tune Section</b> selector to that tune's section and jumps directly to the tune. If <b>Large tune collection grouping</b> is <b>Disabled</b>, this setting is automatically forced back to <b>Show (include search bar)</b> because there is no <b>Tune Section</b> selector to search across.</li>
-                <li>When a generated website also has a <b>Tune Section</b> selector, the table of contents title reflects the currently selected tune section name instead of always saying <b>Table of Contents</b>.</li>
-                <li><b>Hide</b> omits the table of contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
+                <li>When a generated website also has a <b>Tune Section</b> selector, the Table of Contents title reflects the currently selected tune section name instead of always saying <b>Table of Contents</b>.</li>
+                <li><b>Hide</b> omits the Table of Contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
               </ul>
+              <p>When <b>Tune Display</b> is set to <b>Single</b>, the Table of Contents is always available so visitors can choose which tune to display. The <b>Hide</b> option remains visible in the selector, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the Table of Contents setting back to <b>Show</b>. If older saved settings or a project use <b>Single</b> tune display with the Table of Contents hidden, the builder automatically changes the Table of Contents setting to <b>Show</b>.</p>
             </li>
             <li id="instructions-setting-show-tune-dividers"><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections and above the footer.
               <ul>
@@ -5043,11 +5119,12 @@
             <li id="instructions-setting-tune-display"><b>Tune Display</b> controls whether generated websites render multiple visible tunes at once or only one selected tune at a time.
               <ul>
                 <li><b>Multiple</b> is the default: All visible tunes in the selected tune section are rendered and ready to play.</li>
-                <li><b>Single</b> creates a single-tune website mode. On launch, only the first tune is rendered. When a visitor chooses another tune from the table of contents or a Search all sections result, playback stops, the current tune is cleared, and the selected tune is rendered and made ready to play.</li>
-                <li>If <b>Single</b> is selected, the exported website includes a basic table of contents whenever there is more than one playable tune, even if the <b>Table of contents</b> setting is set to <b>Hide</b>. This gives visitors a way to choose which tune is displayed.</li>
-                <li>In <b>Single</b> mode, T:* style section-header links in the table of contents and Search all sections results are no-ops. They do not stop playback, change the displayed tune, or scroll the page.</li>
+                <li><b>Single</b> creates a single-tune website mode. On launch, only the first tune is rendered. When a visitor chooses another tune from the Table of Contents or a Search all sections result, playback stops, the current tune is cleared, and the selected tune is rendered and made ready to play.</li>
+                <li>If <b>Single</b> is selected, the exported website includes a Table of Contents because it is needed to choose which tune is displayed.</li>
+                <li>In <b>Single</b> mode, T:* style section-header links in the Table of Contents and Search all sections results are no-ops. They do not stop playback, change the displayed tune, or scroll the page.</li>
                 <li><b>Single</b> mode is useful for very long tunes, such as classical arrangements, where it makes sense to show and prepare only one tune at a time.</li>
               </ul>
+              <p>In <b>Single</b> mode, the Table of Contents cannot be hidden because it is needed to choose the tune to display. If <b>Include table of contents</b> is set to <b>Hide</b> and you change <b>Tune Display</b> to <b>Single</b>, the builder changes the Table of Contents setting to <b>Show</b>. The <b>Hide</b> choice remains visible, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the setting back to <b>Show</b>.</p>
             </li>
             <li id="instructions-setting-instrument-selector"><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
               <ul>
@@ -5111,12 +5188,13 @@
                 <li>This applies both to the main <b>Notation / tablature display</b> setting and to stringed-instrument choices made with the exported website's <b>Display / Instrument</b> selector.</li>
               </ul>
             </li>
+            <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Table of contents buttons also below tunes</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. The extra button appears at the lower right of the tune panel. If the play controller is below the notation, the extra button appears below the play controller. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel.</li>
             <li id="instructions-setting-title-article-reverser"><b>Automatically reverse title articles</b> controls whether known trailing title articles are moved to the front of ordinary tune titles.
               <ul>
                 <li><b>Kesh, The -&gt; The Kesh</b> is the default.</li>
                 <li><b>Disabled</b> leaves titles exactly as loaded.</li>
                 <li>The supported article set is also used when sorting titles for large tune collection grouping.</li>
-                <li>The setting affects only displayed titles in the loaded tune list, table of contents, and tune metadata headings in the exported website.</li>
+                <li>The setting affects only displayed titles in the loaded tune list, Table of Contents, and tune metadata headings in the exported website.</li>
                 <li>The ABC text itself is not changed, title text inside the rendered notation is not changed, and T:* style section headers are never article-reversed.</li>
               </ul>
             </li>
@@ -5206,8 +5284,9 @@
           <ul>
             <li>All tune ABC source directly in the HTML.</li>
             <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
-            <li>An optional table of contents linking to every tune.</li>
-            <li>An optional Table of Contents button for every tune that returns to the top of the table of contents when the table of contents is included.</li>
+            <li>An optional Table of Contents linking to every tune.</li>
+            <li>An optional Table of Contents button near the top of every tune that returns to the top of the Table of Contents when the Table of Contents is included.</li>
+            <li>Optional additional Table of Contents buttons below tunes. These are especially useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel.</li>
             <li>Optional <b>ABC Transcription Tools</b> link buttons for each tune.</li>
             <li>An optional global Display/Instrument selector dropdown.</li>
             <li>T:* style section headers if present.</li>
@@ -5225,14 +5304,14 @@
           <h3 id="instructions-generated-site">6. Using the generated website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
-            <li>If the table of contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
+            <li>If the Table of Contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed. Click or tap the tempo percentage field in any tune's player to open a small tempo entry dialog. Enter a value from 5 to 400 or choose one of the preset percentages to preload the entry field, then choose <b>Apply</b> to update that tune's play controller or <b>Cancel</b> to leave it unchanged.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
-            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the table of contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
-            <li>If the generated website includes both a table of contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed table of contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
+            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the Table of Contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
+            <li>If the generated website includes both a Table of Contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed Table of Contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
             <li>Click the notation itself to pause or resume playback.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
-            <li>If the table of contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the table of contents.</li>
+            <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Table of contents buttons also below tunes</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation.</li>
           </ul>
 
           <h3 id="instructions-clear">7. Clearing the current collection</h3>
@@ -5278,7 +5357,7 @@
             <li><code>%add_all_playback_volumes</code> supplies the playback volume values used with those clickable PDF tune-title links.</li>
           </ul>
           <p>
-            Other PDF-only annotations in that block, such as table-of-contents, index, QR-code, PDF-quality,
+            Other PDF-only annotations in that block, such as Table of Contents, index, QR-code, PDF-quality,
             and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
           </p>
           <h3 id="instructions-theme-builder">9. abcjs-eskin Website Theme Builder</h3>
@@ -8043,6 +8122,9 @@ fiddle: {
     const largeCollectionPlan = buildLargeCollectionGroups(state.tunes, largeCollectionGroupingMode, tuneOrderMode, titleArticleMode, largeCollectionBatchSizeMode);
     const largeCollectionGroupingEnabled = largeCollectionPlan.enabled;
     const includeTableOfContentsSearchAll = tableOfContentsMode === "showSearchAll" && largeCollectionGroupingEnabled;
+    const includeTableOfContentsBottomButtons =
+      includeTableOfContents &&
+      String(s.tableOfContentsBottomButtons || DEFAULT_SETTINGS.tableOfContentsBottomButtons) === "enabled";
     const tuneGroups = largeCollectionPlan.groups;
     const firstTuneGroupId = tuneGroups.length ? tuneGroups[0].id : "group-1";
     const abcToolsFormat = abcToolsFormatForDisplayMode(s.displayMode);
@@ -8251,6 +8333,9 @@ fiddle: {
           ${includeTableOfContents ? `<a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a>` : ""}
         </div>`
         : "";
+      const bottomTableOfContentsMarkup = includeTableOfContentsBottomButtons
+        ? `<div class="bottom-toc-row"><a class="back-to-toc" data-toc-link="true" href="#table-of-contents">↑ Table of Contents</a></div>`
+        : "";
 
 
       return dividerMarkup + `
@@ -8263,6 +8348,7 @@ fiddle: {
           <div id="${tune.key}-paper" class="paper" aria-label="${escapeHtml(tune.title)} notation"></div>
         </div>
         ${playerAbove ? "" : audio}
+        ${bottomTableOfContentsMarkup}
       </article>`;
     });
 
@@ -8821,6 +8907,8 @@ fiddle: {
       padding for button size or background/border for button color.
     */
     .back-to-toc { position:absolute; top:50%; right:0; transform:translateY(-50%); padding:7px 10px; color:#fff; background:var(--primary); border:1px solid var(--accent); text-decoration:none; font-size:.8rem; font-weight:800; }
+    .bottom-toc-row { display:flex; justify-content:flex-end; width:100%; margin:14px 0 0; }
+    .bottom-toc-row .back-to-toc { position:static; display:inline-block; transform:none; white-space:nowrap; }
     .abc-tools-link { left:0; right:auto; }
     .score-panel.has-abc-tools-link .tune-header h2 { padding-left:330px; padding-right:330px; }
     @media (min-width:761px) and (max-width:1200px) {
@@ -9179,6 +9267,7 @@ fiddle: {
       .tune-header.no-tune-heading { min-height:44px; }
       .tune-header.no-tune-heading .back-to-toc { top:0; right:50%; bottom:auto; transform:translateX(50%); }
       .tune-header.no-tune-heading .abc-tools-link { left:0; right:auto; transform:none; }
+      .bottom-toc-row .back-to-toc { position:static; top:auto; right:auto; bottom:auto; display:block; width:100%; text-align:center; white-space:normal; transform:none; }
       .notation-wrap,.audio-controls,.status,.flatten-parts-playback-note { width:100%; }
       .site-instrument-selector {
         flex-direction:column;
@@ -9269,7 +9358,7 @@ fiddle: {
       /* Print card style: remove shadows to avoid gray boxes in printed output. */
       .collection-intro, .table-of-contents, .score-panel { box-shadow:none; }
       /* Print controls: hide browser-only navigation, playback, instrument, and search controls. */
-      .back-to-toc, .abc-tools-link, .audio-controls, .site-instrument-selector, .instrument-working-overlay, .toc-search { display:none !important; }
+      .back-to-toc, .abc-tools-link, .bottom-toc-row, .audio-controls, .site-instrument-selector, .instrument-working-overlay, .toc-search { display:none !important; }
       /* Print pagination: avoid splitting tune and section-header cards across pages when possible. */
       .score-panel { break-inside:avoid; page-break-inside:avoid; }
     }
