@@ -537,13 +537,13 @@
         linear-gradient(135deg, rgba(11, 55, 34, .97), rgba(23, 107, 67, .96)),
         repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,.025) 12px 24px);
       border-bottom: 5px solid var(--accent);
-      padding: 34px 20px 30px;
+      padding: 16px 20px 14px 20px;
       text-align: center;
     }
 
     .app-header h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-size: clamp(1.95rem, 4vw, 2.3rem);
       line-height: 1.1;
     }
 
@@ -553,7 +553,7 @@
       color: #dcebe2;
     }
 
-    @media (min-width: 761px) and (max-width: 1400px) and (orientation: landscape) {
+    @media (min-width: 761px) and (max-width: 1400px) and (orientation: landscape) and (any-pointer: coarse) {
       .app-header {
         padding-top: 16px;
         padding-bottom: 14px;
