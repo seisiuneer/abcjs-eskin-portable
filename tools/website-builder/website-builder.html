@@ -553,6 +553,27 @@
       color: #dcebe2;
     }
 
+    @media (min-width: 761px) and (max-width: 1400px) and (orientation: landscape) {
+      .app-header {
+        padding-top: 16px;
+        padding-bottom: 14px;
+      }
+
+      .app-header h1 {
+        font-size: clamp(1.45rem, 2.45vw, 1.95rem);
+        line-height: 1.02;
+      }
+
+      .app-header p {
+        max-width: 900px;
+        margin-top: 6px;
+      }
+
+      .app {
+        margin-top: 18px !important;
+      }
+    }
+
     .app {
       width: min(1120px, calc(100% - 28px));
       margin: 28px auto 50px;
