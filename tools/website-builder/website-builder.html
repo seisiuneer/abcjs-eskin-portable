@@ -8231,7 +8231,7 @@ fiddle: {
       .filter(tune => !tune.isSectionHeader)
       .map(tune =>
         `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
-      ).join("\n\n  ");
+      ).join("\n\n");
 
     const selectorStorageSeed = `${s.title}|${tunes.length}|${tunes.map(tune => tune.key).join("|")}`;
     const selectorStorageHash = Math.abs(
@@ -9423,1474 +9423,1474 @@ ${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-ins
     </div>
   </footer>
 ${embeddedCloseMarkup}
-  ${abcBlocks}
+${abcBlocks}
 
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js?cb=${externalLibraryCacheBuster}"><\/script>
-  <script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js?cb=${externalLibraryCacheBuster}"><\/script>
-  ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/pako.min.js?cb=' + externalLibraryCacheBuster + '"><\/script>\n  ' : ''}<script>
-  (() => {
-    "use strict";
+<script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-chord-intervals.js?cb=${externalLibraryCacheBuster}"><\/script>
+<script src="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-portable-min.js?cb=${externalLibraryCacheBuster}"><\/script>
+${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs-eskin-portable/website-builder/pako.min.js?cb=' + externalLibraryCacheBuster + '"><\/script>\n' : ''}<script>
+(() => {
+  "use strict";
 
-    const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
-      key: panel.dataset.key,
-      groupId: panel.dataset.group || "group-1",
-      abcElementId: panel.dataset.key + "-abc"
-    }));
+  const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
+    key: panel.dataset.key,
+    groupId: panel.dataset.group || "group-1",
+    abcElementId: panel.dataset.key + "-abc"
+  }));
 
-    function cssIdSelector(id) {
-      const value = String(id || "");
-      if (window.CSS && typeof window.CSS.escape === "function") return "#" + window.CSS.escape(value);
-      return "#" + value.replace(/(^[0-9])|[^a-zA-Z0-9_-]/g, character => "\\\\" + character.charCodeAt(0).toString(16) + " ");
-    }
+  function cssIdSelector(id) {
+    const value = String(id || "");
+    if (window.CSS && typeof window.CSS.escape === "function") return "#" + window.CSS.escape(value);
+    return "#" + value.replace(/(^[0-9])|[^a-zA-Z0-9_-]/g, character => "\\\\" + character.charCodeAt(0).toString(16) + " ");
+  }
 
-    const controllers = new Map();
-    const defaultDisplayMode = ${displayMode};
-    const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
-    const tuneGroupSelectorEnabled = ${JSON.stringify(largeCollectionGroupingEnabled)};
-    const showMultipleTunes = ${JSON.stringify(showMultipleTunes)};
-    const tuneGroups = ${JSON.stringify(tuneGroups)};
-    const firstTuneGroupId = ${JSON.stringify(firstTuneGroupId)};
-    const instrumentSelectorStorageKey = ${JSON.stringify(instrumentSelectorStorageKey)};
-    const tuneGroupStorageKey = ${JSON.stringify(tuneGroupStorageKey)};
-    let activeTuneGroupId = firstTuneGroupId;
-    let applyTocFilter = function() {};
-    const abcToolsLinkMode = ${JSON.stringify(abcToolsLinkMode)};
-    const defaultABCToolsFormat = ${JSON.stringify(abcToolsFormat)};
-    const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
-    const cursorColor = ${cursorColor};
-    /*
-      Playback autoscroll view ahead customization:
-      top and bottom are viewport guard-band sizes in pixels. Increase bottom
-      if you want more upcoming notation to remain visible below the playback cursor.
-    */
-    const cursorAutoscrollGuardBand = ${JSON.stringify(cursorAutoscrollGuardBand)};
-    /*
-      JavaScript default sound settings customization:
-      These are the default sound settings exported from the Website Builder.
-      They are used before a visitor changes the Display / Instrument selector
-      and are also used for bass and chord playback when the selector changes
-      the melody instrument.
-      To change the default soundfont or bass/chord sound in the exported site,
-      edit these values. To change a selectable melody instrument, edit the
-      matching entry in instrumentChoices below.
-    */
-    const defaultSoundSettings = {
-      injectSounds: ${JSON.stringify(isChecked(s.injectSoundSettings) || includeInstrumentSelector)},
-      soundfont: ${JSON.stringify(String(s.soundfont || DEFAULT_SETTINGS.soundfont))},
-      bassProgram: ${JSON.stringify(normalizeMidiValue(s.bassProgram))},
-      bassVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.bassVolume) || 0))))},
-      chordProgram: ${JSON.stringify(normalizeMidiValue(s.chordProgram))},
-      chordVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.chordVolume) || 0))))}
-    };
-    /*
-      Display / Instrument selector choices customization:
-      Keep each key in this object matched to an <option value="sameKey"> line
-      in the selector HTML above.
-      To remove an instrument, remove both the <option> line and its matching
-      instrumentChoices entry.
-      To add an instrument, add both a new <option> line and a matching entry here.
-      displayMode controls notation/tablature style, program controls the melody
-      MIDI program, transpose is optional, and format controls ABC Transcription
-      Tools link format.
-    */
-    const instrumentChoices = {
-      pianoNotation: { displayMode: defaultDisplayMode, program: ${JSON.stringify(selectorDefaultProgram)}, transpose: ${JSON.stringify(selectorDefaultTranspose)}, format: defaultABCToolsFormat },
-      mandolin: { displayMode: "mandolinNotation", program: "141", format: "mandolin" },
-      tenorBanjo: { displayMode: "mandolinNotation", program: "105", format: "mandolin" },
-      gdadBouzouki: { displayMode: "bouzoukiNotation", program: "140", format: "gdad" },
-      standardGuitar: { displayMode: "guitarNotation", program: "24", transpose: "-12", format: "guitare" },
-      dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12", format: "guitard" },
-      tinWhistle: { displayMode: "whistleNotation", program: "78", format: "whistle" },
-      irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
-      uilleann: { displayMode: "notation", program: "129", format: "noten" },
-      accordion: { displayMode: "notation", program: "21", format: "noten" },
-      concertina: { displayMode: "notation", program: "133", format: "noten" },
-      fiddle: { displayMode: "notation", program: "110", format: "noten" },
-      harp: { displayMode: "notation", program: "46", format: "noten" },
-      hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }${includeBackupOnlyInstrument ? `,
-      backupOnly: { displayMode: "notation", program: "mute", format: "noten" }` : ""}
-    };
+  const controllers = new Map();
+  const defaultDisplayMode = ${displayMode};
+  const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
+  const tuneGroupSelectorEnabled = ${JSON.stringify(largeCollectionGroupingEnabled)};
+  const showMultipleTunes = ${JSON.stringify(showMultipleTunes)};
+  const tuneGroups = ${JSON.stringify(tuneGroups)};
+  const firstTuneGroupId = ${JSON.stringify(firstTuneGroupId)};
+  const instrumentSelectorStorageKey = ${JSON.stringify(instrumentSelectorStorageKey)};
+  const tuneGroupStorageKey = ${JSON.stringify(tuneGroupStorageKey)};
+  let activeTuneGroupId = firstTuneGroupId;
+  let applyTocFilter = function() {};
+  const abcToolsLinkMode = ${JSON.stringify(abcToolsLinkMode)};
+  const defaultABCToolsFormat = ${JSON.stringify(abcToolsFormat)};
+  const showStringInstrumentTablatureNames = ${JSON.stringify(showStringInstrumentTablatureNames)};
+  const cursorColor = ${cursorColor};
+  /*
+    Playback autoscroll view ahead customization:
+    top and bottom are viewport guard-band sizes in pixels. Increase bottom
+    if you want more upcoming notation to remain visible below the playback cursor.
+  */
+  const cursorAutoscrollGuardBand = ${JSON.stringify(cursorAutoscrollGuardBand)};
+  /*
+    JavaScript default sound settings customization:
+    These are the default sound settings exported from the Website Builder.
+    They are used before a visitor changes the Display / Instrument selector
+    and are also used for bass and chord playback when the selector changes
+    the melody instrument.
+    To change the default soundfont or bass/chord sound in the exported site,
+    edit these values. To change a selectable melody instrument, edit the
+    matching entry in instrumentChoices below.
+  */
+  const defaultSoundSettings = {
+    injectSounds: ${JSON.stringify(isChecked(s.injectSoundSettings) || includeInstrumentSelector)},
+    soundfont: ${JSON.stringify(String(s.soundfont || DEFAULT_SETTINGS.soundfont))},
+    bassProgram: ${JSON.stringify(normalizeMidiValue(s.bassProgram))},
+    bassVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.bassVolume) || 0))))},
+    chordProgram: ${JSON.stringify(normalizeMidiValue(s.chordProgram))},
+    chordVolume: ${JSON.stringify(String(Math.max(0, Math.min(127, Number(s.chordVolume) || 0))))}
+  };
+  /*
+    Display / Instrument selector choices customization:
+    Keep each key in this object matched to an <option value="sameKey"> line
+    in the selector HTML above.
+    To remove an instrument, remove both the <option> line and its matching
+    instrumentChoices entry.
+    To add an instrument, add both a new <option> line and a matching entry here.
+    displayMode controls notation/tablature style, program controls the melody
+    MIDI program, transpose is optional, and format controls ABC Transcription
+    Tools link format.
+  */
+  const instrumentChoices = {
+    pianoNotation: { displayMode: defaultDisplayMode, program: ${JSON.stringify(selectorDefaultProgram)}, transpose: ${JSON.stringify(selectorDefaultTranspose)}, format: defaultABCToolsFormat },
+    mandolin: { displayMode: "mandolinNotation", program: "141", format: "mandolin" },
+    tenorBanjo: { displayMode: "mandolinNotation", program: "105", format: "mandolin" },
+    gdadBouzouki: { displayMode: "bouzoukiNotation", program: "140", format: "gdad" },
+    standardGuitar: { displayMode: "guitarNotation", program: "24", transpose: "-12", format: "guitare" },
+    dadgadGuitar: { displayMode: "dadgadGuitarNotation", program: "24", transpose: "-12", format: "guitard" },
+    tinWhistle: { displayMode: "whistleNotation", program: "78", format: "whistle" },
+    irishFlute: { displayMode: "whistleNotation", program: "73", format: "whistle" },
+    uilleann: { displayMode: "notation", program: "129", format: "noten" },
+    accordion: { displayMode: "notation", program: "21", format: "noten" },
+    concertina: { displayMode: "notation", program: "133", format: "noten" },
+    fiddle: { displayMode: "notation", program: "110", format: "noten" },
+    harp: { displayMode: "notation", program: "46", format: "noten" },
+    hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }${includeBackupOnlyInstrument ? `,
+    backupOnly: { displayMode: "notation", program: "mute", format: "noten" }` : ""}
+  };
 
-    function stringedTablatureLabel(name) {
-      return showStringInstrumentTablatureNames ? name : "";
-    }
+  function stringedTablatureLabel(name) {
+    return showStringInstrumentTablatureNames ? name : "";
+  }
 
-    function getRenderParams(mode) {
-      const activeDisplayMode = mode || defaultDisplayMode;
-      const params = {
-        responsive: "resize",
-        expandToWidest: true,
-        selectTypes: false
-      };
-
-      if (activeDisplayMode === "whistleNotation") {
-        params.paddingbottom = 16;
-        params.disallowTablatureOnly = true;
-        params.tablature = [{
-          instrument: "violin",
-          label: " ",
-          tuning: ["G,"],
-          highestNote: "^a'",
-          hideTabSymbol: true
-        }];
-      } else if (activeDisplayMode === "mandolinNotation" || activeDisplayMode === "mandolinOnly") {
-        params.tablatureOnly = activeDisplayMode === "mandolinOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "violin",
-          label: stringedTablatureLabel("Mandolin"),
-          tuning: ["G,", "D", "A", "e"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (activeDisplayMode === "bouzoukiNotation" || activeDisplayMode === "bouzoukiOnly") {
-        params.tablatureOnly = activeDisplayMode === "bouzoukiOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "violin",
-          label: stringedTablatureLabel("GDAD Bouzouki"),
-          tuning: ["G,", "D", "A", "d"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (activeDisplayMode === "guitarNotation" || activeDisplayMode === "guitarOnly") {
-        params.tablatureOnly = activeDisplayMode === "guitarOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "guitar",
-          label: stringedTablatureLabel("Guitar"),
-          tuning: ["E,", "A,", "D", "G", "B", "e"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      } else if (activeDisplayMode === "dadgadGuitarNotation" || activeDisplayMode === "dadgadGuitarOnly") {
-        params.tablatureOnly = activeDisplayMode === "dadgadGuitarOnly";
-        params.paddingbottom = 16;
-        params.tablature = [{
-          instrument: "guitar",
-          label: stringedTablatureLabel("DADGAD Guitar"),
-          tuning: ["D,", "A,", "D", "G", "A", "d"],
-          highestNote: "f'",
-          capo: 0
-        }];
-      }
-
-      return params;
-    }
-
-    const playerOptions = {
-      displayLoop: true,
-      displayRestart: true,
-      displayPlay: true,
-      displayProgress: true,
-      displayWarp: true
+  function getRenderParams(mode) {
+    const activeDisplayMode = mode || defaultDisplayMode;
+    const params = {
+      responsive: "resize",
+      expandToWidest: true,
+      selectTypes: false
     };
 
-    const synthOptions = { program: 0, chordsOff: false };
-
-    function hideAllPlayCursors() {
-      document.querySelectorAll(".abcjs-cursor").forEach(cursor => {
-        cursor.style.display = "none";
-      });
+    if (activeDisplayMode === "whistleNotation") {
+      params.paddingbottom = 16;
+      params.disallowTablatureOnly = true;
+      params.tablature = [{
+        instrument: "violin",
+        label: " ",
+        tuning: ["G,"],
+        highestNote: "^a'",
+        hideTabSymbol: true
+      }];
+    } else if (activeDisplayMode === "mandolinNotation" || activeDisplayMode === "mandolinOnly") {
+      params.tablatureOnly = activeDisplayMode === "mandolinOnly";
+      params.paddingbottom = 16;
+      params.tablature = [{
+        instrument: "violin",
+        label: stringedTablatureLabel("Mandolin"),
+        tuning: ["G,", "D", "A", "e"],
+        highestNote: "f'",
+        capo: 0
+      }];
+    } else if (activeDisplayMode === "bouzoukiNotation" || activeDisplayMode === "bouzoukiOnly") {
+      params.tablatureOnly = activeDisplayMode === "bouzoukiOnly";
+      params.paddingbottom = 16;
+      params.tablature = [{
+        instrument: "violin",
+        label: stringedTablatureLabel("GDAD Bouzouki"),
+        tuning: ["G,", "D", "A", "d"],
+        highestNote: "f'",
+        capo: 0
+      }];
+    } else if (activeDisplayMode === "guitarNotation" || activeDisplayMode === "guitarOnly") {
+      params.tablatureOnly = activeDisplayMode === "guitarOnly";
+      params.paddingbottom = 16;
+      params.tablature = [{
+        instrument: "guitar",
+        label: stringedTablatureLabel("Guitar"),
+        tuning: ["E,", "A,", "D", "G", "B", "e"],
+        highestNote: "f'",
+        capo: 0
+      }];
+    } else if (activeDisplayMode === "dadgadGuitarNotation" || activeDisplayMode === "dadgadGuitarOnly") {
+      params.tablatureOnly = activeDisplayMode === "dadgadGuitarOnly";
+      params.paddingbottom = 16;
+      params.tablature = [{
+        instrument: "guitar",
+        label: stringedTablatureLabel("DADGAD Guitar"),
+        tuning: ["D,", "A,", "D", "G", "A", "d"],
+        highestNote: "f'",
+        capo: 0
+      }];
     }
 
-    function stopAllPlayback() {
-      controllers.forEach(controller => {
-        if (controller && typeof controller.pause === "function") controller.pause();
-      });
-      hideAllPlayCursors();
-    }
+    return params;
+  }
 
-    function stopOtherPlayback(activeKey) {
-      controllers.forEach((controller, key) => {
-        if (key !== activeKey && controller && typeof controller.pause === "function") {
-          controller.pause();
-        }
-      });
-      hideAllPlayCursors();
-    }
+  const playerOptions = {
+    displayLoop: true,
+    displayRestart: true,
+    displayPlay: true,
+    displayProgress: true,
+    displayWarp: true
+  };
 
-    function togglePlayback(controller) {
-      if (!controller) return Promise.resolve();
-      return Promise.resolve(controller.play()).catch(console.error);
-    }
+  const synthOptions = { program: 0, chordsOff: false };
 
-    function isTablatureOnlyDisplayMode(mode) {
-      return mode === "mandolinOnly" ||
-        mode === "bouzoukiOnly" ||
-        mode === "guitarOnly" ||
-        mode === "dadgadGuitarOnly";
-    }
+  function hideAllPlayCursors() {
+    document.querySelectorAll(".abcjs-cursor").forEach(cursor => {
+      cursor.style.display = "none";
+    });
+  }
 
-    function escapeForRegExpText(text) {
-      const specials = "^$.*+?()[]{}|\\\\";
-      return String(text || "")
-        .split("")
-        .map(ch => specials.indexOf(ch) >= 0 ? "\\\\" + ch : ch)
-        .join("");
-    }
+  function stopAllPlayback() {
+    controllers.forEach(controller => {
+      if (controller && typeof controller.pause === "function") controller.pause();
+    });
+    hideAllPlayCursors();
+  }
 
-    function addDirectiveAfterXField(abc, directive) {
-      const normalized = String(abc || "").trim();
-      if (!directive || !normalized) return normalized;
-
-      const escapedDirective = escapeForRegExpText(directive);
-      const directiveRegex = new RegExp("^\\\\s*" + escapedDirective + "\\\\s*$", "mi");
-      if (directiveRegex.test(normalized)) return normalized;
-
-      const xFieldRegex = new RegExp("^(X\\\\s*:\\\\s*.*)$", "mi");
-      return normalized.replace(
-        xFieldRegex,
-        "$1\\n" + directive
-      );
-    }
-
-    function bytesToBase64URL(bytes) {
-      const chunkSize = 0x8000;
-      let binary = "";
-
-      for (let index = 0; index < bytes.length; index += chunkSize) {
-        const chunk = bytes.subarray(index, index + chunkSize);
-        binary += String.fromCharCode.apply(null, chunk);
+  function stopOtherPlayback(activeKey) {
+    controllers.forEach((controller, key) => {
+      if (key !== activeKey && controller && typeof controller.pause === "function") {
+        controller.pause();
       }
+    });
+    hideAllPlayCursors();
+  }
 
-      return btoa(binary)
-        .split("+").join("-")
-        .split("/").join("_")
-        .replace(/=+$/g, "");
+  function togglePlayback(controller) {
+    if (!controller) return Promise.resolve();
+    return Promise.resolve(controller.play()).catch(console.error);
+  }
+
+  function isTablatureOnlyDisplayMode(mode) {
+    return mode === "mandolinOnly" ||
+      mode === "bouzoukiOnly" ||
+      mode === "guitarOnly" ||
+      mode === "dadgadGuitarOnly";
+  }
+
+  function escapeForRegExpText(text) {
+    const specials = "^$.*+?()[]{}|\\\\";
+    return String(text || "")
+      .split("")
+      .map(ch => specials.indexOf(ch) >= 0 ? "\\\\" + ch : ch)
+      .join("");
+  }
+
+  function addDirectiveAfterXField(abc, directive) {
+    const normalized = String(abc || "").trim();
+    if (!directive || !normalized) return normalized;
+
+    const escapedDirective = escapeForRegExpText(directive);
+    const directiveRegex = new RegExp("^\\\\s*" + escapedDirective + "\\\\s*$", "mi");
+    if (directiveRegex.test(normalized)) return normalized;
+
+    const xFieldRegex = new RegExp("^(X\\\\s*:\\\\s*.*)$", "mi");
+    return normalized.replace(
+      xFieldRegex,
+      "$1\\n" + directive
+    );
+  }
+
+  function bytesToBase64URL(bytes) {
+    const chunkSize = 0x8000;
+    let binary = "";
+
+    for (let index = 0; index < bytes.length; index += chunkSize) {
+      const chunk = bytes.subarray(index, index + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk);
     }
 
-    function compressABCDeflateForShareLink(abcText) {
-      if (typeof pako === "undefined") {
-        throw new Error("pako.min.js did not load; the ABC Transcription Tools link could not be created.");
-      }
+    return btoa(binary)
+      .split("+").join("-")
+      .split("/").join("_")
+      .replace(/=+$/g, "");
+  }
 
-      if (typeof TextEncoder === "undefined") {
-        throw new Error("TextEncoder is not available in this browser.");
-      }
-
-      const utf8Bytes = new TextEncoder().encode(abcText || "");
-      const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
-      return bytesToBase64URL(deflatedBytes);
+  function compressABCDeflateForShareLink(abcText) {
+    if (typeof pako === "undefined") {
+      throw new Error("pako.min.js did not load; the ABC Transcription Tools link could not be created.");
     }
 
-    function abcForABCTranscriptionTools(work, choice, link) {
-      const linkDisplayMode = link && link.dataset ? link.dataset.displayMode : "";
-      const linkRequestsTablatureOnly = !!(link && link.dataset && link.dataset.tablatureOnly === "true");
-      const activeDisplayMode = choice ? choice.displayMode : (linkDisplayMode || defaultDisplayMode);
-      const abc = abcForInstrumentChoice(work, choice);
-
-      if (linkRequestsTablatureOnly || isTablatureOnlyDisplayMode(activeDisplayMode)) {
-        return addDirectiveAfterXField(abc, "%tablature_only");
-      }
-
-      return abc;
+    if (typeof TextEncoder === "undefined") {
+      throw new Error("TextEncoder is not available in this browser.");
     }
 
-    function buildABCTranscriptionToolsURL(abcText, format) {
-      if (!abcText || !abcText.length) return "";
-      if (!["player", "editor", "fullscreen"].includes(abcToolsLinkMode)) return "";
+    const utf8Bytes = new TextEncoder().encode(abcText || "");
+    const deflatedBytes = pako.deflate(utf8Bytes, { level: 6 });
+    return bytesToBase64URL(deflatedBytes);
+  }
 
-      const params = new URLSearchParams();
-      params.set("def", compressABCDeflateForShareLink(abcText));
-      params.set("format", format || "noten");
+  function abcForABCTranscriptionTools(work, choice, link) {
+    const linkDisplayMode = link && link.dataset ? link.dataset.displayMode : "";
+    const linkRequestsTablatureOnly = !!(link && link.dataset && link.dataset.tablatureOnly === "true");
+    const activeDisplayMode = choice ? choice.displayMode : (linkDisplayMode || defaultDisplayMode);
+    const abc = abcForInstrumentChoice(work, choice);
 
-      if (abcToolsLinkMode === "player") {
-        params.set("play", "1");
-      } else if (abcToolsLinkMode === "editor") {
-        params.set("editor", "1");
-      }
-
-      const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
-      return url.length <= 8100 ? url : "";
+    if (linkRequestsTablatureOnly || isTablatureOnlyDisplayMode(activeDisplayMode)) {
+      return addDirectiveAfterXField(abc, "%tablature_only");
     }
 
-    function activeABCTranscriptionToolsChoice() {
-      if (!instrumentSelectorEnabled) return null;
+    return abc;
+  }
 
-      const selector = document.getElementById("site-instrument-selector");
-      const choiceId = validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
-      return instrumentChoices[choiceId] || instrumentChoices.pianoNotation;
+  function buildABCTranscriptionToolsURL(abcText, format) {
+    if (!abcText || !abcText.length) return "";
+    if (!["player", "editor", "fullscreen"].includes(abcToolsLinkMode)) return "";
+
+    const params = new URLSearchParams();
+    params.set("def", compressABCDeflateForShareLink(abcText));
+    params.set("format", format || "noten");
+
+    if (abcToolsLinkMode === "player") {
+      params.set("play", "1");
+    } else if (abcToolsLinkMode === "editor") {
+      params.set("editor", "1");
     }
 
-    function openABCTranscriptionToolsLink(link) {
-      stopAllPlayback();
-
-      try {
-        const workKey = link && link.dataset ? link.dataset.workKey : "";
-        const work = works.find(item => item.key === workKey);
-        if (!work) throw new Error("Tune data was not found for this link.");
-
-        const choice = activeABCTranscriptionToolsChoice();
-        const format = choice ? choice.format : defaultABCToolsFormat;
-        const abc = abcForABCTranscriptionTools(work, choice, link);
-        const url = buildABCTranscriptionToolsURL(abc, format);
-
-        if (!url) {
-          alert("This tune is too large to open in ABC Transcription Tools as a share link.");
-          return;
-        }
-
-        link.href = url;
-        window.open(url, "_blank", "noopener,noreferrer");
-      } catch (error) {
-        console.error(error);
-        alert(error && error.message ? error.message : String(error));
-      }
-    }
-
-    function installTableOfContentsSearch() {
-      const input = document.getElementById("toc-search-input");
-      const clearButton = document.getElementById("toc-search-clear");
-      const searchAllButton = document.getElementById("toc-search-all");
-      const searchAllResults = document.getElementById("toc-search-all-results");
-      const searchAllMessage = document.getElementById("toc-search-all-message");
-      const searchAllList = document.getElementById("toc-search-all-list");
-      const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
-      const searchAllResultLimit = 50;
-
-      function normalizeSearchText(text) {
-        return String(text || "")
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase();
-      }
-
-      function hideSearchAllResults() {
-        if (searchAllResults) searchAllResults.hidden = true;
-        if (searchAllList) searchAllList.innerHTML = "";
-      }
-
-      function displaySearchAllMessage(message) {
-        if (!searchAllResults || !searchAllMessage || !searchAllList) return;
-        searchAllMessage.textContent = message;
-        searchAllList.innerHTML = "";
-        searchAllResults.hidden = false;
-        searchAllResults.scrollTop = 0;
-        searchAllList.scrollTop = 0;
-      }
-
-      function tocEntryDisplayTitle(link) {
-        if (!link) return "";
-
-        const clone = link.cloneNode(true);
-        clone.querySelectorAll("span").forEach(span => span.remove());
-
-        return (clone.textContent || link.dataset.tocTitle || link.textContent || "")
-          .replace(/\\s+/g, " ")
-          .trim();
-      }
-
-      function searchAllMatches(query) {
-        if (!query) return [];
-        return entries.filter(link => {
-          const title = normalizeSearchText(tocEntryDisplayTitle(link));
-          return title.indexOf(query) !== -1;
-        });
-      }
-
-      async function selectSearchAllMatch(link) {
-        if (!link) return;
-        if (!showMultipleTunes && link.dataset.sectionHeader === "true") return;
-
-        const groupId = validTuneGroupId(link.dataset.group || "");
-        const selector = document.getElementById("site-tune-group-selector");
-        const href = link.getAttribute("href") || "";
-        const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
-        hideSearchAllResults();
-
-        if (selector) selector.value = groupId;
-        saveTuneGroup(groupId);
-        if (!showMultipleTunes && targetId) selectSingleWorkForTargetId(targetId);
-        applyTuneGroup(groupId);
-        const renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
-
-        if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return;
-
-        if (targetId && scrollToTargetIdAfterLayout(targetId)) {
-          stopAllPlayback();
-          history.replaceState(null, "", "#" + targetId);
-        }
-      }
-
-      function renderSearchAllResults() {
-        if (!searchAllButton || !searchAllResults || !searchAllMessage || !searchAllList) return;
-
-        const query = input ? normalizeSearchText(input.value.trim()) : "";
-        if (!query) {
-          displaySearchAllMessage("Enter search text to search all tune sections.");
-          return;
-        }
-
-        const matches = searchAllMatches(query);
-        const shown = matches.slice(0, searchAllResultLimit);
-
-        if (!matches.length) {
-          displaySearchAllMessage("No matches found across all tune sections.");
-          return;
-        }
-
-        if (matches.length > shown.length) {
-          searchAllMessage.textContent = "Only the first " + shown.length + " matches of " + matches.length + " are shown.";
-        } else {
-          searchAllMessage.textContent = "Showing " + shown.length + " match" + (shown.length === 1 ? "" : "es") + " across all tune sections.";
-        }
-
-        searchAllList.innerHTML = "";
-        shown.forEach(link => {
-          const item = document.createElement("button");
-          item.type = "button";
-          item.className = "toc-search-all-option";
-          item.setAttribute("role", "option");
-
-          const title = document.createElement("span");
-          title.className = "toc-search-all-title";
-          title.textContent = tocEntryDisplayTitle(link);
-
-          const section = document.createElement("span");
-          section.className = "toc-search-all-section";
-          section.textContent = "Tune Section: " + tuneGroupName(link.dataset.group || "");
-
-          item.appendChild(title);
-          item.appendChild(section);
-          item.addEventListener("click", () => {
-            void selectSearchAllMatch(link);
-          });
-
-          searchAllList.appendChild(item);
-        });
-
-        searchAllResults.hidden = false;
-        searchAllResults.scrollTop = 0;
-        searchAllList.scrollTop = 0;
-      }
-
-      applyTocFilter = function() {
-        const query = input ? normalizeSearchText(input.value.trim()) : "";
-        entries.forEach(link => {
-          const title = normalizeSearchText(link.dataset.tocTitle || link.textContent || "");
-          const groupMismatch = tuneGroupSelectorEnabled && link.dataset.group !== activeTuneGroupId;
-          const searchMismatch = !!query && title.indexOf(query) === -1;
-          const shouldHide = groupMismatch || searchMismatch;
-          link.hidden = shouldHide;
-          link.style.display = shouldHide ? "none" : "";
-        });
-        if (clearButton) clearButton.hidden = !query;
-      };
-
-      function handleTocSearchInput() {
-        hideSearchAllResults();
-        applyTocFilter();
-      }
-
-      if (input && clearButton) {
-        input.addEventListener("input", handleTocSearchInput);
-        input.addEventListener("search", handleTocSearchInput);
-        input.addEventListener("change", handleTocSearchInput);
-        input.addEventListener("keyup", handleTocSearchInput);
-        clearButton.addEventListener("click", () => {
-          input.value = "";
-          hideSearchAllResults();
-          applyTocFilter();
-          input.focus();
-        });
-      }
-
-      if (searchAllButton) {
-        searchAllButton.addEventListener("click", renderSearchAllResults);
-      }
-
-      document.addEventListener("click", event => {
-        if (!searchAllResults || searchAllResults.hidden) return;
-        const searchRoot = searchAllResults.closest(".toc-search");
-        if (searchRoot && !searchRoot.contains(event.target)) hideSearchAllResults();
-      });
-
-      applyTocFilter();
-    }
-
-
-    function getHashTargetId() {
-      const hash = window.location.hash || "";
-      if (hash.length <= 1) return "";
-      try {
-        return decodeURIComponent(hash.slice(1));
-      } catch (error) {
-        return hash.slice(1);
-      }
-    }
-
-    function groupIdForTargetId(targetId) {
-      if (!targetId) return "";
-      const target = document.getElementById(targetId);
-      if (!target) return "";
-      const groupPanel = target.closest ? target.closest("[data-group-panel='true']") : target;
-      const groupId = groupPanel && groupPanel.dataset ? groupPanel.dataset.group : "";
-      return groupId ? validTuneGroupId(groupId) : "";
-    }
-
-    function scrollToTargetIdAfterLayout(targetId) {
-      const target = targetId ? document.getElementById(targetId) : null;
-      if (!target) return false;
-
-      const scrollNow = () => {
-        const currentTarget = document.getElementById(targetId);
-        if (!currentTarget || currentTarget.hidden) return;
-        currentTarget.scrollIntoView({ behavior: "auto", block: "start" });
-      };
-
-      scrollNow();
-      requestAnimationFrame(() => {
-        scrollNow();
-        requestAnimationFrame(scrollNow);
-      });
-      setTimeout(scrollNow, 120);
-      setTimeout(scrollNow, 500);
-      return true;
-    }
-
-    function scrollToCurrentHashAfterLayout() {
-      return scrollToTargetIdAfterLayout(getHashTargetId());
-    }
-
-    function isSingleTuneSectionHeaderTarget(targetId) {
-      if (showMultipleTunes || !targetId) return false;
-      const targetHref = "#" + String(targetId || "").replace(/^#/, "");
-      return Array.from(document.querySelectorAll("[data-toc-entry='true']")).some(link =>
-        (link.getAttribute("href") || "") === targetHref && link.dataset.sectionHeader === "true"
-      );
-    }
-
-    async function navigateToHashTarget() {
-      const targetId = getHashTargetId();
-      if (!targetId || isSingleTuneSectionHeaderTarget(targetId)) return false;
-
-      const targetGroupId = groupIdForTargetId(targetId);
-      let renderCompleted = true;
-      if (targetGroupId && targetGroupId !== activeTuneGroupId) {
-        const selector = document.getElementById("site-tune-group-selector");
-        if (selector) selector.value = targetGroupId;
-        saveTuneGroup(targetGroupId);
-        if (!showMultipleTunes) selectSingleWorkForTargetId(targetId);
-        applyTuneGroup(targetGroupId);
-        renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
-      } else if (!showMultipleTunes && selectSingleWorkForTargetId(targetId)) {
-        applyContentVisibility();
-        renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
-      }
-
-      if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return false;
-
-      stopAllPlayback();
-      return scrollToTargetIdAfterLayout(targetId);
-    }
-
-    let activeTempoInput = null;
-
-    function tempoEntryValue(value) {
-      const text = String(value == null ? "" : value).trim();
-      if (!text) return null;
-
-      const parsed = Number(text);
-      if (!Number.isFinite(parsed)) return null;
-
-      const rounded = Math.round(parsed);
-      if (rounded < 5 || rounded > 400) return null;
-      return rounded;
-    }
-
-    function currentTempoValue(tempoInput) {
-      const fromInput = tempoEntryValue(tempoInput ? tempoInput.value : "");
-      if (fromInput !== null) return fromInput;
-      return 100;
-    }
-
-    function ensureTempoEntryDialog() {
-      let overlay = document.getElementById("tempo-entry-overlay");
-      if (overlay) return overlay;
-
-      overlay = document.createElement("div");
-      overlay.id = "tempo-entry-overlay";
-      overlay.className = "tempo-entry-overlay";
-      overlay.hidden = true;
-      overlay.innerHTML =
-        '<div class="tempo-entry-dialog" role="dialog" aria-modal="true" aria-labelledby="tempo-entry-title">' +
-          '<h2 id="tempo-entry-title">Set Tempo Percentage</h2>' +
-          '<div class="tempo-entry-field-row">' +
-            '<label for="tempo-entry-input">Tempo percentage:</label>' +
-            '<input id="tempo-entry-input" type="number" inputmode="numeric" min="5" max="400" step="1" autocomplete="off">' +
-            '<select id="tempo-entry-preset" class="tempo-entry-preset" aria-label="Preset tempo percentage">' +
-              '<option value="">Preset</option>' +
-              '<option value="25">25</option><option value="30">30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="70">70</option><option value="75">75</option><option value="80">80</option><option value="85">85</option><option value="90">90</option><option value="95">95</option><option value="100">100</option><option value="125">125</option><option value="150">150</option><option value="175">175</option><option value="200">200</option>' +
-            '</select>' +
-          '</div>' +
-          '<p id="tempo-entry-error" class="tempo-entry-error" aria-live="polite"></p>' +
-          '<div class="tempo-entry-actions">' +
-            '<button type="button" class="tempo-entry-apply" id="tempo-entry-apply">Apply</button>' +
-            '<button type="button" class="tempo-entry-cancel" id="tempo-entry-cancel">Cancel</button>' +
-          '</div>' +
-        '</div>';
-
-      document.body.appendChild(overlay);
-
-      const input = overlay.querySelector("#tempo-entry-input");
-      const preset = overlay.querySelector("#tempo-entry-preset");
-      const applyButton = overlay.querySelector("#tempo-entry-apply");
-      const cancelButton = overlay.querySelector("#tempo-entry-cancel");
-
-      cancelButton.addEventListener("click", closeTempoEntryDialog);
-      applyButton.addEventListener("click", applyTempoEntryDialog);
-
-      preset.addEventListener("change", () => {
-        if (!preset.value) return;
-        input.value = preset.value;
-        input.focus({ preventScroll: true });
-        input.select();
-      });
-
-      input.addEventListener("input", () => {
-        if (preset && preset.value !== input.value) preset.value = "";
-      });
-
-      input.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          applyTempoEntryDialog();
-        } else if (event.key === "Escape") {
-          event.preventDefault();
-          closeTempoEntryDialog();
-        }
-      });
-
-      return overlay;
-    }
-
-    function openTempoEntryDialog(tempoInput) {
-      if (!tempoInput) return;
-
-      const overlay = ensureTempoEntryDialog();
-      const input = overlay.querySelector("#tempo-entry-input");
-      const preset = overlay.querySelector("#tempo-entry-preset");
-      activeTempoInput = tempoInput;
-      input.value = String(currentTempoValue(tempoInput));
-      if (preset) preset.value = "";
-      overlay.hidden = false;
-
-      /*
-        iOS only opens the on-screen keyboard when focus happens directly
-        inside the trusted tap/click handler. Do the first focus/select
-        synchronously, then repeat on the next frames only as a layout fallback.
-      */
-      input.focus({ preventScroll: true });
-      input.select();
-
-      requestAnimationFrame(() => {
-        input.focus({ preventScroll: true });
-        input.select();
-        requestAnimationFrame(() => {
-          input.focus({ preventScroll: true });
-          input.select();
-        });
-      });
-    }
-
-    function closeTempoEntryDialog() {
-      const overlay = document.getElementById("tempo-entry-overlay");
-      if (overlay) overlay.hidden = true;
-      activeTempoInput = null;
-    }
-
-    function applyTempoEntryDialog() {
-      const overlay = document.getElementById("tempo-entry-overlay");
-      if (!overlay || !activeTempoInput) return;
-
-      const input = overlay.querySelector("#tempo-entry-input");
-      const tempoValue = tempoEntryValue(input ? input.value : "");
-
-      if (tempoValue === null) {
-        closeTempoEntryDialog();
+    const url = "https://michaeleskin.com/abctools/abctools.html?" + params.toString();
+    return url.length <= 8100 ? url : "";
+  }
+
+  function activeABCTranscriptionToolsChoice() {
+    if (!instrumentSelectorEnabled) return null;
+
+    const selector = document.getElementById("site-instrument-selector");
+    const choiceId = validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
+    return instrumentChoices[choiceId] || instrumentChoices.pianoNotation;
+  }
+
+  function openABCTranscriptionToolsLink(link) {
+    stopAllPlayback();
+
+    try {
+      const workKey = link && link.dataset ? link.dataset.workKey : "";
+      const work = works.find(item => item.key === workKey);
+      if (!work) throw new Error("Tune data was not found for this link.");
+
+      const choice = activeABCTranscriptionToolsChoice();
+      const format = choice ? choice.format : defaultABCToolsFormat;
+      const abc = abcForABCTranscriptionTools(work, choice, link);
+      const url = buildABCTranscriptionToolsURL(abc, format);
+
+      if (!url) {
+        alert("This tune is too large to open in ABC Transcription Tools as a share link.");
         return;
       }
 
-      activeTempoInput.value = String(tempoValue);
-      activeTempoInput.dispatchEvent(new Event("input", { bubbles: true }));
-      activeTempoInput.dispatchEvent(new Event("change", { bubbles: true }));
+      link.href = url;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error(error);
+      alert(error && error.message ? error.message : String(error));
+    }
+  }
 
+  function installTableOfContentsSearch() {
+    const input = document.getElementById("toc-search-input");
+    const clearButton = document.getElementById("toc-search-clear");
+    const searchAllButton = document.getElementById("toc-search-all");
+    const searchAllResults = document.getElementById("toc-search-all-results");
+    const searchAllMessage = document.getElementById("toc-search-all-message");
+    const searchAllList = document.getElementById("toc-search-all-list");
+    const entries = Array.from(document.querySelectorAll("[data-toc-entry='true']"));
+    const searchAllResultLimit = 50;
+
+    function normalizeSearchText(text) {
+      return String(text || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    function hideSearchAllResults() {
+      if (searchAllResults) searchAllResults.hidden = true;
+      if (searchAllList) searchAllList.innerHTML = "";
+    }
+
+    function displaySearchAllMessage(message) {
+      if (!searchAllResults || !searchAllMessage || !searchAllList) return;
+      searchAllMessage.textContent = message;
+      searchAllList.innerHTML = "";
+      searchAllResults.hidden = false;
+      searchAllResults.scrollTop = 0;
+      searchAllList.scrollTop = 0;
+    }
+
+    function tocEntryDisplayTitle(link) {
+      if (!link) return "";
+
+      const clone = link.cloneNode(true);
+      clone.querySelectorAll("span").forEach(span => span.remove());
+
+      return (clone.textContent || link.dataset.tocTitle || link.textContent || "")
+        .replace(/\\s+/g, " ")
+        .trim();
+    }
+
+    function searchAllMatches(query) {
+      if (!query) return [];
+      return entries.filter(link => {
+        const title = normalizeSearchText(tocEntryDisplayTitle(link));
+        return title.indexOf(query) !== -1;
+      });
+    }
+
+    async function selectSearchAllMatch(link) {
+      if (!link) return;
+      if (!showMultipleTunes && link.dataset.sectionHeader === "true") return;
+
+      const groupId = validTuneGroupId(link.dataset.group || "");
+      const selector = document.getElementById("site-tune-group-selector");
+      const href = link.getAttribute("href") || "";
+      const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
+      hideSearchAllResults();
+
+      if (selector) selector.value = groupId;
+      saveTuneGroup(groupId);
+      if (!showMultipleTunes && targetId) selectSingleWorkForTargetId(targetId);
+      applyTuneGroup(groupId);
+      const renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
+
+      if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return;
+
+      if (targetId && scrollToTargetIdAfterLayout(targetId)) {
+        stopAllPlayback();
+        history.replaceState(null, "", "#" + targetId);
+      }
+    }
+
+    function renderSearchAllResults() {
+      if (!searchAllButton || !searchAllResults || !searchAllMessage || !searchAllList) return;
+
+      const query = input ? normalizeSearchText(input.value.trim()) : "";
+      if (!query) {
+        displaySearchAllMessage("Enter search text to search all tune sections.");
+        return;
+      }
+
+      const matches = searchAllMatches(query);
+      const shown = matches.slice(0, searchAllResultLimit);
+
+      if (!matches.length) {
+        displaySearchAllMessage("No matches found across all tune sections.");
+        return;
+      }
+
+      if (matches.length > shown.length) {
+        searchAllMessage.textContent = "Only the first " + shown.length + " matches of " + matches.length + " are shown.";
+      } else {
+        searchAllMessage.textContent = "Showing " + shown.length + " match" + (shown.length === 1 ? "" : "es") + " across all tune sections.";
+      }
+
+      searchAllList.innerHTML = "";
+      shown.forEach(link => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "toc-search-all-option";
+        item.setAttribute("role", "option");
+
+        const title = document.createElement("span");
+        title.className = "toc-search-all-title";
+        title.textContent = tocEntryDisplayTitle(link);
+
+        const section = document.createElement("span");
+        section.className = "toc-search-all-section";
+        section.textContent = "Tune Section: " + tuneGroupName(link.dataset.group || "");
+
+        item.appendChild(title);
+        item.appendChild(section);
+        item.addEventListener("click", () => {
+          void selectSearchAllMatch(link);
+        });
+
+        searchAllList.appendChild(item);
+      });
+
+      searchAllResults.hidden = false;
+      searchAllResults.scrollTop = 0;
+      searchAllList.scrollTop = 0;
+    }
+
+    applyTocFilter = function() {
+      const query = input ? normalizeSearchText(input.value.trim()) : "";
+      entries.forEach(link => {
+        const title = normalizeSearchText(link.dataset.tocTitle || link.textContent || "");
+        const groupMismatch = tuneGroupSelectorEnabled && link.dataset.group !== activeTuneGroupId;
+        const searchMismatch = !!query && title.indexOf(query) === -1;
+        const shouldHide = groupMismatch || searchMismatch;
+        link.hidden = shouldHide;
+        link.style.display = shouldHide ? "none" : "";
+      });
+      if (clearButton) clearButton.hidden = !query;
+    };
+
+    function handleTocSearchInput() {
+      hideSearchAllResults();
+      applyTocFilter();
+    }
+
+    if (input && clearButton) {
+      input.addEventListener("input", handleTocSearchInput);
+      input.addEventListener("search", handleTocSearchInput);
+      input.addEventListener("change", handleTocSearchInput);
+      input.addEventListener("keyup", handleTocSearchInput);
+      clearButton.addEventListener("click", () => {
+        input.value = "";
+        hideSearchAllResults();
+        applyTocFilter();
+        input.focus();
+      });
+    }
+
+    if (searchAllButton) {
+      searchAllButton.addEventListener("click", renderSearchAllResults);
+    }
+
+    document.addEventListener("click", event => {
+      if (!searchAllResults || searchAllResults.hidden) return;
+      const searchRoot = searchAllResults.closest(".toc-search");
+      if (searchRoot && !searchRoot.contains(event.target)) hideSearchAllResults();
+    });
+
+    applyTocFilter();
+  }
+
+
+  function getHashTargetId() {
+    const hash = window.location.hash || "";
+    if (hash.length <= 1) return "";
+    try {
+      return decodeURIComponent(hash.slice(1));
+    } catch (error) {
+      return hash.slice(1);
+    }
+  }
+
+  function groupIdForTargetId(targetId) {
+    if (!targetId) return "";
+    const target = document.getElementById(targetId);
+    if (!target) return "";
+    const groupPanel = target.closest ? target.closest("[data-group-panel='true']") : target;
+    const groupId = groupPanel && groupPanel.dataset ? groupPanel.dataset.group : "";
+    return groupId ? validTuneGroupId(groupId) : "";
+  }
+
+  function scrollToTargetIdAfterLayout(targetId) {
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (!target) return false;
+
+    const scrollNow = () => {
+      const currentTarget = document.getElementById(targetId);
+      if (!currentTarget || currentTarget.hidden) return;
+      currentTarget.scrollIntoView({ behavior: "auto", block: "start" });
+    };
+
+    scrollNow();
+    requestAnimationFrame(() => {
+      scrollNow();
+      requestAnimationFrame(scrollNow);
+    });
+    setTimeout(scrollNow, 120);
+    setTimeout(scrollNow, 500);
+    return true;
+  }
+
+  function scrollToCurrentHashAfterLayout() {
+    return scrollToTargetIdAfterLayout(getHashTargetId());
+  }
+
+  function isSingleTuneSectionHeaderTarget(targetId) {
+    if (showMultipleTunes || !targetId) return false;
+    const targetHref = "#" + String(targetId || "").replace(/^#/, "");
+    return Array.from(document.querySelectorAll("[data-toc-entry='true']")).some(link =>
+      (link.getAttribute("href") || "") === targetHref && link.dataset.sectionHeader === "true"
+    );
+  }
+
+  async function navigateToHashTarget() {
+    const targetId = getHashTargetId();
+    if (!targetId || isSingleTuneSectionHeaderTarget(targetId)) return false;
+
+    const targetGroupId = groupIdForTargetId(targetId);
+    let renderCompleted = true;
+    if (targetGroupId && targetGroupId !== activeTuneGroupId) {
+      const selector = document.getElementById("site-tune-group-selector");
+      if (selector) selector.value = targetGroupId;
+      saveTuneGroup(targetGroupId);
+      if (!showMultipleTunes) selectSingleWorkForTargetId(targetId);
+      applyTuneGroup(targetGroupId);
+      renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
+    } else if (!showMultipleTunes && selectSingleWorkForTargetId(targetId)) {
+      applyContentVisibility();
+      renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
+    }
+
+    if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return false;
+
+    stopAllPlayback();
+    return scrollToTargetIdAfterLayout(targetId);
+  }
+
+  let activeTempoInput = null;
+
+  function tempoEntryValue(value) {
+    const text = String(value == null ? "" : value).trim();
+    if (!text) return null;
+
+    const parsed = Number(text);
+    if (!Number.isFinite(parsed)) return null;
+
+    const rounded = Math.round(parsed);
+    if (rounded < 5 || rounded > 400) return null;
+    return rounded;
+  }
+
+  function currentTempoValue(tempoInput) {
+    const fromInput = tempoEntryValue(tempoInput ? tempoInput.value : "");
+    if (fromInput !== null) return fromInput;
+    return 100;
+  }
+
+  function ensureTempoEntryDialog() {
+    let overlay = document.getElementById("tempo-entry-overlay");
+    if (overlay) return overlay;
+
+    overlay = document.createElement("div");
+    overlay.id = "tempo-entry-overlay";
+    overlay.className = "tempo-entry-overlay";
+    overlay.hidden = true;
+    overlay.innerHTML =
+      '<div class="tempo-entry-dialog" role="dialog" aria-modal="true" aria-labelledby="tempo-entry-title">' +
+        '<h2 id="tempo-entry-title">Set Tempo Percentage</h2>' +
+        '<div class="tempo-entry-field-row">' +
+          '<label for="tempo-entry-input">Tempo percentage:</label>' +
+          '<input id="tempo-entry-input" type="number" inputmode="numeric" min="5" max="400" step="1" autocomplete="off">' +
+          '<select id="tempo-entry-preset" class="tempo-entry-preset" aria-label="Preset tempo percentage">' +
+            '<option value="">Preset</option>' +
+            '<option value="25">25</option><option value="30">30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="70">70</option><option value="75">75</option><option value="80">80</option><option value="85">85</option><option value="90">90</option><option value="95">95</option><option value="100">100</option><option value="125">125</option><option value="150">150</option><option value="175">175</option><option value="200">200</option>' +
+          '</select>' +
+        '</div>' +
+        '<p id="tempo-entry-error" class="tempo-entry-error" aria-live="polite"></p>' +
+        '<div class="tempo-entry-actions">' +
+          '<button type="button" class="tempo-entry-apply" id="tempo-entry-apply">Apply</button>' +
+          '<button type="button" class="tempo-entry-cancel" id="tempo-entry-cancel">Cancel</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector("#tempo-entry-input");
+    const preset = overlay.querySelector("#tempo-entry-preset");
+    const applyButton = overlay.querySelector("#tempo-entry-apply");
+    const cancelButton = overlay.querySelector("#tempo-entry-cancel");
+
+    cancelButton.addEventListener("click", closeTempoEntryDialog);
+    applyButton.addEventListener("click", applyTempoEntryDialog);
+
+    preset.addEventListener("change", () => {
+      if (!preset.value) return;
+      input.value = preset.value;
+      input.focus({ preventScroll: true });
+      input.select();
+    });
+
+    input.addEventListener("input", () => {
+      if (preset && preset.value !== input.value) preset.value = "";
+    });
+
+    input.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyTempoEntryDialog();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeTempoEntryDialog();
+      }
+    });
+
+    return overlay;
+  }
+
+  function openTempoEntryDialog(tempoInput) {
+    if (!tempoInput) return;
+
+    const overlay = ensureTempoEntryDialog();
+    const input = overlay.querySelector("#tempo-entry-input");
+    const preset = overlay.querySelector("#tempo-entry-preset");
+    activeTempoInput = tempoInput;
+    input.value = String(currentTempoValue(tempoInput));
+    if (preset) preset.value = "";
+    overlay.hidden = false;
+
+    /*
+      iOS only opens the on-screen keyboard when focus happens directly
+      inside the trusted tap/click handler. Do the first focus/select
+      synchronously, then repeat on the next frames only as a layout fallback.
+    */
+    input.focus({ preventScroll: true });
+    input.select();
+
+    requestAnimationFrame(() => {
+      input.focus({ preventScroll: true });
+      input.select();
+      requestAnimationFrame(() => {
+        input.focus({ preventScroll: true });
+        input.select();
+      });
+    });
+  }
+
+  function closeTempoEntryDialog() {
+    const overlay = document.getElementById("tempo-entry-overlay");
+    if (overlay) overlay.hidden = true;
+    activeTempoInput = null;
+  }
+
+  function applyTempoEntryDialog() {
+    const overlay = document.getElementById("tempo-entry-overlay");
+    if (!overlay || !activeTempoInput) return;
+
+    const input = overlay.querySelector("#tempo-entry-input");
+    const tempoValue = tempoEntryValue(input ? input.value : "");
+
+    if (tempoValue === null) {
       closeTempoEntryDialog();
+      return;
     }
 
-    function findTempoInput(audioElement) {
-      if (!audioElement) return null;
+    activeTempoInput.value = String(tempoValue);
+    activeTempoInput.dispatchEvent(new Event("input", { bubbles: true }));
+    activeTempoInput.dispatchEvent(new Event("change", { bubbles: true }));
 
-      return audioElement.querySelector(
-        "input.abcjs-midi-tempo," +
-        "input.abcjs-midi-current-tempo," +
-        ".abcjs-midi-tempo input," +
-        ".abcjs-midi-current-tempo input," +
-        ".abcjs-midi-current-tempo-wrapper input," +
-        ".abcjs-tempo-wrapper input," +
-        "input[type='number']," +
-        "input[type='text']"
-      );
-    }
+    closeTempoEntryDialog();
+  }
 
-    function installTempoEntryDialog(audioElement) {
-      if (!audioElement) return false;
+  function findTempoInput(audioElement) {
+    if (!audioElement) return null;
 
-      const tempoInput = findTempoInput(audioElement);
-      if (!tempoInput || tempoInput.dataset.tempoDialogInstalled === "true") return Boolean(tempoInput);
+    return audioElement.querySelector(
+      "input.abcjs-midi-tempo," +
+      "input.abcjs-midi-current-tempo," +
+      ".abcjs-midi-tempo input," +
+      ".abcjs-midi-current-tempo input," +
+      ".abcjs-midi-current-tempo-wrapper input," +
+      ".abcjs-tempo-wrapper input," +
+      "input[type='number']," +
+      "input[type='text']"
+    );
+  }
 
-      tempoInput.dataset.tempoDialogInstalled = "true";
-      tempoInput.readOnly = true;
-      tempoInput.setAttribute("readonly", "readonly");
-      tempoInput.setAttribute("inputmode", "numeric");
-      tempoInput.setAttribute("aria-label", "Open tempo percentage dialog");
-      tempoInput.title = "Click to set tempo percentage";
+  function installTempoEntryDialog(audioElement) {
+    if (!audioElement) return false;
 
-      const openDialog = event => {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        openTempoEntryDialog(tempoInput);
-      };
+    const tempoInput = findTempoInput(audioElement);
+    if (!tempoInput || tempoInput.dataset.tempoDialogInstalled === "true") return Boolean(tempoInput);
 
-      tempoInput.addEventListener("pointerdown", openDialog);
-      tempoInput.addEventListener("mousedown", openDialog);
-      tempoInput.addEventListener("touchstart", openDialog, { passive: false });
-      tempoInput.addEventListener("focus", openDialog);
-      tempoInput.addEventListener("click", event => {
+    tempoInput.dataset.tempoDialogInstalled = "true";
+    tempoInput.readOnly = true;
+    tempoInput.setAttribute("readonly", "readonly");
+    tempoInput.setAttribute("inputmode", "numeric");
+    tempoInput.setAttribute("aria-label", "Open tempo percentage dialog");
+    tempoInput.title = "Click to set tempo percentage";
+
+    const openDialog = event => {
+      if (event) {
         event.preventDefault();
         event.stopPropagation();
-      });
-      tempoInput.addEventListener("beforeinput", event => {
+      }
+      openTempoEntryDialog(tempoInput);
+    };
+
+    tempoInput.addEventListener("pointerdown", openDialog);
+    tempoInput.addEventListener("mousedown", openDialog);
+    tempoInput.addEventListener("touchstart", openDialog, { passive: false });
+    tempoInput.addEventListener("focus", openDialog);
+    tempoInput.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    tempoInput.addEventListener("beforeinput", event => {
+      event.preventDefault();
+    });
+    tempoInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        openDialog(event);
+      } else if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
         event.preventDefault();
+      }
+    });
+
+    return true;
+  }
+
+  function installTempoEntryDialogWhenReady(audioElement) {
+    if (!audioElement) return;
+
+    if (installTempoEntryDialog(audioElement)) return;
+
+    let attempts = 0;
+    const retry = () => {
+      attempts += 1;
+      if (installTempoEntryDialog(audioElement) || attempts >= 20) return;
+      setTimeout(retry, 50);
+    };
+
+    requestAnimationFrame(retry);
+
+    if (typeof MutationObserver === "function") {
+      const observer = new MutationObserver(() => {
+        if (installTempoEntryDialog(audioElement)) observer.disconnect();
       });
-      tempoInput.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-          openDialog(event);
-        } else if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
-          event.preventDefault();
+      observer.observe(audioElement, { childList: true, subtree: true });
+      setTimeout(() => observer.disconnect(), 2000);
+    }
+  }
+
+  function installNavigation() {
+    installTableOfContentsSearch();
+
+    document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        stopAllPlayback();
+
+        const targetId = "table-of-contents";
+        if (scrollToTargetIdAfterLayout(targetId)) {
+          history.replaceState(null, "", "#" + targetId);
         }
       });
+    });
 
-      return true;
-    }
+    document.querySelectorAll(".toc-links a").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        void (async () => {
+          const href = link.getAttribute("href") || "";
+          const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
+          if (!showMultipleTunes && link.dataset.sectionHeader === "true") return;
 
-    function installTempoEntryDialogWhenReady(audioElement) {
-      if (!audioElement) return;
-
-      if (installTempoEntryDialog(audioElement)) return;
-
-      let attempts = 0;
-      const retry = () => {
-        attempts += 1;
-        if (installTempoEntryDialog(audioElement) || attempts >= 20) return;
-        setTimeout(retry, 50);
-      };
-
-      requestAnimationFrame(retry);
-
-      if (typeof MutationObserver === "function") {
-        const observer = new MutationObserver(() => {
-          if (installTempoEntryDialog(audioElement)) observer.disconnect();
-        });
-        observer.observe(audioElement, { childList: true, subtree: true });
-        setTimeout(() => observer.disconnect(), 2000);
-      }
-    }
-
-    function installNavigation() {
-      installTableOfContentsSearch();
-
-      document.querySelectorAll(".back-to-toc[data-toc-link='true']").forEach(link => {
-        link.addEventListener("click", event => {
-          event.preventDefault();
           stopAllPlayback();
 
-          const targetId = "table-of-contents";
-          if (scrollToTargetIdAfterLayout(targetId)) {
+          let renderCompleted = true;
+          if (!showMultipleTunes && targetId && selectSingleWorkForTargetId(targetId)) {
+            applyContentVisibility();
+            renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
+          }
+
+          if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return;
+
+          if (targetId && scrollToTargetIdAfterLayout(targetId)) {
             history.replaceState(null, "", "#" + targetId);
           }
-        });
+        })();
       });
+    });
 
-      document.querySelectorAll(".toc-links a").forEach(link => {
-        link.addEventListener("click", event => {
-          event.preventDefault();
-          void (async () => {
-            const href = link.getAttribute("href") || "";
-            const targetId = href.charAt(0) === "#" ? href.slice(1) : "";
-            if (!showMultipleTunes && link.dataset.sectionHeader === "true") return;
-
-            stopAllPlayback();
-
-            let renderCompleted = true;
-            if (!showMultipleTunes && targetId && selectSingleWorkForTargetId(targetId)) {
-              applyContentVisibility();
-              renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
-            }
-
-            if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return;
-
-            if (targetId && scrollToTargetIdAfterLayout(targetId)) {
-              history.replaceState(null, "", "#" + targetId);
-            }
-          })();
-        });
+    document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        openABCTranscriptionToolsLink(link);
       });
+    });
 
-      document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
-        link.addEventListener("click", event => {
-          event.preventDefault();
-          openABCTranscriptionToolsLink(link);
-        });
-      });
+    window.addEventListener("hashchange", () => {
+      void navigateToHashTarget();
+    });
+  }
 
-      window.addEventListener("hashchange", () => {
-        void navigateToHashTarget();
-      });
+  function keepCursorVisible(cursor, paper) {
+    const cursorRect = cursor.getBoundingClientRect();
+    const guardTop = Number(cursorAutoscrollGuardBand.top) || 72;
+    const guardBottom = Number(cursorAutoscrollGuardBand.bottom) || 82;
+    const viewportTop = guardTop;
+    const viewportBottom = Math.max(viewportTop + 80, window.innerHeight - guardBottom);
+    const usableViewportHeight = viewportBottom - viewportTop;
+    const cursorHeight = Math.max(0, cursorRect.height || (cursorRect.bottom - cursorRect.top));
+    const useShortViewportCentering = window.innerHeight < 430 || usableViewportHeight < cursorHeight + 40;
+
+    if (useShortViewportCentering) {
+      const targetY = Math.round(window.innerHeight * 0.45);
+      const cursorCenterY = cursorRect.top + (cursorHeight / 2);
+      const deltaY = cursorCenterY - targetY;
+      const deadZone = Math.max(22, Math.min(44, Math.round(window.innerHeight * 0.08)));
+
+      if (Math.abs(deltaY) > deadZone) {
+        window.scrollBy({ top: deltaY, behavior: "smooth" });
+      }
+    } else if (cursorRect.top < viewportTop) {
+      window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
+    } else if (cursorRect.bottom > viewportBottom) {
+      window.scrollBy({ top: cursorRect.bottom - viewportBottom + 18, behavior: "smooth" });
     }
 
-    function keepCursorVisible(cursor, paper) {
-      const cursorRect = cursor.getBoundingClientRect();
-      const guardTop = Number(cursorAutoscrollGuardBand.top) || 72;
-      const guardBottom = Number(cursorAutoscrollGuardBand.bottom) || 82;
-      const viewportTop = guardTop;
-      const viewportBottom = Math.max(viewportTop + 80, window.innerHeight - guardBottom);
-      const usableViewportHeight = viewportBottom - viewportTop;
-      const cursorHeight = Math.max(0, cursorRect.height || (cursorRect.bottom - cursorRect.top));
-      const useShortViewportCentering = window.innerHeight < 430 || usableViewportHeight < cursorHeight + 40;
+    const paperRect = paper.getBoundingClientRect();
+    const margin = 44;
+    const visibleLeft = Math.max(paperRect.left, 0) + margin;
+    const visibleRight = Math.min(paperRect.right, window.innerWidth) - margin;
 
-      if (useShortViewportCentering) {
-        const targetY = Math.round(window.innerHeight * 0.45);
-        const cursorCenterY = cursorRect.top + (cursorHeight / 2);
-        const deltaY = cursorCenterY - targetY;
-        const deadZone = Math.max(22, Math.min(44, Math.round(window.innerHeight * 0.08)));
-
-        if (Math.abs(deltaY) > deadZone) {
-          window.scrollBy({ top: deltaY, behavior: "smooth" });
-        }
-      } else if (cursorRect.top < viewportTop) {
-        window.scrollBy({ top: cursorRect.top - viewportTop - 18, behavior: "smooth" });
-      } else if (cursorRect.bottom > viewportBottom) {
-        window.scrollBy({ top: cursorRect.bottom - viewportBottom + 18, behavior: "smooth" });
-      }
-
-      const paperRect = paper.getBoundingClientRect();
-      const margin = 44;
-      const visibleLeft = Math.max(paperRect.left, 0) + margin;
-      const visibleRight = Math.min(paperRect.right, window.innerWidth) - margin;
-
-      if (cursorRect.left < visibleLeft) {
-        paper.scrollBy({ left: cursorRect.left - visibleLeft - 24, behavior: "smooth" });
-      } else if (cursorRect.right > visibleRight) {
-        paper.scrollBy({ left: cursorRect.right - visibleRight + 24, behavior: "smooth" });
-      }
+    if (cursorRect.left < visibleLeft) {
+      paper.scrollBy({ left: cursorRect.left - visibleLeft - 24, behavior: "smooth" });
+    } else if (cursorRect.right > visibleRight) {
+      paper.scrollBy({ left: cursorRect.right - visibleRight + 24, behavior: "smooth" });
     }
+  }
 
-    function createCursorControl(paperId, workKey) {
-      let cursor = null;
-      let autoscrollFrame = 0;
-      const paper = document.getElementById(paperId);
+  function createCursorControl(paperId, workKey) {
+    let cursor = null;
+    let autoscrollFrame = 0;
+    const paper = document.getElementById(paperId);
 
-      function scheduleCursorAutoscroll() {
-        if (!paper || !cursor || autoscrollFrame) return;
+    function scheduleCursorAutoscroll() {
+      if (!paper || !cursor || autoscrollFrame) return;
 
-        autoscrollFrame = requestAnimationFrame(() => {
-          autoscrollFrame = 0;
-          if (cursor && paper) keepCursorVisible(cursor, paper);
-        });
-      }
-
-      function cancelCursorAutoscroll() {
-        if (!autoscrollFrame) return;
-        cancelAnimationFrame(autoscrollFrame);
+      autoscrollFrame = requestAnimationFrame(() => {
         autoscrollFrame = 0;
+        if (cursor && paper) keepCursorVisible(cursor, paper);
+      });
+    }
+
+    function cancelCursorAutoscroll() {
+      if (!autoscrollFrame) return;
+      cancelAnimationFrame(autoscrollFrame);
+      autoscrollFrame = 0;
+    }
+
+    return {
+      onStart() {
+        stopOtherPlayback(workKey);
+        cancelCursorAutoscroll();
+        const svg = paper ? paper.querySelector("svg") : null;
+        if (!svg) return;
+        svg.querySelectorAll(".abcjs-cursor").forEach(item => item.remove());
+        cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        cursor.setAttribute("class", "abcjs-cursor");
+        cursor.setAttribute("stroke", cursorColor);
+        svg.appendChild(cursor);
+      },
+      onEvent(event) {
+        if (!cursor || !event || event.left == null) return;
+        cursor.style.display = "";
+        cursor.setAttribute("x1", String(event.left - 2));
+        cursor.setAttribute("x2", String(event.left - 2));
+        cursor.setAttribute("y1", String(event.top));
+        cursor.setAttribute("y2", String(event.top + event.height));
+        scheduleCursorAutoscroll();
+      },
+      onFinished() {
+        cancelCursorAutoscroll();
+        if (cursor) cursor.remove();
+        cursor = null;
       }
+    };
+  }
 
-      return {
-        onStart() {
-          stopOtherPlayback(workKey);
-          cancelCursorAutoscroll();
-          const svg = paper ? paper.querySelector("svg") : null;
-          if (!svg) return;
-          svg.querySelectorAll(".abcjs-cursor").forEach(item => item.remove());
-          cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          cursor.setAttribute("class", "abcjs-cursor");
-          cursor.setAttribute("stroke", cursorColor);
-          svg.appendChild(cursor);
-        },
-        onEvent(event) {
-          if (!cursor || !event || event.left == null) return;
-          cursor.style.display = "";
-          cursor.setAttribute("x1", String(event.left - 2));
-          cursor.setAttribute("x2", String(event.left - 2));
-          cursor.setAttribute("y1", String(event.top));
-          cursor.setAttribute("y2", String(event.top + event.height));
-          scheduleCursorAutoscroll();
-        },
-        onFinished() {
-          cancelCursorAutoscroll();
-          if (cursor) cursor.remove();
-          cursor = null;
-        }
-      };
-    }
+  function getNextSiblings(element) {
+    const siblings = [];
+    let current = element;
+    while (current = current.nextSibling) siblings.push(current);
+    return siblings;
+  }
 
-    function getNextSiblings(element) {
-      const siblings = [];
-      let current = element;
-      while (current = current.nextSibling) siblings.push(current);
-      return siblings;
-    }
+  function postProcessWhistleTab(visualObj, renderDivID) {
+    if (!visualObj || !visualObj.length) return;
 
-    function postProcessWhistleTab(visualObj, renderDivID) {
-      if (!visualObj || !visualObj.length) return;
+    const allTopLines = document.querySelectorAll(
+      'div[id="' + renderDivID + '"] > svg > g > g > [class="abcjs-top-line"]'
+    );
 
-      const allTopLines = document.querySelectorAll(
-        'div[id="' + renderDivID + '"] > svg > g > g > [class="abcjs-top-line"]'
-      );
+    const visual = visualObj[0];
+    if (!visual || !visual.lines || !visual.lines.length) return;
 
-      const visual = visualObj[0];
-      if (!visual || !visual.lines || !visual.lines.length) return;
+    const linesToCheck = [];
+    visual.lines.forEach(line => {
+      if (line && line.staff) linesToCheck.push(line);
+    });
 
-      const linesToCheck = [];
-      visual.lines.forEach(line => {
-        if (line && line.staff) linesToCheck.push(line);
-      });
-
-      const tabTopLines = [];
-      linesToCheck.forEach(line => {
-        const staffCount = line.staff ? line.staff.length : 0;
-        const tabStaffIndex = staffCount / 2;
-        for (let index = 0; index < staffCount; index++) {
-          tabTopLines.push(index >= tabStaffIndex);
-        }
-      });
-
-      allTopLines.forEach((line, index) => {
-        if (!tabTopLines[index]) return;
-        line.setAttribute("class", "hiddentabline");
-        getNextSiblings(line).forEach(sibling => {
-          if (sibling && sibling.setAttribute) sibling.setAttribute("class", "hiddentabline");
-        });
-      });
-
-      const map = [
-        "g", "m", "a", "i", "b", "c", "j", "d", "k", "e", "f", "l",
-        "g", "m", "a", "i", "b", "c", "j", "D", "K", "E", "F", "L",
-        "G", "M", "A", "I", "B", "n", "J", "D", "K", "E", "F", "L",
-        "G", "M", "A"
-      ];
-
-      const selector = 'div[id="' + renderDivID + '"] > svg > g > g[data-name="tabNumber"] > text > tspan';
-      document.querySelectorAll(selector).forEach(tspan => {
-        tspan.setAttribute("class", "whistle");
-        tspan.setAttribute("dy", "-7");
-
-        // Match ABC Transcription Tools: the whistle tab uses the raw
-        // generated single-string tab value directly as the glyph-map index.
-        const index = parseInt(tspan.textContent, 10);
-
-        if (!Number.isNaN(index) && index >= 0 && index < map.length) {
-          tspan.textContent = map[index];
-        } else {
-          tspan.setAttribute("class", "whistle_small");
-          tspan.setAttribute("dy", "-23");
-          tspan.textContent = "x";
-        }
-      });
-    }
-
-    function getEmbeddedAbc(id) {
-      const element = document.getElementById(id);
-      if (!element) throw new Error("Embedded ABC not found: " + id);
-      return element.textContent.trim();
-    }
-
-    function removeRuntimeInjectedDirectives(value, removeStaffSep) {
-      let cleaned = String(value || "")
-        .replace(/^\\s*%(?:abcjs_)?soundfont\\s+.*(?:\\n|$)/gim, "")
-        .replace(/^\\s*%%MIDI\\s+(?:program|bassprog|bassvol|chordprog|chordvol|transpose)\\s+.*(?:\\n|$)/gim, "");
-
-      if (removeStaffSep) {
-        cleaned = cleaned.replace(/^[ \\t]*%%staffsep[ \\t]+.*(?:\\n|$)/gim, "");
+    const tabTopLines = [];
+    linesToCheck.forEach(line => {
+      const staffCount = line.staff ? line.staff.length : 0;
+      const tabStaffIndex = staffCount / 2;
+      for (let index = 0; index < staffCount; index++) {
+        tabTopLines.push(index >= tabStaffIndex);
       }
+    });
 
-      return cleaned
-        .split("\\n")
-        .map(line => line.replace(/\\s+$/g, ""))
-        .filter(line => line.trim() !== "")
-        .join("\\n");
-    }
+    allTopLines.forEach((line, index) => {
+      if (!tabTopLines[index]) return;
+      line.setAttribute("class", "hiddentabline");
+      getNextSiblings(line).forEach(sibling => {
+        if (sibling && sibling.setAttribute) sibling.setAttribute("class", "hiddentabline");
+      });
+    });
 
-    function staffSepDirectiveForDisplayMode(mode) {
-      if (mode === "mandolinOnly" || mode === "bouzoukiOnly") return "%%staffsep 80";
-      if (mode === "guitarOnly" || mode === "dadgadGuitarOnly") return "%%staffsep 100";
-      return "";
-    }
+    const map = [
+      "g", "m", "a", "i", "b", "c", "j", "d", "k", "e", "f", "l",
+      "g", "m", "a", "i", "b", "c", "j", "D", "K", "E", "F", "L",
+      "G", "M", "A", "I", "B", "n", "J", "D", "K", "E", "F", "L",
+      "G", "M", "A"
+    ];
 
-    function insertRuntimeDirectivesAfterXField(abc, directives) {
-      const cleaned = String(abc || "").trim();
-      const additions = (directives || []).filter(Boolean);
-      if (!cleaned || !additions.length) return cleaned;
+    const selector = 'div[id="' + renderDivID + '"] > svg > g > g[data-name="tabNumber"] > text > tspan';
+    document.querySelectorAll(selector).forEach(tspan => {
+      tspan.setAttribute("class", "whistle");
+      tspan.setAttribute("dy", "-7");
 
-      return cleaned.replace(
-        /^(X\\s*:\\s*.*)$/mi,
-        "$1\\n" + additions.join("\\n")
-      );
-    }
+      // Match ABC Transcription Tools: the whistle tab uses the raw
+      // generated single-string tab value directly as the glyph-map index.
+      const index = parseInt(tspan.textContent, 10);
 
-    function abcForInstrumentChoice(work, choice) {
-      const originalAbc = getEmbeddedAbc(work.abcElementId);
-      if (!choice) return originalAbc;
-
-      const activeDisplayMode = choice.displayMode || defaultDisplayMode;
-      const directives = [];
-      const staffSepDirective = staffSepDirectiveForDisplayMode(activeDisplayMode);
-
-      if (staffSepDirective) directives.push(staffSepDirective);
-
-      if (defaultSoundSettings.injectSounds) {
-        directives.push("%soundfont " + defaultSoundSettings.soundfont);
-        directives.push("%%MIDI program " + choice.program);
-        if (choice.transpose) directives.push("%%MIDI transpose " + choice.transpose);
-        directives.push("%%MIDI bassprog " + defaultSoundSettings.bassProgram);
-        directives.push("%%MIDI bassvol " + defaultSoundSettings.bassVolume);
-        directives.push("%%MIDI chordprog " + defaultSoundSettings.chordProgram);
-        directives.push("%%MIDI chordvol " + defaultSoundSettings.chordVolume);
+      if (!Number.isNaN(index) && index >= 0 && index < map.length) {
+        tspan.textContent = map[index];
       } else {
-        directives.push("%%MIDI program " + choice.program);
-        if (choice.transpose) directives.push("%%MIDI transpose " + choice.transpose);
+        tspan.setAttribute("class", "whistle_small");
+        tspan.setAttribute("dy", "-23");
+        tspan.textContent = "x";
       }
+    });
+  }
 
-      return insertRuntimeDirectivesAfterXField(
-        removeRuntimeInjectedDirectives(originalAbc, Boolean(staffSepDirective)),
-        directives
-      );
+  function getEmbeddedAbc(id) {
+    const element = document.getElementById(id);
+    if (!element) throw new Error("Embedded ABC not found: " + id);
+    return element.textContent.trim();
+  }
+
+  function removeRuntimeInjectedDirectives(value, removeStaffSep) {
+    let cleaned = String(value || "")
+      .replace(/^\\s*%(?:abcjs_)?soundfont\\s+.*(?:\\n|$)/gim, "")
+      .replace(/^\\s*%%MIDI\\s+(?:program|bassprog|bassvol|chordprog|chordvol|transpose)\\s+.*(?:\\n|$)/gim, "");
+
+    if (removeStaffSep) {
+      cleaned = cleaned.replace(/^[ \\t]*%%staffsep[ \\t]+.*(?:\\n|$)/gim, "");
     }
 
-    async function prepareWork(work, choiceId) {
-      const paperId = work.key + "-paper";
-      const audioId = work.key + "-audio";
-      const status = document.getElementById(work.key + "-status");
-      const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
-      const paper = document.getElementById(paperId);
-      const audioElement = document.getElementById(audioId);
-      const choice = choiceId ? instrumentChoices[choiceId] : null;
-      const activeDisplayMode = choice ? choice.displayMode : defaultDisplayMode;
+    return cleaned
+      .split("\\n")
+      .map(line => line.replace(/\\s+$/g, ""))
+      .filter(line => line.trim() !== "")
+      .join("\\n");
+  }
 
-      try {
-        const previousController = controllers.get(work.key);
-        if (previousController && typeof previousController.pause === "function") {
-          previousController.pause();
-        }
-        controllers.delete(work.key);
+  function staffSepDirectiveForDisplayMode(mode) {
+    if (mode === "mandolinOnly" || mode === "bouzoukiOnly") return "%%staffsep 80";
+    if (mode === "guitarOnly" || mode === "dadgadGuitarOnly") return "%%staffsep 100";
+    return "";
+  }
 
-        if (paper) {
-          paper.innerHTML = "";
-          paper.onclick = null;
-          paper.onkeydown = null;
-        }
-        if (audioElement) audioElement.innerHTML = "";
-        if (flattenPartsNote) flattenPartsNote.hidden = true;
-        if (status) {
-          status.classList.remove("error");
-          status.textContent = "Rendering notation and preparing audio…";
-        }
+  function insertRuntimeDirectivesAfterXField(abc, directives) {
+    const cleaned = String(abc || "").trim();
+    const additions = (directives || []).filter(Boolean);
+    if (!cleaned || !additions.length) return cleaned;
 
-        const rendered = ABCJS.renderAbc(
-          paperId,
-          abcForInstrumentChoice(work, choice),
-          getRenderParams(activeDisplayMode)
-        );
-        if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
+    return cleaned.replace(
+      /^(X\\s*:\\s*.*)$/mi,
+      "$1\\n" + additions.join("\\n")
+    );
+  }
 
-        if (activeDisplayMode === "whistleNotation") {
-          postProcessWhistleTab(rendered, paperId);
-        }
+  function abcForInstrumentChoice(work, choice) {
+    const originalAbc = getEmbeddedAbc(work.abcElementId);
+    if (!choice) return originalAbc;
 
-        const controller = new ABCJS.synth.SynthController();
-        controller.load(cssIdSelector(audioId), createCursorControl(paperId, work.key), playerOptions);
-        await controller.setTune(rendered[0], false, synthOptions);
-        installTempoEntryDialogWhenReady(audioElement);
-        controllers.set(work.key, controller);
+    const activeDisplayMode = choice.displayMode || defaultDisplayMode;
+    const directives = [];
+    const staffSepDirective = staffSepDirectiveForDisplayMode(activeDisplayMode);
 
-        if (paper) {
-          paper.tabIndex = 0;
-          paper.title = "Click the notation to pause or resume playing";
-          paper.onclick = () => void togglePlayback(controller);
-          paper.onkeydown = event => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              void togglePlayback(controller);
-            }
-          };
-        }
+    if (staffSepDirective) directives.push(staffSepDirective);
 
-        if (status) status.textContent = "Click the notation to pause or resume playing";
-        if (flattenPartsNote) flattenPartsNote.hidden = false;
-      } catch (error) {
-        console.error(error);
-        if (flattenPartsNote) flattenPartsNote.hidden = true;
-        if (status) {
-          status.classList.add("error");
-          status.textContent = error && error.message ? error.message : String(error);
-        }
-      }
+    if (defaultSoundSettings.injectSounds) {
+      directives.push("%soundfont " + defaultSoundSettings.soundfont);
+      directives.push("%%MIDI program " + choice.program);
+      if (choice.transpose) directives.push("%%MIDI transpose " + choice.transpose);
+      directives.push("%%MIDI bassprog " + defaultSoundSettings.bassProgram);
+      directives.push("%%MIDI bassvol " + defaultSoundSettings.bassVolume);
+      directives.push("%%MIDI chordprog " + defaultSoundSettings.chordProgram);
+      directives.push("%%MIDI chordvol " + defaultSoundSettings.chordVolume);
+    } else {
+      directives.push("%%MIDI program " + choice.program);
+      if (choice.transpose) directives.push("%%MIDI transpose " + choice.transpose);
     }
 
-    function validInstrumentChoiceId(value) {
-      if (value && Object.prototype.hasOwnProperty.call(instrumentChoices, value)) return value;
-      return instrumentSelectorEnabled ? "pianoNotation" : "";
-    }
+    return insertRuntimeDirectivesAfterXField(
+      removeRuntimeInjectedDirectives(originalAbc, Boolean(staffSepDirective)),
+      directives
+    );
+  }
 
-    function loadSavedInstrumentChoice() {
-      if (!instrumentSelectorEnabled) return "";
-      try {
-        return validInstrumentChoiceId(localStorage.getItem(instrumentSelectorStorageKey) || "");
-      } catch (error) {
-        console.warn("Unable to restore display/instrument selector setting.", error);
-        return "";
-      }
-    }
+  async function prepareWork(work, choiceId) {
+    const paperId = work.key + "-paper";
+    const audioId = work.key + "-audio";
+    const status = document.getElementById(work.key + "-status");
+    const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
+    const paper = document.getElementById(paperId);
+    const audioElement = document.getElementById(audioId);
+    const choice = choiceId ? instrumentChoices[choiceId] : null;
+    const activeDisplayMode = choice ? choice.displayMode : defaultDisplayMode;
 
-    function saveInstrumentChoice(choiceId) {
-      if (!instrumentSelectorEnabled) return;
-      try {
-        localStorage.setItem(instrumentSelectorStorageKey, validInstrumentChoiceId(choiceId));
-      } catch (error) {
-        console.warn("Unable to save display/instrument selector setting.", error);
-      }
-    }
-
-    function updateABCTranscriptionToolsLinks(choiceId) {
-      document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
-        link.href = "#";
-        link.hidden = false;
-        link.removeAttribute("aria-disabled");
-      });
-    }
-
-    function setInstrumentWorkingBannerVisible(visible) {
-      const overlay = document.getElementById("instrument-working-overlay");
-      if (!overlay) return;
-      overlay.hidden = !visible;
-    }
-
-    function waitForWorkingBannerPaint() {
-      return new Promise(resolve => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      });
-    }
-
-    function validTuneGroupId(value) {
-      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
-      if (value && tuneGroups.some(group => group.id === value)) return value;
-      return firstTuneGroupId;
-    }
-
-    function tuneGroupName(groupId) {
-      const validGroupId = validTuneGroupId(groupId);
-      const group = tuneGroups.find(item => item.id === validGroupId);
-      return group && group.name ? group.name : "Table of Contents";
-    }
-
-    function updateTableOfContentsTitle(groupId) {
-      const title = document.getElementById("toc-title");
-      if (!title) return;
-      title.textContent = tuneGroupSelectorEnabled ? tuneGroupName(groupId) : "Table of Contents";
-    }
-
-    function loadSavedTuneGroup() {
-      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
-      try {
-        return validTuneGroupId(localStorage.getItem(tuneGroupStorageKey) || "");
-      } catch (error) {
-        console.warn("Unable to restore tune group selector setting.", error);
-        return firstTuneGroupId;
-      }
-    }
-
-    function saveTuneGroup(groupId) {
-      if (!tuneGroupSelectorEnabled) return;
-      try {
-        localStorage.setItem(tuneGroupStorageKey, validTuneGroupId(groupId));
-      } catch (error) {
-        console.warn("Unable to save tune group selector setting.", error);
-      }
-    }
-
-    function clearWorkRender(work) {
+    try {
       const previousController = controllers.get(work.key);
-      if (previousController && typeof previousController.pause === "function") previousController.pause();
+      if (previousController && typeof previousController.pause === "function") {
+        previousController.pause();
+      }
       controllers.delete(work.key);
-
-      const paper = document.getElementById(work.key + "-paper");
-      const audioElement = document.getElementById(work.key + "-audio");
-      const status = document.getElementById(work.key + "-status");
-      const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
 
       if (paper) {
         paper.innerHTML = "";
         paper.onclick = null;
         paper.onkeydown = null;
-        paper.removeAttribute("tabindex");
-        paper.removeAttribute("title");
       }
       if (audioElement) audioElement.innerHTML = "";
       if (flattenPartsNote) flattenPartsNote.hidden = true;
       if (status) {
         status.classList.remove("error");
-        status.textContent = "";
+        status.textContent = "Rendering notation and preparing audio…";
+      }
+
+      const rendered = ABCJS.renderAbc(
+        paperId,
+        abcForInstrumentChoice(work, choice),
+        getRenderParams(activeDisplayMode)
+      );
+      if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
+
+      if (activeDisplayMode === "whistleNotation") {
+        postProcessWhistleTab(rendered, paperId);
+      }
+
+      const controller = new ABCJS.synth.SynthController();
+      controller.load(cssIdSelector(audioId), createCursorControl(paperId, work.key), playerOptions);
+      await controller.setTune(rendered[0], false, synthOptions);
+      installTempoEntryDialogWhenReady(audioElement);
+      controllers.set(work.key, controller);
+
+      if (paper) {
+        paper.tabIndex = 0;
+        paper.title = "Click the notation to pause or resume playing";
+        paper.onclick = () => void togglePlayback(controller);
+        paper.onkeydown = event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            void togglePlayback(controller);
+          }
+        };
+      }
+
+      if (status) status.textContent = "Click the notation to pause or resume playing";
+      if (flattenPartsNote) flattenPartsNote.hidden = false;
+    } catch (error) {
+      console.error(error);
+      if (flattenPartsNote) flattenPartsNote.hidden = true;
+      if (status) {
+        status.classList.add("error");
+        status.textContent = error && error.message ? error.message : String(error);
       }
     }
+  }
 
-    let activeSingleWorkKey = "";
-    let visibleSingleWorkKey = "";
+  function validInstrumentChoiceId(value) {
+    if (value && Object.prototype.hasOwnProperty.call(instrumentChoices, value)) return value;
+    return instrumentSelectorEnabled ? "pianoNotation" : "";
+  }
 
-    function getGroupWorks() {
-      if (!tuneGroupSelectorEnabled) return works;
-      return works.filter(work => work.groupId === activeTuneGroupId);
+  function loadSavedInstrumentChoice() {
+    if (!instrumentSelectorEnabled) return "";
+    try {
+      return validInstrumentChoiceId(localStorage.getItem(instrumentSelectorStorageKey) || "");
+    } catch (error) {
+      console.warn("Unable to restore display/instrument selector setting.", error);
+      return "";
     }
+  }
 
-    function workForTargetId(targetId) {
-      if (!targetId) return null;
-      const normalizedId = String(targetId || "").replace(/^#/, "");
-      return works.find(work => "tune-" + work.key === normalizedId) || null;
+  function saveInstrumentChoice(choiceId) {
+    if (!instrumentSelectorEnabled) return;
+    try {
+      localStorage.setItem(instrumentSelectorStorageKey, validInstrumentChoiceId(choiceId));
+    } catch (error) {
+      console.warn("Unable to save display/instrument selector setting.", error);
     }
+  }
 
-    function ensureActiveSingleWorkKey() {
-      if (showMultipleTunes) return "";
-      const groupWorks = getGroupWorks();
-      if (activeSingleWorkKey && groupWorks.some(work => work.key === activeSingleWorkKey)) {
-        return activeSingleWorkKey;
-      }
-      activeSingleWorkKey = groupWorks.length ? groupWorks[0].key : "";
+  function updateABCTranscriptionToolsLinks(choiceId) {
+    document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
+      link.href = "#";
+      link.hidden = false;
+      link.removeAttribute("aria-disabled");
+    });
+  }
+
+  function setInstrumentWorkingBannerVisible(visible) {
+    const overlay = document.getElementById("instrument-working-overlay");
+    if (!overlay) return;
+    overlay.hidden = !visible;
+  }
+
+  function waitForWorkingBannerPaint() {
+    return new Promise(resolve => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }
+
+  function validTuneGroupId(value) {
+    if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+    if (value && tuneGroups.some(group => group.id === value)) return value;
+    return firstTuneGroupId;
+  }
+
+  function tuneGroupName(groupId) {
+    const validGroupId = validTuneGroupId(groupId);
+    const group = tuneGroups.find(item => item.id === validGroupId);
+    return group && group.name ? group.name : "Table of Contents";
+  }
+
+  function updateTableOfContentsTitle(groupId) {
+    const title = document.getElementById("toc-title");
+    if (!title) return;
+    title.textContent = tuneGroupSelectorEnabled ? tuneGroupName(groupId) : "Table of Contents";
+  }
+
+  function loadSavedTuneGroup() {
+    if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+    try {
+      return validTuneGroupId(localStorage.getItem(tuneGroupStorageKey) || "");
+    } catch (error) {
+      console.warn("Unable to restore tune group selector setting.", error);
+      return firstTuneGroupId;
+    }
+  }
+
+  function saveTuneGroup(groupId) {
+    if (!tuneGroupSelectorEnabled) return;
+    try {
+      localStorage.setItem(tuneGroupStorageKey, validTuneGroupId(groupId));
+    } catch (error) {
+      console.warn("Unable to save tune group selector setting.", error);
+    }
+  }
+
+  function clearWorkRender(work) {
+    const previousController = controllers.get(work.key);
+    if (previousController && typeof previousController.pause === "function") previousController.pause();
+    controllers.delete(work.key);
+
+    const paper = document.getElementById(work.key + "-paper");
+    const audioElement = document.getElementById(work.key + "-audio");
+    const status = document.getElementById(work.key + "-status");
+    const flattenPartsNote = document.getElementById(work.key + "-flatten-parts-note");
+
+    if (paper) {
+      paper.innerHTML = "";
+      paper.onclick = null;
+      paper.onkeydown = null;
+      paper.removeAttribute("tabindex");
+      paper.removeAttribute("title");
+    }
+    if (audioElement) audioElement.innerHTML = "";
+    if (flattenPartsNote) flattenPartsNote.hidden = true;
+    if (status) {
+      status.classList.remove("error");
+      status.textContent = "";
+    }
+  }
+
+  let activeSingleWorkKey = "";
+  let visibleSingleWorkKey = "";
+
+  function getGroupWorks() {
+    if (!tuneGroupSelectorEnabled) return works;
+    return works.filter(work => work.groupId === activeTuneGroupId);
+  }
+
+  function workForTargetId(targetId) {
+    if (!targetId) return null;
+    const normalizedId = String(targetId || "").replace(/^#/, "");
+    return works.find(work => "tune-" + work.key === normalizedId) || null;
+  }
+
+  function ensureActiveSingleWorkKey() {
+    if (showMultipleTunes) return "";
+    const groupWorks = getGroupWorks();
+    if (activeSingleWorkKey && groupWorks.some(work => work.key === activeSingleWorkKey)) {
       return activeSingleWorkKey;
     }
+    activeSingleWorkKey = groupWorks.length ? groupWorks[0].key : "";
+    return activeSingleWorkKey;
+  }
 
-    function applyContentVisibility() {
-      if (showMultipleTunes) {
-        document.querySelectorAll("[data-group-panel='true'], [data-group-divider='true']").forEach(element => {
-          element.hidden = tuneGroupSelectorEnabled && element.dataset.group !== activeTuneGroupId;
-        });
-
-        works.forEach(work => {
-          if (tuneGroupSelectorEnabled && work.groupId !== activeTuneGroupId) clearWorkRender(work);
-        });
-        return;
-      }
-
-      const activeKey = ensureActiveSingleWorkKey();
-      if (!visibleSingleWorkKey || !works.some(work => work.key === visibleSingleWorkKey)) {
-        visibleSingleWorkKey = activeKey;
-      }
-
-      document.querySelectorAll("[data-group-divider='true']").forEach(element => {
-        element.hidden = true;
-      });
-
-      document.querySelectorAll("article.score-panel[data-group-panel='true']").forEach(panel => {
-        const key = panel.dataset.key || "";
-        panel.hidden = !key || (key !== activeKey && key !== visibleSingleWorkKey);
+  function applyContentVisibility() {
+    if (showMultipleTunes) {
+      document.querySelectorAll("[data-group-panel='true'], [data-group-divider='true']").forEach(element => {
+        element.hidden = tuneGroupSelectorEnabled && element.dataset.group !== activeTuneGroupId;
       });
 
       works.forEach(work => {
-        if (work.key !== activeKey && work.key !== visibleSingleWorkKey) clearWorkRender(work);
+        if (tuneGroupSelectorEnabled && work.groupId !== activeTuneGroupId) clearWorkRender(work);
       });
+      return;
     }
 
-    function finishSingleTuneDisplaySwap() {
-      if (showMultipleTunes) return;
-      visibleSingleWorkKey = ensureActiveSingleWorkKey();
-
-      document.querySelectorAll("article.score-panel[data-group-panel='true']").forEach(panel => {
-        const key = panel.dataset.key || "";
-        panel.hidden = !key || key !== visibleSingleWorkKey;
-      });
-
-      works.forEach(work => {
-        if (work.key !== visibleSingleWorkKey) clearWorkRender(work);
-      });
+    const activeKey = ensureActiveSingleWorkKey();
+    if (!visibleSingleWorkKey || !works.some(work => work.key === visibleSingleWorkKey)) {
+      visibleSingleWorkKey = activeKey;
     }
 
-    function selectSingleWorkForTargetId(targetId) {
-      if (showMultipleTunes) return false;
-      const work = workForTargetId(targetId);
-      if (!work) return false;
-      activeSingleWorkKey = work.key;
-      return true;
+    document.querySelectorAll("[data-group-divider='true']").forEach(element => {
+      element.hidden = true;
+    });
+
+    document.querySelectorAll("article.score-panel[data-group-panel='true']").forEach(panel => {
+      const key = panel.dataset.key || "";
+      panel.hidden = !key || (key !== activeKey && key !== visibleSingleWorkKey);
+    });
+
+    works.forEach(work => {
+      if (work.key !== activeKey && work.key !== visibleSingleWorkKey) clearWorkRender(work);
+    });
+  }
+
+  function finishSingleTuneDisplaySwap() {
+    if (showMultipleTunes) return;
+    visibleSingleWorkKey = ensureActiveSingleWorkKey();
+
+    document.querySelectorAll("article.score-panel[data-group-panel='true']").forEach(panel => {
+      const key = panel.dataset.key || "";
+      panel.hidden = !key || key !== visibleSingleWorkKey;
+    });
+
+    works.forEach(work => {
+      if (work.key !== visibleSingleWorkKey) clearWorkRender(work);
+    });
+  }
+
+  function selectSingleWorkForTargetId(targetId) {
+    if (showMultipleTunes) return false;
+    const work = workForTargetId(targetId);
+    if (!work) return false;
+    activeSingleWorkKey = work.key;
+    return true;
+  }
+
+  function isCurrentSingleWorkTargetId(targetId) {
+    if (showMultipleTunes) return true;
+    const work = workForTargetId(targetId);
+    if (!work) return false;
+    if (work.key !== activeSingleWorkKey) return false;
+    return !tuneGroupSelectorEnabled || work.groupId === activeTuneGroupId;
+  }
+
+  function getActiveWorks() {
+    const groupWorks = getGroupWorks();
+    if (showMultipleTunes) return groupWorks;
+
+    const activeKey = ensureActiveSingleWorkKey();
+    return groupWorks.filter(work => work.key === activeKey);
+  }
+
+  function currentInstrumentChoiceId() {
+    const selector = document.getElementById("site-instrument-selector");
+    return validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
+  }
+
+  function applyTuneGroup(groupId) {
+    activeTuneGroupId = validTuneGroupId(groupId);
+    updateTableOfContentsTitle(activeTuneGroupId);
+    applyContentVisibility();
+    applyTocFilter();
+  }
+
+  function initializeTuneGroupSelector(preferredGroupId) {
+    if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+
+    const selector = document.getElementById("site-tune-group-selector");
+    const savedGroupId = validTuneGroupId(preferredGroupId || loadSavedTuneGroup());
+    activeTuneGroupId = savedGroupId;
+    if (preferredGroupId) saveTuneGroup(savedGroupId);
+    if (!selector) return savedGroupId;
+
+    selector.value = savedGroupId;
+    selector.addEventListener("change", () => {
+      const groupId = validTuneGroupId(selector.value);
+      const searchAllResults = document.getElementById("toc-search-all-results");
+      const searchAllList = document.getElementById("toc-search-all-list");
+      if (searchAllResults) searchAllResults.hidden = true;
+      if (searchAllList) {
+        searchAllList.innerHTML = "";
+        searchAllList.scrollTop = 0;
+      }
+      selector.value = groupId;
+      saveTuneGroup(groupId);
+      applyTuneGroup(groupId);
+      void renderAllWorks(currentInstrumentChoiceId());
+    });
+
+    return savedGroupId;
+  }
+
+  let renderAllWorksRequestId = 0;
+  let renderAllWorksQueue = Promise.resolve(true);
+
+  async function renderAllWorks(choiceId) {
+    const requestId = ++renderAllWorksRequestId;
+
+    if (!showMultipleTunes) {
+      renderAllWorksQueue = renderAllWorksQueue
+        .catch(() => false)
+        .then(() => renderAllWorksNow(choiceId, requestId));
+      return renderAllWorksQueue;
     }
 
-    function isCurrentSingleWorkTargetId(targetId) {
-      if (showMultipleTunes) return true;
-      const work = workForTargetId(targetId);
-      if (!work) return false;
-      if (work.key !== activeSingleWorkKey) return false;
-      return !tuneGroupSelectorEnabled || work.groupId === activeTuneGroupId;
-    }
+    return renderAllWorksNow(choiceId, requestId);
+  }
 
-    function getActiveWorks() {
-      const groupWorks = getGroupWorks();
-      if (showMultipleTunes) return groupWorks;
+  async function renderAllWorksNow(choiceId, requestId) {
+    const isStaleSingleTuneRender = () => !showMultipleTunes && requestId !== renderAllWorksRequestId;
+    if (isStaleSingleTuneRender()) return false;
 
-      const activeKey = ensureActiveSingleWorkKey();
-      return groupWorks.filter(work => work.key === activeKey);
-    }
+    const selector = document.getElementById("site-instrument-selector");
+    const groupSelector = document.getElementById("site-tune-group-selector");
+    const activeChoiceId = validInstrumentChoiceId(choiceId);
+    applyContentVisibility();
+    if (isStaleSingleTuneRender()) return false;
 
-    function currentInstrumentChoiceId() {
-      const selector = document.getElementById("site-instrument-selector");
-      return validInstrumentChoiceId(selector ? selector.value : loadSavedInstrumentChoice());
-    }
+    const activeWorks = getActiveWorks();
+    const showWorkingBanner = activeWorks.length > 0;
 
-    function applyTuneGroup(groupId) {
-      activeTuneGroupId = validTuneGroupId(groupId);
-      updateTableOfContentsTitle(activeTuneGroupId);
-      applyContentVisibility();
-      applyTocFilter();
-    }
+    if (selector) selector.disabled = true;
+    if (groupSelector) groupSelector.disabled = true;
 
-    function initializeTuneGroupSelector(preferredGroupId) {
-      if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
-
-      const selector = document.getElementById("site-tune-group-selector");
-      const savedGroupId = validTuneGroupId(preferredGroupId || loadSavedTuneGroup());
-      activeTuneGroupId = savedGroupId;
-      if (preferredGroupId) saveTuneGroup(savedGroupId);
-      if (!selector) return savedGroupId;
-
-      selector.value = savedGroupId;
-      selector.addEventListener("change", () => {
-        const groupId = validTuneGroupId(selector.value);
-        const searchAllResults = document.getElementById("toc-search-all-results");
-        const searchAllList = document.getElementById("toc-search-all-list");
-        if (searchAllResults) searchAllResults.hidden = true;
-        if (searchAllList) {
-          searchAllList.innerHTML = "";
-          searchAllList.scrollTop = 0;
-        }
-        selector.value = groupId;
-        saveTuneGroup(groupId);
-        applyTuneGroup(groupId);
-        void renderAllWorks(currentInstrumentChoiceId());
-      });
-
-      return savedGroupId;
-    }
-
-    let renderAllWorksRequestId = 0;
-    let renderAllWorksQueue = Promise.resolve(true);
-
-    async function renderAllWorks(choiceId) {
-      const requestId = ++renderAllWorksRequestId;
-
-      if (!showMultipleTunes) {
-        renderAllWorksQueue = renderAllWorksQueue
-          .catch(() => false)
-          .then(() => renderAllWorksNow(choiceId, requestId));
-        return renderAllWorksQueue;
+    try {
+      if (showWorkingBanner) {
+        setInstrumentWorkingBannerVisible(true);
+        await waitForWorkingBannerPaint();
       }
 
-      return renderAllWorksNow(choiceId, requestId);
-    }
-
-    async function renderAllWorksNow(choiceId, requestId) {
-      const isStaleSingleTuneRender = () => !showMultipleTunes && requestId !== renderAllWorksRequestId;
       if (isStaleSingleTuneRender()) return false;
 
-      const selector = document.getElementById("site-instrument-selector");
-      const groupSelector = document.getElementById("site-tune-group-selector");
-      const activeChoiceId = validInstrumentChoiceId(choiceId);
-      applyContentVisibility();
-      if (isStaleSingleTuneRender()) return false;
+      stopAllPlayback();
+      updateABCTranscriptionToolsLinks(activeChoiceId);
 
-      const activeWorks = getActiveWorks();
-      const showWorkingBanner = activeWorks.length > 0;
-
-      if (selector) selector.disabled = true;
-      if (groupSelector) groupSelector.disabled = true;
-
-      try {
-        if (showWorkingBanner) {
-          setInstrumentWorkingBannerVisible(true);
-          await waitForWorkingBannerPaint();
-        }
-
+      for (const work of activeWorks) {
         if (isStaleSingleTuneRender()) return false;
-
-        stopAllPlayback();
-        updateABCTranscriptionToolsLinks(activeChoiceId);
-
-        for (const work of activeWorks) {
-          if (isStaleSingleTuneRender()) return false;
-          await prepareWork(work, activeChoiceId);
-          if (isStaleSingleTuneRender()) return false;
-        }
-        finishSingleTuneDisplaySwap();
-        return true;
-      } finally {
-        if (selector) selector.disabled = false;
-        if (groupSelector) groupSelector.disabled = false;
-        if (showWorkingBanner) setInstrumentWorkingBannerVisible(false);
+        await prepareWork(work, activeChoiceId);
+        if (isStaleSingleTuneRender()) return false;
       }
+      finishSingleTuneDisplaySwap();
+      return true;
+    } finally {
+      if (selector) selector.disabled = false;
+      if (groupSelector) groupSelector.disabled = false;
+      if (showWorkingBanner) setInstrumentWorkingBannerVisible(false);
     }
+  }
 
-    function initializeInstrumentSelector() {
-      if (!instrumentSelectorEnabled) return "";
+  function initializeInstrumentSelector() {
+    if (!instrumentSelectorEnabled) return "";
 
-      const selector = document.getElementById("site-instrument-selector");
-      const savedChoiceId = loadSavedInstrumentChoice();
-      if (!selector) return savedChoiceId;
+    const selector = document.getElementById("site-instrument-selector");
+    const savedChoiceId = loadSavedInstrumentChoice();
+    if (!selector) return savedChoiceId;
 
-      selector.value = savedChoiceId;
-      selector.addEventListener("change", () => {
-        const choiceId = validInstrumentChoiceId(selector.value);
-        selector.value = choiceId;
-        saveInstrumentChoice(choiceId);
-        void renderAllWorks(choiceId);
-      });
+    selector.value = savedChoiceId;
+    selector.addEventListener("change", () => {
+      const choiceId = validInstrumentChoiceId(selector.value);
+      selector.value = choiceId;
+      saveInstrumentChoice(choiceId);
+      void renderAllWorks(choiceId);
+    });
 
-      return savedChoiceId;
+    return savedChoiceId;
+  }
+
+  async function initialize() {
+    if (!window.ABCJS || !ABCJS.eskinConfig) throw new Error("abcjs-eskin-portable did not load.");
+    ABCJS.eskinConfig.setIrishRolls(true);
+    ABCJS.eskinConfig.setCustomGMSounds(true);
+    ABCJS.eskinConfig.setPlayerDefaults(100, false);
+
+    const initialHashTargetId = getHashTargetId();
+    const initialHashGroupId = groupIdForTargetId(initialHashTargetId);
+    const savedTuneGroupId = initializeTuneGroupSelector(initialHashGroupId);
+    if (!showMultipleTunes && initialHashTargetId) selectSingleWorkForTargetId(initialHashTargetId);
+    applyTuneGroup(savedTuneGroupId);
+    installNavigation();
+
+    const savedInstrumentChoiceId = initializeInstrumentSelector();
+    const initialRenderCompleted = await renderAllWorks(savedInstrumentChoiceId);
+    if (
+      initialHashTargetId &&
+      initialRenderCompleted &&
+      !isSingleTuneSectionHeaderTarget(initialHashTargetId) &&
+      (showMultipleTunes || isCurrentSingleWorkTargetId(initialHashTargetId))
+    ) {
+      scrollToCurrentHashAfterLayout();
     }
+  }
 
-    async function initialize() {
-      if (!window.ABCJS || !ABCJS.eskinConfig) throw new Error("abcjs-eskin-portable did not load.");
-      ABCJS.eskinConfig.setIrishRolls(true);
-      ABCJS.eskinConfig.setCustomGMSounds(true);
-      ABCJS.eskinConfig.setPlayerDefaults(100, false);
-
-      const initialHashTargetId = getHashTargetId();
-      const initialHashGroupId = groupIdForTargetId(initialHashTargetId);
-      const savedTuneGroupId = initializeTuneGroupSelector(initialHashGroupId);
-      if (!showMultipleTunes && initialHashTargetId) selectSingleWorkForTargetId(initialHashTargetId);
-      applyTuneGroup(savedTuneGroupId);
-      installNavigation();
-
-      const savedInstrumentChoiceId = initializeInstrumentSelector();
-      const initialRenderCompleted = await renderAllWorks(savedInstrumentChoiceId);
-      if (
-        initialHashTargetId &&
-        initialRenderCompleted &&
-        !isSingleTuneSectionHeaderTarget(initialHashTargetId) &&
-        (showMultipleTunes || isCurrentSingleWorkTargetId(initialHashTargetId))
-      ) {
-        scrollToCurrentHashAfterLayout();
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      initialize().catch(error => {
-        console.error(error);
-        document.querySelectorAll(".status").forEach(element => {
-          element.classList.add("error");
-          element.textContent = error && error.message ? error.message : String(error);
-        });
+  window.addEventListener("DOMContentLoaded", () => {
+    initialize().catch(error => {
+      console.error(error);
+      document.querySelectorAll(".status").forEach(element => {
+        element.classList.add("error");
+        element.textContent = error && error.message ? error.message : String(error);
       });
     });
-  })();
-  <\/script>
+  });
+})();
+<\/script>
 </body>
 </html>`;
   }
