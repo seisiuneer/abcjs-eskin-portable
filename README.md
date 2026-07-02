@@ -6,12 +6,9 @@ Fork of abcjs with additional notation rendering and playback features based on 
 
 These standalone website demonstrations show features of the portable library that distinguish it from the standard official abcjs release channel:
 
-- [Traditional Irish tunes with standalone mandolin tablature](https://michaeleskin.com/abcjs-eskin-portable/mandolin-demo/mandolin.html) — Three traditional Irish tunes rendered as standalone mandolin tablature and played with a custom mandolin sound.
-- [Classical music demonstrations](https://michaeleskin.com/abcjs-eskin-portable/classical-demo/classical.html) — A collection of classical music pieces demonstrating multiple soundfonts, multiple instruments, and reverb.
-- [TV and movie theme demonstrations](https://michaeleskin.com/abcjs-eskin-portable/tv-movie-themes-demo/tv-movie-themes.html) — A collection of TV and movie theme songs demonstrating multiple soundfonts, multiple instruments, and reverb.
-- [abcjs-eskin-portable Test Application - Rendering, playback, reverb, swing, callbacks, tablature, caching, and failure diagnostics.](https://michaeleskin.com/abcjs-eskin-portable/integration-test/index.html) — Test application for various common ABC use cases.
-- [abcjs-eskin-portable Website Builder](https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html) — Open one or more ABC files, choose a visual style and notation format, then export a complete multi-tune website with embedded ABC, playback, and table-of-contents navigation.
-
+- [abcjs-eskin-portable Test Application - Rendering, playback, reverb, swing, callbacks, tablature, caching, and failure diagnostics.](https://michaeleskin.com/abcjs-eskin-portable/integration-test/index.html) — Test application for various common ABC use cases
+- [abcjs-eskin-portable Website Builder](https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html) — Open one or more ABC files, choose a visual style and notation format, then export a complete multi-tune website with embedded ABC, playback, and table-of-contents navigation
+- [Example websites](https://michaeleskin.com/tunebooks.html#websites_irish) — Multiple example tune websites created with the abcjs-eskin-portable Website Builder
 
 ## Scope and ABC Transcription Tools compatibility
 
