@@ -2610,6 +2610,28 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  async function shareTextFile(filename, text, mimeType = "text/plain;charset=utf-8") {
+    const file = new File(
+      [text],
+      filename,
+      { type: mimeType }
+    );
+    const shareData = {
+      files: [file]
+    };
+
+    if (
+      typeof navigator.share !== "function" ||
+      typeof navigator.canShare !== "function" ||
+      !navigator.canShare(shareData)
+    ) {
+      return false;
+    }
+
+    await navigator.share(shareData);
+    return true;
+  }
+
   function getOpenThemeBuilderModalRoot() {
     return document.getElementById("theme-builder-root");
   }
@@ -2693,6 +2715,23 @@
 
     const filename = await promptThemeFilename(validation.theme.name);
     if (!filename) return;
+
+    if (isIOSDevice()) {
+      try {
+        const text = formatCustomThemeAsBuiltInThemeSource(validation.theme) + "\n";
+        const shared = await shareTextFile(filename, text, "text/plain;charset=utf-8");
+        if (shared) {
+          setStatus(`Shared custom theme ${filename}.`);
+          return;
+        }
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          setStatus("Theme sharing canceled.");
+          return;
+        }
+        console.warn("Unable to use the iOS share sheet; using the browser download fallback.", error);
+      }
+    }
 
     downloadThemeFile(filename, validation.theme);
     setStatus(`Saved custom theme to ${filename}.`);
