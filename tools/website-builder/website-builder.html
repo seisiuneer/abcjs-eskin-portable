@@ -1929,6 +1929,10 @@
       settings.includeTableOfContents = "show";
     }
 
+    if (String(settings.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
+      settings.tableOfContentsBottomButtons = "disabled";
+    }
+
     return settings;
   }
 
@@ -3338,12 +3342,16 @@
     enforceLargeCollectionControls();
   }
 
-  function updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField) {
+  function updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField, tableOfContentsBottomButtonsField = null) {
     if (!tuneDisplayField || !tableOfContentsField) return;
 
     if (String(tuneDisplayField.value || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
         String(tableOfContentsField.value || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
       tableOfContentsField.value = "show";
+    }
+
+    if (String(tableOfContentsField.value || DEFAULT_SETTINGS.includeTableOfContents) === "hide" && tableOfContentsBottomButtonsField) {
+      tableOfContentsBottomButtonsField.value = "disabled";
     }
   }
 
@@ -3353,16 +3361,21 @@
 
     const tuneDisplayField = findWebsiteSettingsField(modalRoot, "tuneDisplay");
     const tableOfContentsField = findWebsiteSettingsField(modalRoot, "includeTableOfContents");
+    const tableOfContentsBottomButtonsField = findWebsiteSettingsField(modalRoot, "tableOfContentsBottomButtons");
     if (!tuneDisplayField || !tableOfContentsField || tuneDisplayField.dataset.tableOfContentsGuard === "true") return;
 
     const syncTableOfContentsOptions = () => {
-      updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField);
+      updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField, tableOfContentsBottomButtonsField);
     };
 
     tuneDisplayField.addEventListener("change", syncTableOfContentsOptions);
     tuneDisplayField.addEventListener("input", syncTableOfContentsOptions);
     tableOfContentsField.addEventListener("change", syncTableOfContentsOptions);
     tableOfContentsField.addEventListener("input", syncTableOfContentsOptions);
+    if (tableOfContentsBottomButtonsField) {
+      tableOfContentsBottomButtonsField.addEventListener("change", syncTableOfContentsOptions);
+      tableOfContentsBottomButtonsField.addEventListener("input", syncTableOfContentsOptions);
+    }
     tuneDisplayField.dataset.tableOfContentsGuard = "true";
     syncTableOfContentsOptions();
   }
@@ -5193,7 +5206,7 @@
                 <li><b>Unlimited</b> disables batch splitting while still allowing the selected grouping mode to create its main groups.</li>
               </ul>
             </li><li id="instructions-setting-back-to-tune-top-bottom-button"><b>Add back to top-of-tune button at bottom of tunes</b> adds an extra <b>Top of Tune</b> button below each tune. Clicking the button stops playback, hides all play cursors, and returns to the top of the tune. <b>Disabled</b> is the default.</li>
-            <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Table of contents buttons also below tunes</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel.  <b>Disabled</b> is the default.</li>
+            <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Table of contents buttons also below tunes</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel. If <b>Include table of contents</b> is set to <b>Disabled</b>, this setting is automatically forced to <b>Disabled</b>. <b>Disabled</b> is the default.</li>
             <li id="instructions-setting-cursor-autoscroll-guard-band"><b>Playback autoscroll view ahead</b> controls how much upcoming music the generated website tries to keep visible below the playback cursor while the music autoscrolls.
               <ul>
                 <li><b>Small</b> keeps the cursor visible with a compact view-ahead area.</li>
