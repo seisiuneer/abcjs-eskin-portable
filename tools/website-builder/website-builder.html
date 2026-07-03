@@ -607,7 +607,8 @@
 
     .toolbar {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      align-items: center;
       gap: 18px;
       padding: 15px;
       border-radius: 10px;
@@ -653,6 +654,14 @@
 
     #settings-button {
       margin-left: auto;
+      margin-right: auto;
+      white-space: nowrap;
+    }
+
+    #settings-button:hover,
+    #settings-button:focus-visible {
+      background: #d7e8dc;
+      outline: none;
     }
 
     .instructions-modal-content {
@@ -949,13 +958,7 @@
       background: #eef2ef;
     }
 
-    @media (max-width: 1200px) {
-      #settings-button {
-        margin-left: 0;
-      }
-    }
-
-    @media (min-width: 761px) and (max-width: 1200px) {
+    @media (min-width: 761px) and (max-width: 1400px) {
       .toolbar {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -970,14 +973,38 @@
         white-space: normal;
       }
 
-      #settings-button {
+      .toolbar label[for="abc-files"],
+      #save-button,
+      #load-project-button,
+      #save-project-button,
+      #settings-button,
+      #instructions-button {
         margin-left: 0;
+        margin-right: 0;
+        grid-column: auto;
+        justify-self: stretch;
       }
     }
 
     @media (max-width: 760px) {
       .summary { grid-template-columns: repeat(2, 1fr); }
-      .toolbar { display: grid; }
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 14px;
+      }
+      .toolbar label[for="abc-files"],
+      #save-button,
+      #load-project-button,
+      #save-project-button,
+      #settings-button,
+      #instructions-button {
+        margin-left: 0;
+        margin-right: 0;
+        grid-column: auto;
+        justify-self: stretch;
+      }
       .toolbar .instructions-button { margin-left: 0; }
       .button { width: 100%; }
       .instructions-scroll-area {
@@ -1004,7 +1031,7 @@
       <button id="save-button" class="button" type="button" disabled>Build and Save Website</button>
       <button id="load-project-button" class="button" type="button">Load Project</button>
       <button id="save-project-button" class="button" type="button" disabled>Save Project</button>
-      <button id="settings-button" class="button secondary" type="button">Settings</button>
+      <button id="settings-button" class="button secondary" type="button">Website Settings</button>
       <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
     </div>
 
@@ -5073,7 +5100,7 @@
 
           <h3 id="instructions-configure">3. Configure the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <p>On the top toolbar, <b>Settings</b> is grouped just to the left of <b>Instructions</b>. Click <b>Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
+          <p>Click <b>Website Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
           <div class="instructions-note">
             <b>Configure website topics</b>
             <ol style="margin-bottom:0;">
@@ -5299,7 +5326,7 @@
             <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog, including by drag and drop onto the settings dialog, does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
           </p>
           <ul>
-            <li>Use <b>Manage Settings</b> &gt; <b>Save Settings</b> to save the current settings from the open Settings dialog to a reusable settings <code>.txt</code> file. On iPhone and iPad, the file is offered through the iOS share sheet.</li>
+            <li>Use <b>Manage Settings</b> &gt; <b>Save Settings</b> to save the current settings from the open Website Settings dialog to a reusable settings <code>.txt</code> file. On iPhone and iPad, the file is offered through the iOS share sheet.</li>
             <li>If a built-in theme is selected, the saved settings file contains only the website settings.</li>
             <li>If <b>Custom</b> is selected and a custom theme is loaded, the saved settings file includes both the website settings and the custom theme data needed to use that theme later.</li>
             <li>If <b>Custom</b> is selected but no custom theme is loaded, the settings file is not saved and the tool displays a warning.</li>
