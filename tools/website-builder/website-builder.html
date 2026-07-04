@@ -1067,7 +1067,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.42";
+  const WEBSITE_BUILDER_VERSION = "1.1.43";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1205,6 +1205,12 @@
     { id: "2", name: "2" },
     { id: "3", name: "3" },
     { id: "4", name: "4" }
+  ];
+
+  const TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS = [
+    { id: "small", name: "Small" },
+    { id: "medium", name: "Medium" },
+    { id: "large", name: "Large" }
   ];
 
   const TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS = [
@@ -1882,6 +1888,7 @@
     showTuneDividers: "show",
     includeTableOfContents: "showSearch",
     tableOfContentsMaxColumns: "4",
+    tableOfContentsGapSize: "small",
     injectSoundSettings: true,
     soundfont: "fatboy",
     melodyProgram: "0",
@@ -2000,6 +2007,10 @@
 
     if (!optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS).has(String(normalized.tableOfContentsMaxColumns || ""))) {
       normalized.tableOfContentsMaxColumns = DEFAULT_SETTINGS.tableOfContentsMaxColumns;
+    }
+
+    if (!optionIds(TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS).has(String(normalized.tableOfContentsGapSize || ""))) {
+      normalized.tableOfContentsGapSize = DEFAULT_SETTINGS.tableOfContentsGapSize;
     }
 
     if (!optionIds(TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS).has(String(normalized.tableOfContentsBottomButtons || ""))) {
@@ -3498,12 +3509,13 @@
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
         "includeTableOfContents", "tableOfContentsMaxColumns", "tuneNumbers",
-        "includeSectionHeaderNumbers",
+        "tableOfContentsGapSize",
         "tuneOrder", "tuneDisplay",
         "instrumentSelector", "abcToolsLinks",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "backToTuneTopBottomButton", "tableOfContentsBottomButtons",
-        "cursorAutoscrollGuardBand", "showTuneDividers", "showStringInstrumentTablatureNames",
+        "cursorAutoscrollGuardBand", "showTuneDividers", "includeSectionHeaderNumbers",
+        "showStringInstrumentTablatureNames",
         "titleArticleReverser", "deploymentTarget"
       ],
       website_settings_playback_inject: [
@@ -3536,7 +3548,7 @@
       });
     });
 
-    if (moved < 36) return false;
+    if (moved < 37) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3590,6 +3602,7 @@
     bodyWidth: "instructions-setting-body-width",
     includeTableOfContents: "instructions-setting-include-table-of-contents",
     tableOfContentsMaxColumns: "instructions-setting-table-of-contents-max-columns",
+    tableOfContentsGapSize: "instructions-setting-table-of-contents-gap-size",
     showTuneDividers: "instructions-setting-show-tune-dividers",
     tuneNumbers: "instructions-setting-tune-numbers",
     includeSectionHeaderNumbers: "instructions-setting-include-section-header-numbers",
@@ -3805,6 +3818,7 @@
       showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
       includeTableOfContents: optionIds(TABLE_OF_CONTENTS_OPTIONS),
       tableOfContentsMaxColumns: optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS),
+      tableOfContentsGapSize: optionIds(TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
@@ -4889,10 +4903,10 @@
         ]
       },
       {
-        name: "Include numbers on T:* style section headers",
-        id: "includeSectionHeaderNumbers",
+        name: "Table of contents gap size",
+        id: "tableOfContentsGapSize",
         type: "select",
-        options: HIDE_SHOW_OPTIONS
+        options: TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS
       },
       {
         name: "Tune order",
@@ -4951,6 +4965,12 @@
       {
         name: "Show decorative ornament between tunes",
         id: "showTuneDividers",
+        type: "select",
+        options: HIDE_SHOW_OPTIONS
+      },
+      {
+        name: "Include numbers on T:* style section headers",
+        id: "includeSectionHeaderNumbers",
         type: "select",
         options: HIDE_SHOW_OPTIONS
       },
@@ -5142,8 +5162,8 @@
             <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>
             <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>
             <li id="instructions-setting-include-tune-heading"><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>
+            <li id="instructions-setting-include-collection-intro">The <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
             <li id="instructions-setting-collection-intro"><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>
-            <li id="instructions-setting-include-collection-intro">The matching <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
           </ul>
 
           <p id="instructions-configure-style-display"><b>Style &amp; Options</b></p>
@@ -5188,10 +5208,11 @@
               <p>The generated website still uses responsive CSS for tablets and phones. For example, a four-column Table of Contents steps down to fewer columns as the screen narrows, and all multi-column choices eventually become one column on phone-width screens.</p>
             </li>
             <li id="instructions-setting-tune-numbers"><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
-            <li id="instructions-setting-include-section-header-numbers"><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback.
+            <li id="instructions-setting-table-of-contents-gap-size"><b>Table of contents gap size</b> controls the spacing between tune entries in the generated website Table of Contents.
               <ul>
-                <li><b>Hide</b> is the default. Section headers do not show numbers and do not advance the numbering count.</li>
-                <li><b>Show</b> numbers section headers using the same count as any other items currently configured to show numbers.</li>
+                <li><b>Small</b> is the default and uses a <code>12px</code> gap.</li>
+                <li><b>Medium</b> uses an <code>18px</code> gap.</li>
+                <li><b>Large</b> uses a <code>24px</code> gap.</li>
               </ul>
             </li>
             <li id="instructions-setting-tune-order"><b>Tune order</b> controls the order used inside generated website groups.
@@ -5274,6 +5295,12 @@
                 <li><b>Show</b> is the default and displays the selected theme ornament between tunes and above the footer.</li>
               </ul>
             </li>
+            <li id="instructions-setting-include-section-header-numbers"><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback.
+              <ul>
+                <li><b>Hide</b> is the default. Section headers do not show numbers and do not advance the numbering count.</li>
+                <li><b>Show</b> numbers section headers using the same count as any other items currently configured to show numbers.</li>
+              </ul>
+            </li>
             <li id="instructions-setting-string-instrument-tablature-names"><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation.
               <ul>
                 <li><b>Hide</b> is the default and hides the stringed-instrument tablature name labels.</li>
@@ -5304,8 +5331,8 @@
           <ul>
             <li id="instructions-setting-inject-sound-settings">Enable <b>Inject soundfont and MIDI settings</b> to replace the corresponding sound
                 directives in every tune with the selected values. This is also enabled automatically in the exported website whenever <b>Display/Instrument selector dropdown</b> is set to <b>Show</b> or <b>Show (add Bass & Chords Only)</b>.</li>
-            <li id="instructions-setting-soundfont"><b>Soundfont</b> selects the soundfont collection used by the injected playback settings.</li>
             <li id="instructions-setting-melody-program"><b>Melody instrument</b> selects the main MIDI program used for tune melody playback. When the Display/Instrument selector is shown, the selector's first choice uses this selected melody instrument and injects that same MIDI program for playback.</li>
+            <li id="instructions-setting-soundfont"><b>Soundfont</b> selects the soundfont collection used by the injected playback settings.</li>
             <li id="instructions-setting-bass-program"><b>Bass instrument</b> selects the MIDI program used for generated bass accompaniment. Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>
             <li id="instructions-setting-bass-volume"><b>Bass volume (0–127)</b> selects the injected bass accompaniment volume.</li>
             <li id="instructions-setting-chord-program"><b>Chord instrument</b> selects the MIDI program used for generated chord accompaniment. Selecting <b>Mute</b> writes <code>mute</code> for that MIDI program.</li>
@@ -5572,7 +5599,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the TOC panel, optional search field, and tune-link grid:</p>
           <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-search-all-button</code>, <code>.toc-search-all-results</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
-          <p>Change TOC <code>padding</code> for a roomier or more compact card. Use the <b>Maximum table of contents columns</b> setting to choose the normal maximum column count before exporting. For manual CSS edits after export, change the documented <code>.toc-links</code> rule and its related media queries together so the responsive tablet and phone behavior stays intact.</p>
+          <p>Change TOC <code>padding</code> for a roomier or more compact card. Use the <b>Maximum table of contents columns</b> setting to choose the normal maximum column count and the <b>Table of contents gap size</b> setting to choose the spacing between TOC entries before exporting. For manual CSS edits after export, change the documented <code>.toc-links</code> rule and its related media queries together so the responsive tablet and phone behavior stays intact.</p>
 
           <p id="developer-card-spacing"><b>Card spacing</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -8165,10 +8192,17 @@ fiddle: {
     return optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS).has(value) ? value : DEFAULT_SETTINGS.tableOfContentsMaxColumns;
   }
 
+  function tableOfContentsGapPixels(settings) {
+    const value = String((settings && settings.tableOfContentsGapSize) || DEFAULT_SETTINGS.tableOfContentsGapSize || "small");
+    if (value === "medium") return 18;
+    if (value === "large") return 24;
+    return 12;
+  }
+
   function tableOfContentsGridCss(settings) {
     const maxColumns = Number(maxTableOfContentsColumnsValue(settings)) || 4;
     const baseColumns = maxColumns <= 1 ? "1fr" : `repeat(${maxColumns},minmax(0,1fr))`;
-    const rules = [`.toc-links { display:grid; grid-template-columns:${baseColumns}; gap:12px; }`];
+    const rules = [`.toc-links { display:grid; grid-template-columns:${baseColumns}; gap:${tableOfContentsGapPixels(settings)}px; }`];
 
     if (maxColumns >= 4) {
       rules.push(`@media (max-width:1100px) {\n      .toc-links { grid-template-columns:repeat(3,minmax(0,1fr)); }\n    }`);
