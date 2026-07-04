@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.0";
+  const WEBSITE_BUILDER_VERSION = "1.2.1";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -4335,11 +4335,14 @@
     } catch (error) {
       console.warn("Unable to load website settings file.", error);
       await DayPilot.Modal.alert(
-        "The selected settings file could not be loaded.<br><br>" +
-        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-        { title: "Invalid Settings File", okText: "OK" }
+        '<div style="text-align:center;line-height:1.45;max-width:680px;margin:0 auto;">' +
+          'The selected file does not contain valid <b>Website Builder</b> settings.<br><br>' +
+          'You may have selected a custom theme file instead.<br><br>' +
+          'Please choose a <b>Website Builder settings</b> file or project file.' +
+        '</div>',
+        { title: "Unable to Load Settings", okText: "OK", top: 150 }
       );
-      setStatus("The selected settings file could not be loaded.", true);
+      setStatus("The selected file does not contain valid Website Builder settings.", true);
       return false;
     }
   }
@@ -4599,13 +4602,16 @@
 
       if (showAlert && window.DayPilot && DayPilot.Modal) {
         await DayPilot.Modal.alert(
-          "The selected custom theme file could not be loaded.<br><br>" +
-          escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-          { title: "Invalid Custom Theme File", okText: "OK" }
+          '<div style="text-align:center;line-height:1.45;max-width:680px;margin:0 auto;">' +
+            'This does not appear to be a valid <b>Website Builder custom theme file</b>.<br><br>' +
+            'You may have selected a project file or settings file instead.<br><br>' +
+            'Please choose a custom theme file saved <br/>from the <b>abcjs-eskin Website Theme Builder</b>.' +
+          '</div>',
+          { title: "Unable to Load Custom Theme", okText: "OK", top: 150 }
         );
       }
 
-      setStatus("The selected custom theme file could not be loaded.", true);
+      setStatus("The selected file is not a valid Website Builder custom theme file.", true);
       return false;
     }
   }
@@ -11483,12 +11489,15 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       console.warn("Unable to load project file.", error);
       if (window.DayPilot && DayPilot.Modal) {
         await DayPilot.Modal.alert(
-          "The selected project file could not be loaded.<br><br>" +
-          escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-          { title: "Invalid Project File", okText: "OK", top: 150 }
+          '<div style="text-align:center;line-height:1.45;max-width:680px;margin:0 auto;">' +
+            'This does not appear to be a valid <b>Website Builder project file</b>.<br><br>' +
+            'You may have selected a settings file or custom theme file instead.<br><br>' +
+            'Please choose a project file previously saved with <b>Save Project</b>.' +
+          '</div>',
+          { title: "Unable to Load Project", okText: "OK", top: 150 }
         );
       }
-      setStatus("The selected project file could not be loaded.", true);
+      setStatus("The selected file is not a valid Website Builder project file.", true);
     }
   }
 
