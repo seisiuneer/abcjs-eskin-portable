@@ -1210,7 +1210,9 @@
   const TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS = [
     { id: "small", name: "Small" },
     { id: "medium", name: "Medium" },
-    { id: "large", name: "Large" }
+    { id: "large", name: "Large" },
+    { id: "larger", name: "Larger" },
+    { id: "extraLarge", name: "Extra Large" }
   ];
 
   const TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS = [
@@ -5211,8 +5213,10 @@
             <li id="instructions-setting-table-of-contents-gap-size"><b>Table of contents gap size</b> controls the spacing between tune entries in the generated website Table of Contents.
               <ul>
                 <li><b>Small</b> is the default and uses a <code>12px</code> gap.</li>
-                <li><b>Medium</b> uses an <code>18px</code> gap.</li>
-                <li><b>Large</b> uses a <code>24px</code> gap.</li>
+                <li><b>Medium</b> uses a <code>15px</code> gap.</li>
+                <li><b>Large</b> uses an <code>18px</code> gap.</li>
+                <li><b>Larger</b> uses a <code>21px</code> gap.</li>
+                <li><b>Extra Large</b> uses a <code>24px</code> gap.</li>
               </ul>
             </li>
             <li id="instructions-setting-tune-order"><b>Tune order</b> controls the order used inside generated website groups.
@@ -8194,8 +8198,10 @@ fiddle: {
 
   function tableOfContentsGapPixels(settings) {
     const value = String((settings && settings.tableOfContentsGapSize) || DEFAULT_SETTINGS.tableOfContentsGapSize || "small");
-    if (value === "medium") return 18;
-    if (value === "large") return 24;
+    if (value === "medium") return 15;
+    if (value === "large") return 18;
+    if (value === "larger") return 21;
+    if (value === "extraLarge") return 24;
     return 12;
   }
 
