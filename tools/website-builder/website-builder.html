@@ -5212,11 +5212,11 @@
             <li id="instructions-setting-tune-numbers"><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li id="instructions-setting-table-of-contents-gap-size"><b>Table of contents gap size</b> controls the spacing between tune entries in the generated website Table of Contents.
               <ul>
-                <li><b>Small</b> uses a <code>12px</code> gap.</li>
-                <li><b>Medium</b> is the default and uses a <code>15px</code> gap.</li>
-                <li><b>Large</b> uses an <code>18px</code> gap.</li>
-                <li><b>Larger</b> uses a <code>21px</code> gap.</li>
-                <li><b>Extra Large</b> uses a <code>24px</code> gap.</li>
+                <li><b>Small</b> uses a <code>10px</code> gap.</li>
+                <li><b>Medium</b> is the default and uses a <code>12px</code> gap.</li>
+                <li><b>Large</b> uses a <code>15px</code> gap.</li>
+                <li><b>Larger</b> uses a <code>18px</code> gap.</li>
+                <li><b>Extra Large</b> uses a <code>21px</code> gap.</li>
               </ul>
             </li>
             <li id="instructions-setting-tune-order"><b>Tune order</b> controls the order used inside generated website groups.
@@ -8198,11 +8198,11 @@ fiddle: {
 
   function tableOfContentsGapPixels(settings) {
     const value = String((settings && settings.tableOfContentsGapSize) || DEFAULT_SETTINGS.tableOfContentsGapSize || "medium");
-    if (value === "medium") return 15;
-    if (value === "large") return 18;
-    if (value === "larger") return 21;
-    if (value === "extraLarge") return 24;
-    return 12;
+    if (value === "medium") return 12;
+    if (value === "large") return 15;
+    if (value === "larger") return 18;
+    if (value === "extraLarge") return 21;
+    return 10;
   }
 
   function tableOfContentsGridCss(settings) {
