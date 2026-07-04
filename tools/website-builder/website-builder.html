@@ -342,6 +342,28 @@
       accent-color: var(--green);
     }
 
+    .website-settings-tab-panel select {
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      padding-right: 34px !important;
+      background-color: #fff !important;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #17241c 50%),
+        linear-gradient(135deg, #17241c 50%, transparent 50%) !important;
+      background-position:
+        calc(100% - 15px) 50%,
+        calc(100% - 10px) 50% !important;
+      background-size: 5px 5px, 5px 5px !important;
+      background-repeat: no-repeat !important;
+      box-shadow: none !important;
+      line-height: 1.4 !important;
+    }
+
+    .website-settings-tab-panel select::-ms-expand {
+      display: none;
+    }
+
     .website-settings-tab-panel input[type="text"],
     .website-settings-tab-panel textarea {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
@@ -614,6 +636,12 @@
       border-radius: 10px;
     }
 
+    @media (min-width: 1401px) {
+      .toolbar {
+        justify-content: space-between;
+      }
+    }
+
     #save-button {
       background: #174a8b;
     }
@@ -633,12 +661,14 @@
     }
 
     #save-project-button {
-      background: #6b2f9b;
+      background: #1266c2;
+      border-color: #1266c2;
     }
 
     #save-project-button:hover,
     #save-project-button:focus-visible {
-      background: #54247e;
+      background: #0e829b;
+      border-color: #0e829b;
     }
 
     #instructions-button {
@@ -653,14 +683,25 @@
     }
 
     #settings-button {
-      margin-left: auto;
-      margin-right: auto;
       white-space: nowrap;
     }
 
     #settings-button:hover,
     #settings-button:focus-visible {
       background: #d7e8dc;
+      outline: none;
+    }
+
+    #preview-button {
+      color: #fff;
+      background: #6b2f9b;
+      border-color: #6b2f9b;
+    }
+
+    #preview-button:hover,
+    #preview-button:focus-visible {
+      background: #54247e;
+      border-color: #54247e;
       outline: none;
     }
 
@@ -792,7 +833,8 @@
     .button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 
     #save-button:disabled,
-    #save-project-button:disabled {
+    #save-project-button:disabled,
+    #preview-button:disabled {
       opacity: .22;
       filter: grayscale(.35) saturate(.65);
     }
@@ -978,6 +1020,7 @@
       #load-project-button,
       #save-project-button,
       #settings-button,
+      #preview-button,
       #instructions-button {
         margin-left: 0;
         margin-right: 0;
@@ -999,6 +1042,7 @@
       #load-project-button,
       #save-project-button,
       #settings-button,
+      #preview-button,
       #instructions-button {
         margin-left: 0;
         margin-right: 0;
@@ -1031,7 +1075,8 @@
       <button id="save-button" class="button" type="button" disabled>Build and Save Website</button>
       <button id="load-project-button" class="button" type="button">Load Project</button>
       <button id="save-project-button" class="button" type="button" disabled>Save Project</button>
-      <button id="settings-button" class="button secondary" type="button">Website Settings</button>
+      <button id="preview-button" class="button" type="button" disabled>Preview</button>
+      <button id="settings-button" class="button secondary" type="button">Settings</button>
       <button id="instructions-button" class="button secondary instructions-button" type="button">Instructions</button>
     </div>
 
@@ -1067,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.44";
+  const WEBSITE_BUILDER_VERSION = "1.2.0";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2188,6 +2233,7 @@
   const loadProjectButton = document.getElementById("load-project-button");
   const saveProjectButton = document.getElementById("save-project-button");
   const settingsButton = document.getElementById("settings-button");
+  const previewButton = document.getElementById("preview-button");
   const saveButton = document.getElementById("save-button");
   const clearButton = document.getElementById("clear-button");
   const instructionsButton = document.getElementById("instructions-button");
@@ -3113,6 +3159,7 @@
     document.getElementById("loaded-details").hidden = !hasTunes;
     saveButton.disabled = !hasTunes;
     saveProjectButton.disabled = !hasTunes;
+    previewButton.disabled = !hasTunes;
     clearButton.disabled = !hasTunes;
 
     state.settings = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
@@ -5077,6 +5124,7 @@
               <li><a href="#instructions-overview">Overview</a></li>
               <li><a href="#instructions-open-files">Load ABC files</a></li>
               <li><a href="#instructions-projects">Load and save projects</a></li>
+              <li><a href="#instructions-preview">Preview the website</a></li>
               <li><a href="#instructions-configure">Configure the website</a></li>
               <li><a href="#instructions-saved-settings">Saved settings</a></li>
               <li><a href="#instructions-build-save">Build and save the website</a></li>
@@ -5141,9 +5189,13 @@
             <li>Project files are separate from exported websites. Use <b>Build and Save Website</b> when you want the final generated website HTML file.</li>
           </ol>
 
-          <h3 id="instructions-configure">3. Configure the website</h3>
+          <h3 id="instructions-preview">3. Preview the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <p>Click <b>Website Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
+          <p>After loading at least one tune and applying all the settings for the website, click <b>Preview</b> to generate the website with the currently loaded ABC and applied settings and open it in a new browser tab.</p>
+
+          <h3 id="instructions-configure">4. Configure the website</h3>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p>Click <b>Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
           <div class="instructions-note">
             <b>Configure website topics</b>
             <ol style="margin-bottom:0;">
@@ -5380,14 +5432,14 @@
           </div>
 
 
-          <h3 id="instructions-saved-settings">4. Saved settings</h3>
+          <h3 id="instructions-saved-settings">5. Saved settings</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Website settings are stored in this browser using <code>localStorage</code> when
             <b>Apply</b> is clicked. Saving a settings file or loading a settings file into the dialog, including by drag and drop onto the settings dialog, does not update the browser's stored settings unless you click <b>Apply</b>. Stored settings (but not any loaded tunes) are restored automatically the next time the tool is opened.
           </p>
           <ul>
-            <li>Use <b>Manage Settings</b> &gt; <b>Save Settings</b> to save the current settings from the open Website Settings dialog to a reusable settings <code>.txt</code> file. On iPhone and iPad, the file is offered through the iOS share sheet.</li>
+            <li>Use <b>Manage Settings</b> &gt; <b>Save Settings</b> to save the current settings from the open Settings dialog to a reusable settings <code>.txt</code> file. On iPhone and iPad, the file is offered through the iOS share sheet.</li>
             <li>If a built-in theme is selected, the saved settings file contains only the website settings.</li>
             <li>If <b>Custom</b> is selected and a custom theme is loaded, the saved settings file includes both the website settings and the custom theme data needed to use that theme later.</li>
             <li>If <b>Custom</b> is selected but no custom theme is loaded, the settings file is not saved and the tool displays a warning.</li>
@@ -5396,9 +5448,10 @@
             <li>Dropping a standalone custom theme file onto the settings dialog saves the custom theme immediately, but does not change the selected website theme unless you choose <b>Custom</b> and click <b>Apply</b>.</li>
           </ul>
 
-          <h3 id="instructions-build-save">5. Build and save the website</h3>
+          <h3 id="instructions-build-save">6. Build and save the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ol>
+            <li>Optionally use <b>Preview</b> before saving to check the generated website in a new browser tab.</li>
             <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>
             <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only. Loading and applying a saved settings file resets this default filename from the loaded website title.</li>
             <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>
@@ -5424,7 +5477,7 @@
             website so the page can be moved or uploaded as a single HTML document.
           </div>
 
-          <h3 id="instructions-generated-site">6. Using the generated website</h3>
+          <h3 id="instructions-generated-site">7. Using the generated website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
             <li>If the Table of Contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
@@ -5437,7 +5490,7 @@
             <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Table of contents buttons also below tunes</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation. If <b>Add back to top-of-tune button at bottom of tunes</b> is enabled, the lower Top of Tune button also stops playback, hides all play cursors, and returns to the top of the current tune.</li>
           </ul>
 
-          <h3 id="instructions-clear">7. Clearing the current collection</h3>
+          <h3 id="instructions-clear">8. Clearing the current collection</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Click the small <b>Clear</b> button beside the <b>Loaded Tunes</b> label to remove all currently loaded files and tunes from the builder.
@@ -5445,7 +5498,7 @@
             This does not erase saved website settings.
           </p>
 
-          <h3 id="instructions-abctools">8. <b>ABC Transcription Tools</b> compatibility</h3>
+          <h3 id="instructions-abctools">9. <b>ABC Transcription Tools</b> compatibility</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,
@@ -5483,7 +5536,7 @@
             Other PDF-only annotations in that block, such as Table of Contents, index, QR-code, PDF-quality,
             and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
           </p>
-          <h3 id="instructions-theme-builder">9. abcjs-eskin Website Theme Builder</h3>
+          <h3 id="instructions-theme-builder">10. abcjs-eskin Website Theme Builder</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             The <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b>
@@ -5497,7 +5550,7 @@
             <li>Imported custom themes are saved in this browser immediately, even if you close the settings dialog without clicking <b>Apply</b>. Resetting all settings removes the imported custom theme.</li>
           </ul>
 
-          <h3 id="instructions-launching">10. Launching from other ABC tools</h3>
+          <h3 id="instructions-launching">11. Launching from other ABC tools</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             This <b>Website Builder</b> can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
@@ -5514,7 +5567,7 @@
             After the transfer, you can still use <b>Load ABC Files</b> to add additional ABC files to the collection before building the website.
           </div>
 
-          <h3 id="instructions-notes">11. Notes</h3>
+          <h3 id="instructions-notes">12. Notes</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
             <li>The exported website requires internet access to load the linked abcjs-eskin-portable
@@ -5530,7 +5583,7 @@
             <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>
           </ul>
 
-          <h3 id="instructions-developer-customization">12. Developer Customization</h3>
+          <h3 id="instructions-developer-customization">13. Developer Customization</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div class="instructions-note">
             <b>Developer Customization topics</b>
@@ -5805,7 +5858,7 @@ fiddle: {
           <p>The generated CSS also includes a <code>@media (prefers-reduced-motion: reduce)</code> rule for animated background themes. Leave that rule in place so users who request reduced motion do not get the background animation.</p>
 
           <hr style="margin-top:20px;">
-          <h3 id="instructions-tip-jars">13. Tip Jars</h3>
+          <h3 id="instructions-tip-jars">14. Tip Jars</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div style="text-align:left;margin-bottom:20px;">
             <p class="instructions-title">This tool was created by</p>
@@ -5824,7 +5877,7 @@ fiddle: {
             </div>
           </div>
           <hr>
-          <h3 id="instructions-source-code">14. Source Code on GitHub</h3>
+          <h3 id="instructions-source-code">15. Source Code on GitHub</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div style="text-align:left;margin-bottom:20px;">
             The source code for this tool is available on GitHub.
@@ -8293,7 +8346,7 @@ fiddle: {
     }).join("\n");
   }
 
-  function generateSite() {
+  function generateSite(previewMode = false) {
     const s = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
     const t = themeCss(s.theme);
     const controllerTextColor = readableTextForBackground(t.primary);
@@ -9851,6 +9904,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   const showMultipleTunes = ${JSON.stringify(showMultipleTunes)};
   const tuneGroups = ${JSON.stringify(tuneGroups)};
   const firstTuneGroupId = ${JSON.stringify(firstTuneGroupId)};
+  const previewMode = ${JSON.stringify(Boolean(previewMode))};
   const instrumentSelectorStorageKey = ${JSON.stringify(instrumentSelectorStorageKey)};
   const tuneGroupStorageKey = ${JSON.stringify(tuneGroupStorageKey)};
   let activeTuneGroupId = firstTuneGroupId;
@@ -10962,6 +11016,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
   function loadSavedInstrumentChoice() {
     if (!instrumentSelectorEnabled) return "";
+    if (previewMode) return validInstrumentChoiceId("");
     try {
       return validInstrumentChoiceId(localStorage.getItem(instrumentSelectorStorageKey) || "");
     } catch (error) {
@@ -10971,7 +11026,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   }
 
   function saveInstrumentChoice(choiceId) {
-    if (!instrumentSelectorEnabled) return;
+    if (!instrumentSelectorEnabled || previewMode) return;
     try {
       localStorage.setItem(instrumentSelectorStorageKey, validInstrumentChoiceId(choiceId));
     } catch (error) {
@@ -11018,7 +11073,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   }
 
   function loadSavedTuneGroup() {
-    if (!tuneGroupSelectorEnabled) return firstTuneGroupId;
+    if (!tuneGroupSelectorEnabled || previewMode) return firstTuneGroupId;
     try {
       return validTuneGroupId(localStorage.getItem(tuneGroupStorageKey) || "");
     } catch (error) {
@@ -11028,7 +11083,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   }
 
   function saveTuneGroup(groupId) {
-    if (!tuneGroupSelectorEnabled) return;
+    if (!tuneGroupSelectorEnabled || previewMode) return;
     try {
       localStorage.setItem(tuneGroupStorageKey, validTuneGroupId(groupId));
     } catch (error) {
@@ -11437,6 +11492,55 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     }
   }
 
+  async function previewSite() {
+    if (!state.tunes.length) {
+      setStatus("Load at least one ABC tune before previewing.", true);
+      return;
+    }
+
+    const previewWindow = window.open("", "_blank");
+    if (!previewWindow) {
+      setStatus("The preview tab could not be opened. Allow pop-ups for this site and try again.", true);
+      return;
+    }
+
+    try {
+      previewWindow.document.title = "Building preview...";
+      previewWindow.document.body.innerHTML =
+        '<p style="font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif;padding:24px;">Building website preview...</p>';
+
+      if (state.settings.theme === "custom" && !state.customTheme) {
+        previewWindow.close();
+        await showCustomThemeRequiredDialog();
+        setStatus("Load a custom theme before previewing a website with the Custom theme.", true);
+        return;
+      }
+
+      const shouldContinueWithMissingRhythms = await confirmBuildWithMissingRhythmTags(state.settings);
+      if (!shouldContinueWithMissingRhythms) {
+        previewWindow.close();
+        setStatus("Website preview canceled because some tunes are missing R: Rhythm tags.");
+        return;
+      }
+
+      const site = generateSite(true);
+      const previewBlob = new Blob([site], { type: "text/html;charset=utf-8" });
+      const previewUrl = URL.createObjectURL(previewBlob);
+
+      previewWindow.location.replace(previewUrl);
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 60000);
+      setStatus("Opened website preview in a new browser tab.");
+    } catch (error) {
+      try {
+        previewWindow.close();
+      } catch (closeError) {
+        console.warn("Unable to close the preview tab after a preview error.", closeError);
+      }
+      console.error(error);
+      setStatus(error && error.message ? error.message : String(error), true);
+    }
+  }
+
   async function saveSite() {
     if (!state.tunes.length) return;
 
@@ -11581,6 +11685,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
   loadProjectButton.addEventListener("click", () => void loadProjectFromFile());
   saveProjectButton.addEventListener("click", () => void saveProject());
+  previewButton.addEventListener("click", () => void previewSite());
   settingsButton.addEventListener("click", () => void openSettings());
   instructionsButton.addEventListener("click", () => void openInstructions());
   saveButton.addEventListener("click", () => void saveSite());
