@@ -5481,6 +5481,7 @@
               <li><a href="#developer-page-width">Page width</a></li>
               <li><a href="#developer-header-styling">Header styling</a></li>
               <li><a href="#developer-table-of-contents-styling">Table of Contents styling</a></li>
+              <li><a href="#developer-table-of-contents-three-columns">Changing the Table of Contents from 4 columns to 3 columns</a></li>
               <li><a href="#developer-card-spacing">Card spacing</a></li>
               <li><a href="#developer-section-header-styling">Section header styling</a></li>
               <li><a href="#developer-website-title">Website title</a></li>
@@ -5543,6 +5544,32 @@
           <p>Controls the TOC panel, optional search field, and tune-link grid:</p>
           <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-search-all-button</code>, <code>.toc-search-all-results</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
           <p>Change TOC <code>padding</code> for a roomier or more compact card. Change the <code>minmax(220px,1fr)</code> value in <code>.toc-links</code> to control how many TOC columns appear on wider screens.</p>
+
+          <p id="developer-table-of-contents-three-columns"><b>Changing the Table of Contents from a maximum of 4 columns to a maximum of 3 columns</b></p>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
+          <p>
+            Exported websites normally use a responsive CSS grid for the Table of Contents tune links. The default rule is:
+          </p>
+          <p><code>.toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }</code></p>
+          <p>
+            This keeps the Table of Contents responsive because the browser automatically chooses the number of columns that will fit. On wide pages this can allow up to four columns of tune links, while tablets and phones naturally drop to fewer columns.
+          </p>
+          <p>
+            To limit the Table of Contents to a maximum of three columns while preserving the same responsive tablet and phone behavior, edit the exported website HTML, search for <code>TOC link grid customization:</code>, and replace only the <code>.toc-links</code> rule with:
+          </p>
+          <p><code>.toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(max(220px,calc((100% - 24px) / 3)),1fr)); gap:12px; }</code></p>
+          <p>
+            The important part is <code>calc((100% - 24px) / 3)</code>. With the default <code>gap:12px</code>, three columns have two gaps between them, so <code>24px</code> is subtracted before dividing the remaining width by three. This prevents a fourth column from fitting on wide screens.
+          </p>
+          <p>
+            The <code>max(220px,...)</code> wrapper preserves the responsive behavior. When there is enough room, the columns are sized for a maximum of three across. When the screen becomes narrower, the browser still falls back automatically to two columns and then one column, instead of forcing three cramped columns on tablets and phones.
+          </p>
+          <p>
+            If you also change the TOC grid <code>gap</code>, update the subtraction value in the formula to match two gaps. For example, with <code>gap:16px</code>, use <code>calc((100% - 32px) / 3)</code>. With <code>gap:10px</code>, use <code>calc((100% - 20px) / 3)</code>.
+          </p>
+          <p>
+            Do not remove <code>auto-fit</code> or replace the rule with a fixed <code>repeat(3,1fr)</code> layout. A fixed three-column layout would stop the Table of Contents from resizing cleanly on tablets and phones.
+          </p>
 
           <p id="developer-card-spacing"><b>Card spacing</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
