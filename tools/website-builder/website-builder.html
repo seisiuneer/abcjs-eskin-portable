@@ -1067,7 +1067,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.1.43";
+  const WEBSITE_BUILDER_VERSION = "1.1.44";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -8223,6 +8223,76 @@ fiddle: {
     return rules.join("\n    ");
   }
 
+
+  function normalizeGeneratedCssIndentation(css, indent = "    ") {
+    const lines = String(css || "").replace(/\r\n?/g, "\n").split("\n");
+
+    while (lines.length && !lines[0].trim()) lines.shift();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+    if (!lines.length) return "";
+
+    let depth = 0;
+    let inComment = false;
+
+    function braceCounts(line) {
+      let opens = 0;
+      let closes = 0;
+      let quote = "";
+
+      for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+        const next = line[i + 1] || "";
+
+        if (inComment) {
+          if (char === "*" && next === "/") {
+            inComment = false;
+            i += 1;
+          }
+          continue;
+        }
+
+        if (quote) {
+          if (char === "\\") {
+            i += 1;
+            continue;
+          }
+          if (char === quote) quote = "";
+          continue;
+        }
+
+        if (char === "/" && next === "*") {
+          inComment = true;
+          i += 1;
+          continue;
+        }
+
+        if (char === "'" || char === '"') {
+          quote = char;
+          continue;
+        }
+
+        if (char === "{") opens += 1;
+        if (char === "}") closes += 1;
+      }
+
+      return { opens, closes };
+    }
+
+    return lines.map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return "";
+
+      const counts = braceCounts(trimmed);
+      const leadingCloses = (trimmed.match(/^}+/) || [""])[0].length;
+      const lineDepth = Math.max(0, depth - leadingCloses);
+      const formatted = indent + "  ".repeat(lineDepth) + trimmed;
+
+      depth = Math.max(0, depth + counts.opens - counts.closes);
+      return formatted;
+    }).join("\n");
+  }
+
   function generateSite() {
     const s = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
     const t = themeCss(s.theme);
@@ -8554,9 +8624,11 @@ fiddle: {
     const cursorAutoscrollGuardBand =
       cursorAutoscrollGuardBands[String(s.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand)] ||
       cursorAutoscrollGuardBands.medium;
-    const customThemeCss = embeddedDeployment
-      ? scopeCssBodyRulesForEmbeddedDeployment(t.customCss || "")
-      : (t.customCss || "");
+    const customThemeCss = normalizeGeneratedCssIndentation(
+      embeddedDeployment
+        ? scopeCssBodyRulesForEmbeddedDeployment(t.customCss || "")
+        : (t.customCss || "")
+    );
     const whistleTabCss = (s.displayMode === "whistleNotation" || includeInstrumentSelector)
       ? `${WHISTLE_TAB_FONT_CSS}
     .whistle { font-family:'TinWhistleFingering'; font-size:50px; }
@@ -9559,10 +9631,12 @@ fiddle: {
       /* Print pagination: avoid splitting tune and section-header cards across pages when possible. */
       .score-panel { break-inside:avoid; page-break-inside:avoid; }
     }
-    ${customThemeCss}
-${repeatButtonHighlightCss}
+
+${customThemeCss}
+    ${repeatButtonHighlightCss}
     ${whistleTabCss}
-${embeddedDeploymentCss}    .abc-tools-link {
+    ${embeddedDeploymentCss}    
+    .abc-tools-link {
       left:0;
       right:auto;
     }

@@ -774,7 +774,7 @@
       display: inline-block;
       margin-top: 4px;
       padding: 7px 12px;
-      border-radius: var(--theme-preview-radius, 6px);
+      border-radius: 0;
       font-weight: 750;
       text-decoration: none;
     }
@@ -1376,7 +1376,6 @@
         height: calc(100vh - 270px);
       }
     }
-
 
     /* Center the Website Settings modal buttons with a wider gap. */
     .modal_default_buttons,
@@ -2460,6 +2459,25 @@
       .trim();
   }
 
+  function normalizeGeneratedCssBlock(value) {
+    const lines = String(value || "")
+      .replace(/\r\n?/g, "\n")
+      .split("\n");
+
+    while (lines.length && !lines[0].trim()) lines.shift();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+    const indents = lines
+      .filter(line => line.trim())
+      .map(line => (line.match(/^\s*/) || [""])[0].length);
+
+    const commonIndent = indents.length ? Math.min(...indents) : 0;
+
+    return lines
+      .map(line => line.slice(Math.min(commonIndent, line.length)).replace(/\s+$/, ""))
+      .join("\n");
+  }
+
   function generatedBuiltInHeaderCssForTheme(theme) {
     const t = normalizeCustomTheme(theme);
     const rules = [];
@@ -2516,7 +2534,10 @@
     }`);
     }
 
-    const css = rules.join("\n").trim();
+    const css = rules
+      .map(normalizeGeneratedCssBlock)
+      .filter(Boolean)
+      .join("\n\n");
     return css
       ? [THEME_BUILDER_HEADER_CSS_BEGIN, css, THEME_BUILDER_HEADER_CSS_END].join("\n")
       : "";
@@ -4754,14 +4775,14 @@
           <li>Optionally click <b>Generate from Image</b> to create an image-based custom theme from a local PNG or JPEG image.</li>
           <li>Optionally click <b>Full Screen Preview</b> to open a larger simulated website preview in a new window.</li>
           <li>Optionally use <b>Sample Image Color</b> to sample exact colors from a local PNG or JPEG image.</li>
-          <li>Click <b>Save Theme File</b> to export the finished theme as a reusable text file.</li>
+          <li>Click <b>Save Theme File</b> to export the finished theme as a reusable text file. On iOS, the save operation opens the iOS Share sheet.</li>
           <li>Import the saved theme file into the main <b>abcjs-eskin Website Builder</b>, or manually add it to the <b>abcjs-eskin Website Builder</b> source code as a built-in theme.</li>
         </ol>
 
         <h3>Top buttons</h3>
         <ul>
           <li><b>Load Theme File</b> loads a previously saved Theme Builder theme file. The file should be the JavaScript object-literal format saved by this tool.</li>
-          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. This file can be imported by the main <b>abcjs-eskin Website Builder</b> and can also be pasted into the <b>abcjs-eskin Website Builder</b> source code by developers.</li>
+          <li><b>Save Theme File</b> saves the current custom theme as a reusable JavaScript object-literal text file. On iOS, the save operation opens the iOS Share sheet. This file can be imported by the main <b>abcjs-eskin Website Builder</b> and can also be pasted into the <b>abcjs-eskin Website Builder</b> source code by developers.</li>
           <li><b>Load Built-In Theme</b> copies the settings from a built-in theme into the Theme Builder as a starting point. This replaces the current working theme in the editor.</li>
           <li><b>Full Screen Preview</b> opens a new window with a larger simulated website preview, including preserved dynamic CSS, rendered tune images, and a <b>Return to the Theme Builder</b> button that closes the preview tab.</li>
           <li><b>Generate from Image</b> opens a PNG or JPEG image, analyzes its detected color palette in your browser, applies a new custom theme, and opens the same image in the color sampler for fine-tuning.</li>
@@ -4778,7 +4799,7 @@
         <ul>
           <li><b>Theme name</b> is the display name stored in the saved theme file. It is mainly for human reference in this tool. When you integrate the theme into the <b>abcjs-eskin Website Builder</b> source code, the public display name comes from the new entry you add to <code>THEME_OPTIONS</code>.</li>
           <li><b>Ornament character</b> sets the decorative character used for the decorative ornament between tunes in the generated <b>abcjs-eskin Website Builder</b> site. If header ornaments are enabled, the same character is also used at the left and right sides of the header title. Examples include <code>☘</code>, <code>✦</code>, <code>★</code>, or a simple text symbol.</li>
-          <li><b>Font stack</b> controls the main website font family used by the generated <b>abcjs-eskin Website Builder</b> page. It affects body text, headings, table-of-contents text, tune metadata, buttons, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
+          <li><b>Font stack</b> controls the main website font family used by the generated <b>abcjs-eskin Website Builder</b> page. It affects body text, headings, table-of-contents text, tune metadata, and most generated website interface text. ABC notation itself is still rendered by abcjs using notation fonts.</li>
           <li><b>Show ornament at both sides of the header title</b> adds the ornament character as a left and right decorative element in the generated website header. When saved, the needed generated header CSS is included in <code>customCss</code> so the effect works after the theme is imported into or pasted into the main <b>abcjs-eskin Website Builder</b>.</li>
           <li><b>Show simple highlight geometric graphics in the header</b> adds a simple decorative highlight shape behind part of the header. When saved, the generated CSS for this graphic is also included in <code>customCss</code>.</li>
           <li><b>Preserve special built-in theme CSS</b> includes the contents of <b>Additional custom CSS</b> in the saved theme file. This is most useful after loading a built-in theme that has decorative CSS not represented by the normal Theme Builder controls.</li>
@@ -4792,7 +4813,7 @@
           <li>Use the <b>⇄</b> swap button between the two header background color controls to reverse the gradient direction and immediately update the live preview.</li>
           <li><b>Header background CSS</b> is the actual CSS background value used for the generated website header. For a normal two-color gradient, it is usually something like <code>linear-gradient(135deg,#0b4b2c,#16834e)</code>. You can edit this directly for more complex gradients or background effects.</li>
           <li><b>Panel shadow color</b> is used to build the default panel shadow. It affects the perceived shadow color around table-of-contents tiles, tune panels, and other card-like areas.</li>
-          <li><b>Border radius</b> controls the rounded-corner amount for major panels, table-of-contents tiles, buttons, and card-like elements in the generated website. Use values such as <code>0</code>, <code>6px</code>, <code>10px</code>, or <code>18px</code>.</li>
+          <li><b>Border radius</b> controls the rounded-corner amount for major panels, table-of-contents tiles, and card-like elements in the generated website. Use values such as <code>0</code>, <code>6px</code>, <code>10px</code>, or <code>18px</code>.</li>
           <li><b>Panel shadow CSS</b> is the actual CSS box-shadow value used for generated website panels and cards. Edit it directly when you want more or less shadow than the default generated value.</li>
         </ul>
 
