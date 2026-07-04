@@ -1200,6 +1200,13 @@
     { id: "showSearchAll", name: "Enabled (+ search bar + search all button)" }
   ];
 
+  const TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS = [
+    { id: "1", name: "1" },
+    { id: "2", name: "2" },
+    { id: "3", name: "3" },
+    { id: "4", name: "4" }
+  ];
+
   const TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS = [
     { id: "disabled", name: "Disabled" },
     { id: "enabled", name: "Enabled" }
@@ -1874,6 +1881,7 @@
     cursorAutoscrollGuardBand: "large",
     showTuneDividers: "show",
     includeTableOfContents: "showSearch",
+    tableOfContentsMaxColumns: "4",
     injectSoundSettings: true,
     soundfont: "fatboy",
     melodyProgram: "0",
@@ -1988,6 +1996,10 @@
 
     if (!optionIds(TABLE_OF_CONTENTS_OPTIONS).has(String(normalized.includeTableOfContents || ""))) {
       normalized.includeTableOfContents = DEFAULT_SETTINGS.includeTableOfContents;
+    }
+
+    if (!optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS).has(String(normalized.tableOfContentsMaxColumns || ""))) {
+      normalized.tableOfContentsMaxColumns = DEFAULT_SETTINGS.tableOfContentsMaxColumns;
     }
 
     if (!optionIds(TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS).has(String(normalized.tableOfContentsBottomButtons || ""))) {
@@ -3117,9 +3129,7 @@
       "Notation " + escapeHtml(state.settings.notationWidth) + "% of page body",
       "Maximum body width " + escapeHtml(state.settings.bodyWidth) + "px",
       tableOfContentsPreviewText,
-      state.settings.showTuneDividers === "hide"
-        ? "Decorative tune ornaments hidden"
-        : "Decorative tune ornaments shown",
+      "Maximum " + escapeHtml(optionName(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS, state.settings.tableOfContentsMaxColumns || DEFAULT_SETTINGS.tableOfContentsMaxColumns)) + " TOC columns",
       state.settings.tuneNumbers === "hide"
         ? "Tune numbers hidden"
         : "Tune numbers shown",
@@ -3141,6 +3151,9 @@
         ? "Additional table of contents buttons below tunes"
         : "No additional table of contents buttons below tunes",
       escapeHtml(optionName(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS, state.settings.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand)) + " playback autoscroll view ahead",
+      state.settings.showTuneDividers === "hide"
+        ? "Decorative tune ornaments hidden"
+        : "Decorative tune ornaments shown",
       state.settings.showStringInstrumentTablatureNames === "show"
         ? "Stringed tablature names shown"
         : "Stringed tablature names hidden",
@@ -3484,13 +3497,13 @@
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
         "playerPosition", "notationWidth", "bodyWidth",
-        "includeTableOfContents", "showTuneDividers", "tuneNumbers",
+        "includeTableOfContents", "tableOfContentsMaxColumns", "tuneNumbers",
         "includeSectionHeaderNumbers",
         "tuneOrder", "tuneDisplay",
         "instrumentSelector", "abcToolsLinks",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "backToTuneTopBottomButton", "tableOfContentsBottomButtons",
-        "cursorAutoscrollGuardBand", "showStringInstrumentTablatureNames",
+        "cursorAutoscrollGuardBand", "showTuneDividers", "showStringInstrumentTablatureNames",
         "titleArticleReverser", "deploymentTarget"
       ],
       website_settings_playback_inject: [
@@ -3523,7 +3536,7 @@
       });
     });
 
-    if (moved < 35) return false;
+    if (moved < 36) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3576,6 +3589,7 @@
     notationWidth: "instructions-setting-notation-width",
     bodyWidth: "instructions-setting-body-width",
     includeTableOfContents: "instructions-setting-include-table-of-contents",
+    tableOfContentsMaxColumns: "instructions-setting-table-of-contents-max-columns",
     showTuneDividers: "instructions-setting-show-tune-dividers",
     tuneNumbers: "instructions-setting-tune-numbers",
     includeSectionHeaderNumbers: "instructions-setting-include-section-header-numbers",
@@ -3790,6 +3804,7 @@
       bodyWidth: new Set(["700", "800", "900", "1000", "1100", "1180", "1280", "1400", "1600"]),
       showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
       includeTableOfContents: optionIds(TABLE_OF_CONTENTS_OPTIONS),
+      tableOfContentsMaxColumns: optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS),
       tuneNumbers: new Set(["hide", "show"]),
       includeSectionHeaderNumbers: optionIds(HIDE_SHOW_OPTIONS),
       abcToolsLinks: optionIds(ABC_TOOLS_LINK_OPTIONS),
@@ -4859,10 +4874,10 @@
         options: tableOfContentsOptionsForTuneDisplay(state.settings.tuneDisplay)
       },
       {
-        name: "Show decorative ornament between tunes",
-        id: "showTuneDividers",
+        name: "Maximum table of contents columns",
+        id: "tableOfContentsMaxColumns",
         type: "select",
-        options: HIDE_SHOW_OPTIONS
+        options: TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS
       },
       {
         name: "Tune numbers in table of contents and tune sections",
@@ -4932,6 +4947,12 @@
         id: "cursorAutoscrollGuardBand",
         type: "select",
         options: CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS
+      },
+      {
+        name: "Show decorative ornament between tunes",
+        id: "showTuneDividers",
+        type: "select",
+        options: HIDE_SHOW_OPTIONS
       },
       {
         name: "Stringed instrument tablature names",
@@ -5157,11 +5178,14 @@
               </ul>
               <p>When <b>Tune Display</b> is set to <b>Single</b>, the Table of Contents is always available so visitors can choose which tune to display. The <b>Disabled</b> option remains visible in the selector, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the Table of Contents setting back to <b>Enabled</b>. If older saved settings or a project use <b>Single</b> tune display with the Table of Contents hidden, the builder automatically changes the Table of Contents setting to <b>Enabled</b>.</p>
             </li>
-            <li id="instructions-setting-show-tune-dividers"><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections and above the footer.
+            <li id="instructions-setting-table-of-contents-max-columns"><b>Maximum table of contents columns</b> controls the maximum number of tune columns used by the generated website Table of Contents (if enabled).
               <ul>
-                <li><b>Hide</b> separates tunes with comfortable blank spacing instead and omits the ornament above the footer.</li>
-                <li><b>Show</b> is the default and displays the selected theme ornament between tunes and above the footer.</li>
+                <li><b>1</b> keeps the Table of Contents in a single column at all screen widths.</li>
+                <li><b>2</b> caps it at two columns on wide screens.</li>
+                <li><b>3</b> caps the Table of Contents at three columns on wide screens.</li>
+                <li><b>4</b> is the default and allows up to four columns on wide screens.</li>
               </ul>
+              <p>The generated website still uses responsive CSS for tablets and phones. For example, a four-column Table of Contents steps down to fewer columns as the screen narrows, and all multi-column choices eventually become one column on phone-width screens.</p>
             </li>
             <li id="instructions-setting-tune-numbers"><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li id="instructions-setting-include-section-header-numbers"><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback.
@@ -5242,6 +5266,12 @@
                 <li><b>Larger</b> and <b>Extra Large</b> use progressively larger view-ahead areas.</li>
                 <li><b>Medium</b>, <b>Large</b>, <b>Larger</b>, or <b>Extra Large</b> can be helpful for classical scores or other music where the player needs to see upcoming music near the bottom of the screen.</li>
                 <li>On very short screens, such as phone landscape orientation, generated websites use a centered cursor fallback to reduce up/down autoscroll bouncing with tall cursors.</li>
+              </ul>
+            </li>
+            <li id="instructions-setting-show-tune-dividers"><b>Show decorative ornament between tunes</b> controls whether the selected theme ornament appears between tune sections and above the footer.
+              <ul>
+                <li><b>Hide</b> separates tunes with comfortable blank spacing instead and omits the ornament above the footer.</li>
+                <li><b>Show</b> is the default and displays the selected theme ornament between tunes and above the footer.</li>
               </ul>
             </li>
             <li id="instructions-setting-string-instrument-tablature-names"><b>Stringed instrument tablature names</b> controls whether generated Mandolin, GDAD Bouzouki, Standard Guitar, and DADGAD Guitar tablature displays its instrument name label in the rendered notation.
@@ -5481,7 +5511,6 @@
               <li><a href="#developer-page-width">Page width</a></li>
               <li><a href="#developer-header-styling">Header styling</a></li>
               <li><a href="#developer-table-of-contents-styling">Table of Contents styling</a></li>
-              <li><a href="#developer-table-of-contents-three-columns">Changing the Table of Contents from 4 columns to 3 columns</a></li>
               <li><a href="#developer-card-spacing">Card spacing</a></li>
               <li><a href="#developer-section-header-styling">Section header styling</a></li>
               <li><a href="#developer-website-title">Website title</a></li>
@@ -5543,33 +5572,7 @@
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
           <p>Controls the TOC panel, optional search field, and tune-link grid:</p>
           <p><code>.table-of-contents</code>, <code>.toc-search</code>, <code>.toc-search input</code>, <code>.toc-search-all-button</code>, <code>.toc-search-all-results</code>, <code>.toc-links</code>, and <code>.toc-links a</code></p>
-          <p>Change TOC <code>padding</code> for a roomier or more compact card. Change the <code>minmax(220px,1fr)</code> value in <code>.toc-links</code> to control how many TOC columns appear on wider screens.</p>
-
-          <p id="developer-table-of-contents-three-columns"><b>Changing the Table of Contents from a maximum of 4 columns to a maximum of 3 columns</b></p>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
-          <p>
-            Exported websites normally use a responsive CSS grid for the Table of Contents tune links. The default rule is:
-          </p>
-          <p><code>.toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }</code></p>
-          <p>
-            This keeps the Table of Contents responsive because the browser automatically chooses the number of columns that will fit. On wide pages this can allow up to four columns of tune links, while tablets and phones naturally drop to fewer columns.
-          </p>
-          <p>
-            To limit the Table of Contents to a maximum of three columns while preserving the same responsive tablet and phone behavior, edit the exported website HTML, search for <code>TOC link grid customization:</code>, and replace only the <code>.toc-links</code> rule with:
-          </p>
-          <p><code>.toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(max(220px,calc((100% - 24px) / 3)),1fr)); gap:12px; }</code></p>
-          <p>
-            The important part is <code>calc((100% - 24px) / 3)</code>. With the default <code>gap:12px</code>, three columns have two gaps between them, so <code>24px</code> is subtracted before dividing the remaining width by three. This prevents a fourth column from fitting on wide screens.
-          </p>
-          <p>
-            The <code>max(220px,...)</code> wrapper preserves the responsive behavior. When there is enough room, the columns are sized for a maximum of three across. When the screen becomes narrower, the browser still falls back automatically to two columns and then one column, instead of forcing three cramped columns on tablets and phones.
-          </p>
-          <p>
-            If you also change the TOC grid <code>gap</code>, update the subtraction value in the formula to match two gaps. For example, with <code>gap:16px</code>, use <code>calc((100% - 32px) / 3)</code>. With <code>gap:10px</code>, use <code>calc((100% - 20px) / 3)</code>.
-          </p>
-          <p>
-            Do not remove <code>auto-fit</code> or replace the rule with a fixed <code>repeat(3,1fr)</code> layout. A fixed three-column layout would stop the Table of Contents from resizing cleanly on tablets and phones.
-          </p>
+          <p>Change TOC <code>padding</code> for a roomier or more compact card. Use the <b>Maximum table of contents columns</b> setting to choose the normal maximum column count before exporting. For manual CSS edits after export, change the documented <code>.toc-links</code> rule and its related media queries together so the responsive tablet and phone behavior stays intact.</p>
 
           <p id="developer-card-spacing"><b>Card spacing</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -8157,6 +8160,29 @@ fiddle: {
     return window.confirm(message);
   }
 
+  function maxTableOfContentsColumnsValue(settings) {
+    const value = String((settings && settings.tableOfContentsMaxColumns) || DEFAULT_SETTINGS.tableOfContentsMaxColumns || "4");
+    return optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS).has(value) ? value : DEFAULT_SETTINGS.tableOfContentsMaxColumns;
+  }
+
+  function tableOfContentsGridCss(settings) {
+    const maxColumns = Number(maxTableOfContentsColumnsValue(settings)) || 4;
+    const baseColumns = maxColumns <= 1 ? "1fr" : `repeat(${maxColumns},minmax(0,1fr))`;
+    const rules = [`.toc-links { display:grid; grid-template-columns:${baseColumns}; gap:12px; }`];
+
+    if (maxColumns >= 4) {
+      rules.push(`@media (max-width:1100px) {\n      .toc-links { grid-template-columns:repeat(3,minmax(0,1fr)); }\n    }`);
+    }
+    if (maxColumns >= 3) {
+      rules.push(`@media (max-width:820px) {\n      .toc-links { grid-template-columns:repeat(2,minmax(0,1fr)); }\n    }`);
+    }
+    if (maxColumns >= 2) {
+      rules.push(`@media (max-width:560px) {\n      .toc-links { grid-template-columns:1fr; }\n    }`);
+    }
+
+    return rules.join("\n    ");
+  }
+
   function generateSite() {
     const s = settingsWithInstrumentSelectorRequiredSoundInjection(state.settings);
     const t = themeCss(s.theme);
@@ -8203,6 +8229,7 @@ fiddle: {
     }
     const includeTableOfContents = tableOfContentsMode !== "hide";
     const includeTableOfContentsSearch = tableOfContentsMode === "showSearch" || tableOfContentsMode === "showSearchAll";
+    const tableOfContentsGridRules = tableOfContentsGridCss(s);
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
     const largeCollectionGroupingMode = String(s.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping);
@@ -8948,10 +8975,12 @@ fiddle: {
     }
     /*
       TOC link grid customization: controls the link column layout and spacing.
-      Increase 220px for fewer/wider columns; decrease it for more/narrower columns.
-      Change gap to adjust spacing between tune links.
+      This generated website was built with a maximum of ${maxTableOfContentsColumnsValue(s)} Table of Contents column${maxTableOfContentsColumnsValue(s) === "1" ? "" : "s"}.
+      Change the desktop .toc-links rule and any following media queries together to
+      preserve responsive tablet and phone resizing. Change gap to adjust spacing
+      between tune links.
     */
-    .toc-links { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    ${tableOfContentsGridRules}
     /*
       TOC link button customization: controls each tune link's height, padding,
       background, border, and rounded corners. Increase min-height/padding for larger
