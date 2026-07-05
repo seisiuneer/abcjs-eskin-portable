@@ -2797,6 +2797,35 @@
     setStatus(`Saved custom theme to ${filename}.`);
   }
 
+  function looksLikeThemeBuilderThemeFile(rawTheme) {
+    const source = rawTheme && typeof rawTheme === "object" && !Array.isArray(rawTheme)
+      ? (
+          rawTheme.theme &&
+          typeof rawTheme.theme === "object" &&
+          !Array.isArray(rawTheme.theme)
+            ? rawTheme.theme
+            : rawTheme
+        )
+      : null;
+
+    if (!source) return false;
+
+    const signatureFields = [
+      "font", "bg", "panel", "ink", "primary", "secondary",
+      "accent", "line", "hero", "radius", "shadow"
+    ];
+
+    const signatureCount = signatureFields.filter(field =>
+      Object.prototype.hasOwnProperty.call(source, field)
+    ).length;
+
+    const recognizedFieldCount = CUSTOM_THEME_FIELDS.filter(field =>
+      Object.prototype.hasOwnProperty.call(source, field)
+    ).length;
+
+    return signatureCount >= 4 && recognizedFieldCount >= 6;
+  }
+
   async function loadCustomThemeIntoBuilder() {
     const file = await selectSettingsFile();
     if (!file) return;
@@ -2804,6 +2833,11 @@
     try {
       const text = await file.text();
       const parsed = parseCustomThemeText(text);
+
+      if (!looksLikeThemeBuilderThemeFile(parsed)) {
+        throw new Error("The selected file does not have the structure of a Theme Builder theme file.");
+      }
+
       const validation = validateCustomTheme(parsed);
 
       if (!validation.theme) {
@@ -2814,12 +2848,17 @@
       setStatus(`Loaded custom theme from ${file.name}. Edit the loaded values or save a theme file when ready.`);
     } catch (error) {
       console.warn("Unable to load custom theme file.", error);
+
       await DayPilot.Modal.alert(
-        "The selected custom theme file could not be loaded.<br><br>" +
-        escapeHtml(error.message || String(error)).replace(/\n/g, "<br>"),
-        { title: "Invalid Custom Theme File", okText: "OK", top: 150 }
+        '<div style="text-align:center;line-height:1.45;max-width:680px;margin:0 auto;">' +
+          'This does not appear to be a valid <b>Website Theme Builder theme file</b>.<br><br>' +
+          'You may have selected a Website Builder project or settings file,<br>or another type of file, instead.<br><br>' +
+          'Please choose a theme file previously saved with <b>Save Theme File</b>.' +
+        '</div>',
+        { title: "Unable to Load Theme File", okText: "OK", top: 150 }
       );
-      setStatus("The selected custom theme file could not be loaded.", true);
+
+      setStatus("The selected file is not a valid Website Theme Builder theme file.", true);
     }
   }
 
@@ -4513,7 +4552,7 @@
     const themeName = optionName(THEME_OPTIONS, themeId);
     const confirmation = await DayPilot.Modal.confirm(
       `Load ${escapeHtml(themeName)} as the starting point for this custom theme?<br><br>` +
-      "This will replace the current working custom theme settings in the Theme Builder.",
+      "This will replace the current working custom theme settings in the<br>Theme Builder.",
       {
         title: "Load Built-In Theme",
         okText: "Load\u00a0Theme",
