@@ -2778,6 +2778,12 @@
     });
   }
 
+  function hasWebsiteBuilderNoPlayControllerAnnotation(tune) {
+    const annotationRegex = /^\s*%website_builder_no_play_controller\s*$/im;
+    return annotationRegex.test(String(tune && tune.fileHeader || "")) ||
+      annotationRegex.test(String(tune && tune.abc || ""));
+  }
+
   function appendAbcTextSource(text, sourceName, size) {
     const records = splitAbcRecords(text, sourceName);
     const tunes = buildTunesFromRecords(records, sourceName);
@@ -5491,7 +5497,7 @@
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
             <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the Table of Contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>If the generated website includes both a Table of Contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed Table of Contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
-            <li>Click the notation itself to pause or resume playback.</li>
+            <li>Click the notation itself to pause or resume playback. Tunes marked with <code>%website_builder_no_play_controller</code> do not show a play controller and do not support click-to-play-or-pause notation behavior.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
             <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Table of contents buttons also below tunes</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation. If <b>Add back to top-of-tune button at bottom of tunes</b> is enabled, the lower Top of Tune button also stops playback, hides all play cursors, and returns to the top of the current tune.</li>
           </ul>
@@ -5519,6 +5525,16 @@
           </p>
           <p>Tunes with multiple parts using <b><code>P:</code></b> tags that also have a <b><code>%play_flatten_parts</code></b> annotation will
             play following the indicated parts order in the <b>ABC Transcription Tools</b> player if an optional <b>ABC Transcription Tools</b> button is present on the tune and clicked. Such tunes will show <b>Open in ABC Transcription Tools for correct P: parts order playback</b> below the tune on the website.</p>
+          <p>
+            The Website Builder also recognizes <code>%website_builder_no_play_controller</code>.
+            Place this annotation inside a specific tune to suppress that tune's play controller in the generated website.
+            The notation for that tune is still rendered, but clicking or pressing Enter/Space on the notation does not start or pause playback,
+            and the <b>Click the notation to pause or resume playing</b> status text is not shown.
+          </p>
+          <p>
+            To apply the same behavior to every tune in an ABC file, place
+            <code>%website_builder_no_play_controller</code> in the ABC file header before the first <code>X:</code> tag.
+          </p>
           <p>
             If the ABC file header contains a <b>PDF Tunebook Features</b> block beginning with
             <code>% Start of PDF Tunebook Features</code> and ending with
@@ -8443,6 +8459,7 @@ fiddle: {
       while (usedIds.has(key)) key = `${base}-${suffix++}`;
       usedIds.add(key);
       const exportedAbc = tune.isSectionHeader ? "" : prepareTuneAbc(tune.abc, tune.fileHeader, s);
+      const noPlayController = !tune.isSectionHeader && hasWebsiteBuilderNoPlayControllerAnnotation(tune);
       const hasABCTranscriptionToolsLink = !tune.isSectionHeader && abcToolsLinkMode !== "disabled";
       const hasFlattenPartsPlaybackNotice = hasABCTranscriptionToolsLink && /(?:^|\n)\s*%play_flatten_parts\s*(?:\n|$)/i.test(tune.abc || "");
       const abcToolsURL = hasABCTranscriptionToolsLink ? "#" : "";
@@ -8471,6 +8488,7 @@ fiddle: {
         exportedAbc,
         abcToolsURL,
         abcToolsButtonText,
+        noPlayController,
         hasFlattenPartsPlaybackNotice,
         groupId: entry.groupId,
         groupName: entry.groupName
@@ -8603,7 +8621,9 @@ fiddle: {
       }
 
       const meta = [tune.composer, tune.rhythm].filter(Boolean).map(escapeHtml).join(" · ");
-      const audio = `<div id="${tune.key}-audio" class="audio-controls"></div>
+      const audio = tune.noPlayController
+        ? `<div id="${tune.key}-audio" class="audio-controls" hidden></div>`
+        : `<div id="${tune.key}-audio" class="audio-controls"></div>
           <p id="${tune.key}-status" class="status" aria-live="polite"></p>
           ${tune.hasFlattenPartsPlaybackNotice ? `<p id="${tune.key}-flatten-parts-note" class="flatten-parts-playback-note" hidden>Open in ABC Transcription Tools for correct P: parts order playback.</p>` : ""}`;
       const articleActionClass =
@@ -8635,7 +8655,7 @@ fiddle: {
 
 
       return dividerMarkup + `
-      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}" data-group-panel="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr}>
+      <article class="score-panel${articleActionClass}${numberOnlyClass}${numberOnlyWithActionsClass}${showThisNumber ? "" : " no-tune-number" + scorePanelDecorationClass}" id="tune-${tune.key}" data-key="${tune.key}" data-no-play-controller="${tune.noPlayController ? "true" : "false"}" data-group-panel="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr}>
         ${showThisNumber ? `<div class="chapter-label">${tune.number}</div>` : ""}
         ${tuneHeaderMarkup}
         ${includeTuneHeading && meta ? `<p class="tune-meta">${meta}</p>` : ""}
@@ -9894,7 +9914,8 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   const works = Array.from(document.querySelectorAll("article.score-panel[data-key]"), panel => ({
     key: panel.dataset.key,
     groupId: panel.dataset.group || "group-1",
-    abcElementId: panel.dataset.key + "-abc"
+    abcElementId: panel.dataset.key + "-abc",
+    noPlayController: panel.dataset.noPlayController === "true"
   }));
 
   function cssIdSelector(id) {
@@ -10984,6 +11005,22 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       if (activeDisplayMode === "whistleNotation") {
         postProcessWhistleTab(rendered, paperId);
       }
+
+      if (work.noPlayController) {
+        if (paper) {
+          paper.removeAttribute("tabindex");
+          paper.removeAttribute("title");
+          paper.onclick = null;
+          paper.onkeydown = null;
+        }
+        if (audioElement) {
+          audioElement.innerHTML = "";
+          audioElement.hidden = true;
+        }
+        return;
+      }
+
+      if (audioElement) audioElement.hidden = false;
 
       const controller = new ABCJS.synth.SynthController();
       controller.load(cssIdSelector(audioId), createCursorControl(paperId, work.key), playerOptions);
