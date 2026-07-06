@@ -1242,7 +1242,8 @@
     { id: "hide", name: "Disabled" },
     { id: "show", name: "Enabled" },
     { id: "showSearch", name: "Enabled (+ search bar)" },
-    { id: "showSearchAll", name: "Enabled (+ search bar + search all button)" }
+    { id: "showSearchAll", name: "Enabled (+ search bar + search all button)" },
+    { id: "simpleDropdown", name: "Simple drop-down menu" }
   ];
 
   const TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS = [
@@ -5260,7 +5261,8 @@
                 <li><b>Enabled</b> displays the Table of Contents.</li>
                 <li><b>Enabled (+ search bar)</b> is the default and adds a search box directly below the Table of Contents heading in the generated website. Typing in the search box immediately filters the Table of Contents entries by case-insensitive title text, and the small <b>x</b> button clears the search.</li>
                 <li><b>Enabled (+ search bar + search all button)</b> adds the same search box plus a small <b>Search all sections</b> button inside the search area. <b>Search all sections</b> is only available on generated websites that also have a <b>Tune Section</b> selector. It searches all tune sections, shows a custom styled result list of up to 50 matching tune entries with their tune section names, and reports when only the first matches are shown. Choosing a result switches the <b>Tune Section</b> selector to that tune's section and jumps directly to the tune. If <b>Large tune collection grouping</b> is <b>Disabled</b>, this setting is automatically forced back to <b>Enabled (+ search bar)</b> because there is no <b>Tune Section</b> selector to search across.</li>
-                <li>When a generated website also has a <b>Tune Section</b> selector, the Table of Contents title reflects the currently selected tune section name instead of always saying <b>Table of Contents</b>.</li>
+                <li><b>Simple drop-down menu</b> replaces the normal Table of Contents tune tiles and search controls with a tune dropdown below the <b>Table of Contents</b> heading. Selecting a tune behaves the same as selecting that tune's normal Table of Contents tile. In <b>Single</b> tune display mode, the selected tune remains shown in the dropdown until another tune is selected or the menu is rebuilt by changing <b>Tune Section</b>. In <b>Multiple</b> tune display mode, the dropdown resets after each selection. Tune-number prefixes are included when tune numbers are shown. When a generated website also has a <b>Tune Section</b> selector, the dropdown is rebuilt to contain the tunes in the newly selected tune section.</li>
+                <li>When a generated website also has a <b>Tune Section</b> selector, the Table of Contents title reflects the currently selected tune section name for all Table of Contents styles. With <b>Simple drop-down menu</b>, the tune dropdown is also rebuilt for the selected section.</li>
               </ul>
               <p>When <b>Tune Display</b> is set to <b>Single</b>, the Table of Contents is always available so visitors can choose which tune to display. The <b>Disabled</b> option remains visible in the selector, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the Table of Contents setting back to <b>Enabled</b>. If older saved settings or a project use <b>Single</b> tune display with the Table of Contents hidden, the builder automatically changes the Table of Contents setting to <b>Enabled</b>.</p>
             </li>
@@ -5271,7 +5273,7 @@
                 <li><b>3</b> caps the Table of Contents at three columns on wide screens.</li>
                 <li><b>4</b> is the default and allows up to four columns on wide screens.</li>
               </ul>
-              <p>The generated website still uses responsive CSS for tablets and phones. For example, a four-column Table of Contents steps down to fewer columns as the screen narrows, and all multi-column choices eventually become one column on phone-width screens.</p>
+              <p>The generated website still uses responsive CSS for tablets and phones. For example, a four-column Table of Contents steps down to fewer columns as the screen narrows, and all multi-column choices eventually become one column on phone-width screens. This setting does not affect <b>Simple drop-down menu</b>.</p>
             </li>
             <li id="instructions-setting-tune-numbers"><b>Tune numbers in table of contents and tune sections</b> controls whether the exported site shows numbered badges for ordinary tunes. The default is <b>Show</b>.</li>
             <li id="instructions-setting-table-of-contents-gap-size"><b>Table of contents gap size</b> controls the spacing between tune entries in the generated website Table of Contents.
@@ -5282,6 +5284,7 @@
                 <li><b>Larger</b> uses a <code>18px</code> gap.</li>
                 <li><b>Extra Large</b> uses a <code>21px</code> gap.</li>
               </ul>
+              <p>This setting does not affect <b>Simple drop-down menu</b>.</p>
             </li>
             <li id="instructions-setting-tune-order"><b>Tune order</b> controls the order used inside generated website groups.
               <ul>
@@ -5472,7 +5475,7 @@
           <ul>
             <li>All tune ABC source directly in the HTML.</li>
             <li>Optional tune titles and composer/rhythm meta text above each tune.</li>
-            <li>An optional Table of Contents linking to every tune.</li>
+            <li>An optional Table of Contents using tune-navigation tiles, searchable tune-navigation tiles, or a simple tune dropdown menu.</li>
             <li>An optional Table of Contents button near the top of every tune that returns to the top of the Table of Contents when the Table of Contents is included.</li>
             <li>Optional additional Table of Contents buttons below tunes. These are especially useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel.</li>
             <li>Optional <b>ABC Transcription Tools</b> link buttons for each tune.</li>
@@ -5492,10 +5495,10 @@
           <h3 id="instructions-generated-site">7. Using the generated website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
-            <li>If the Table of Contents is included, choose a tune from it to stop current playback, hide all play cursors, and jump directly to that tune.</li>
+            <li>If the Table of Contents is included, choose a tune from its tiles or simple dropdown menu to stop current playback, hide all play cursors, and jump directly to that tune.</li>
             <li>Use the player controls to start, pause, restart, and change playback speed. Click or tap the tempo percentage field in any tune's player to open a small tempo entry dialog. Enter a value from 5 to 400 or choose one of the preset percentages to preload the entry field, then choose <b>Apply</b> to update that tune's play controller or <b>Cancel</b> to leave it unchanged.</li>
             <li>If the Display/Instrument selector is shown, use the <b>Display / Instrument</b> selector near the top of the page to re-render the currently selected tune section with another display style or melody instrument before playing. If no value has been chosen yet, the website uses the first item in the selector: the Melody instrument selected when the website was built. If the selector includes <b>Bass & Chords Only</b>, that choice mutes the melody and only plays the bass and chords; tunes with no chords will play only silence. The selected value is remembered for that generated website.</li>
-            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. If the Table of Contents is included, its heading changes to the selected tune section name. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
+            <li>If large tune collection grouping is enabled, use the <b>Tune Section</b> selector near the top of the generated website to choose the current group. Only the selected group is shown and rendered. For every Table of Contents style, the Table of Contents heading changes to the selected tune section name. With <b>Simple drop-down menu</b>, the dropdown is also rebuilt with the tunes in the selected section. The selected Tune Section value is remembered for that generated website and restored the next time the website is opened. Most grouping modes start tune numbers at 1 in each group; <b>Groups of 100 tunes</b> keeps tune numbers continuous across all groups.</li>
             <li>If the generated website includes both a Table of Contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed Table of Contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
             <li>Click the notation itself to pause or resume playback. Tunes marked with <code>%website_builder_no_play_controller</code> do not show a play controller and do not support click-to-play-or-pause notation behavior.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
@@ -8413,6 +8416,7 @@ fiddle: {
       tableOfContentsMode = "show";
     }
     const includeTableOfContents = tableOfContentsMode !== "hide";
+    const useSimpleTableOfContentsDropdown = tableOfContentsMode === "simpleDropdown";
     const includeTableOfContentsSearch = tableOfContentsMode === "showSearch" || tableOfContentsMode === "showSearchAll";
     const tableOfContentsGridRules = tableOfContentsGridCss(s);
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
@@ -8500,6 +8504,21 @@ fiddle: {
       return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle)}" data-section-header="${tune.isSectionHeader ? "true" : "false"}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
     }).join("\n        ");
 
+    const simpleTocEntries = tunes
+      .filter(tune => !tune.isSectionHeader)
+      .map(tune => ({
+        groupId: tune.groupId,
+        targetId: `tune-${tune.key}`,
+        label: shouldShowNumber(tune)
+          ? `${tune.number}. ${tune.displayTitle}`
+          : tune.displayTitle
+      }));
+
+    const initialSimpleTocOptions = simpleTocEntries
+      .filter(entry => !largeCollectionGroupingEnabled || entry.groupId === firstTuneGroupId)
+      .map(entry => `<option value="${escapeHtml(entry.targetId)}">${escapeHtml(entry.label)}</option>`)
+      .join("\n        ");
+
     const tocSearchMarkup = includeTableOfContentsSearch
       ? `<div class="toc-search${includeTableOfContentsSearchAll ? " has-search-all" : ""}" role="search">
       <label class="visually-hidden" for="toc-search-input">Search table of contents</label>
@@ -8517,13 +8536,23 @@ fiddle: {
       ? tuneGroups[0].name
       : "Table of Contents";
 
+    const simpleTocMarkup = useSimpleTableOfContentsDropdown
+      ? `<div class="simple-toc-select-wrap">
+      <label class="visually-hidden" for="simple-toc-select">Choose a tune</label>
+      <select id="simple-toc-select" class="simple-toc-select" aria-label="Choose a tune">
+        <option value="">Select a tune...</option>
+        ${initialSimpleTocOptions}
+      </select>
+    </div>`
+      : "";
+
     const tocMarkup = includeTableOfContents
-      ? `<nav class="table-of-contents page-width" id="table-of-contents" aria-labelledby="toc-title">
+      ? `<nav class="table-of-contents page-width${useSimpleTableOfContentsDropdown ? " simple-toc-mode" : ""}" id="table-of-contents" aria-labelledby="toc-title">
     <h2 id="toc-title">${escapeHtml(initialTocTitle)}</h2>
-    ${tocSearchMarkup}
+    ${useSimpleTableOfContentsDropdown ? simpleTocMarkup : `${tocSearchMarkup}
     <div class="toc-links">
         ${toc}
-    </div>
+    </div>`}
   </nav>`
       : "";
 
@@ -9057,6 +9086,56 @@ fiddle: {
       line-height:1.1;
       margin:0 0 20px;
     }
+    .simple-toc-mode h2 { margin-bottom:14px; }
+    .simple-toc-select-wrap {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      width:100%;
+      margin:0 auto;
+    }
+    .simple-toc-select {
+      -webkit-appearance:none !important;
+      -moz-appearance:none !important;
+      appearance:none !important;
+      width:100% !important;
+      max-width:450px !important;
+      min-height:46px !important;
+      margin:0 !important;
+      padding:9px 42px 9px 14px !important;
+      color:var(--ink) !important;
+      -webkit-text-fill-color:var(--ink) !important;
+      background-color:var(--panel) !important;
+      background-image:
+        linear-gradient(45deg,transparent 50%,var(--ink) 50%),
+        linear-gradient(135deg,var(--ink) 50%,transparent 50%) !important;
+      background-position:
+        calc(100% - 17px) 50%,
+        calc(100% - 11px) 50% !important;
+      background-size:6px 6px,6px 6px !important;
+      background-repeat:no-repeat !important;
+      border:2px solid var(--line) !important;
+      border-radius:calc(var(--radius) / 2) !important;
+      box-shadow:0 3px 10px rgba(0,0,0,.08) !important;
+      font:inherit !important;
+      font-weight:700 !important;
+      line-height:1.3 !important;
+      cursor:pointer;
+    }
+    .simple-toc-select:hover {
+      border-color:var(--accent) !important;
+    }
+    .simple-toc-select:focus,
+    .simple-toc-select:focus-visible {
+      border-color:var(--primary) !important;
+      outline:3px solid color-mix(in srgb,var(--primary) 30%,transparent) !important;
+      outline-offset:2px !important;
+    }
+    .simple-toc-select:disabled {
+      opacity:.65;
+      cursor:wait;
+    }
+    .simple-toc-select::-ms-expand { display:none; }
     .section-header-title {
       color:var(--ink);
       /*
@@ -9929,6 +10008,8 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
   const tuneGroupSelectorEnabled = ${JSON.stringify(largeCollectionGroupingEnabled)};
   const showMultipleTunes = ${JSON.stringify(showMultipleTunes)};
+  const simpleTableOfContentsEnabled = ${JSON.stringify(useSimpleTableOfContentsDropdown)};
+  const simpleTocEntries = ${JSON.stringify(simpleTocEntries)};
   const tuneGroups = ${JSON.stringify(tuneGroups)};
   const firstTuneGroupId = ${JSON.stringify(firstTuneGroupId)};
   const previewMode = ${JSON.stringify(Boolean(previewMode))};
@@ -10735,6 +10816,33 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       });
     });
 
+    const simpleTocSelector = document.getElementById("simple-toc-select");
+    if (simpleTocSelector) {
+      simpleTocSelector.addEventListener("change", () => {
+        const targetId = String(simpleTocSelector.value || "");
+        if (showMultipleTunes) simpleTocSelector.value = "";
+        if (!targetId) return;
+
+        void (async () => {
+          stopAllPlayback();
+
+          let renderCompleted = true;
+          if (!showMultipleTunes && selectSingleWorkForTargetId(targetId)) {
+            applyContentVisibility();
+            renderCompleted = await renderAllWorks(currentInstrumentChoiceId());
+          }
+
+          if (!showMultipleTunes && (!renderCompleted || !isCurrentSingleWorkTargetId(targetId))) return;
+
+          if (!showMultipleTunes) simpleTocSelector.value = targetId;
+
+          if (scrollToTargetIdAfterLayout(targetId)) {
+            history.replaceState(null, "", "#" + targetId);
+          }
+        })();
+      });
+    }
+
     document.querySelectorAll(".abc-tools-link[data-work-key]").forEach(link => {
       link.addEventListener("click", event => {
         event.preventDefault();
@@ -11112,7 +11220,35 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   function updateTableOfContentsTitle(groupId) {
     const title = document.getElementById("toc-title");
     if (!title) return;
-    title.textContent = tuneGroupSelectorEnabled ? tuneGroupName(groupId) : "Table of Contents";
+    title.textContent = tuneGroupSelectorEnabled
+      ? tuneGroupName(groupId)
+      : "Table of Contents";
+  }
+
+  function rebuildSimpleTocDropdown(groupId) {
+    if (!simpleTableOfContentsEnabled) return;
+
+    const selector = document.getElementById("simple-toc-select");
+    if (!selector) return;
+
+    const validGroupId = validTuneGroupId(groupId);
+    selector.innerHTML = "";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select a tune...";
+    selector.appendChild(placeholder);
+
+    simpleTocEntries
+      .filter(entry => !tuneGroupSelectorEnabled || entry.groupId === validGroupId)
+      .forEach(entry => {
+        const option = document.createElement("option");
+        option.value = entry.targetId;
+        option.textContent = entry.label;
+        selector.appendChild(option);
+      });
+
+    selector.value = "";
   }
 
   function loadSavedTuneGroup() {
@@ -11260,6 +11396,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   function applyTuneGroup(groupId) {
     activeTuneGroupId = validTuneGroupId(groupId);
     updateTableOfContentsTitle(activeTuneGroupId);
+    rebuildSimpleTocDropdown(activeTuneGroupId);
     applyContentVisibility();
     applyTocFilter();
   }
@@ -11314,6 +11451,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
     const selector = document.getElementById("site-instrument-selector");
     const groupSelector = document.getElementById("site-tune-group-selector");
+    const simpleTocSelector = document.getElementById("simple-toc-select");
     const activeChoiceId = validInstrumentChoiceId(choiceId);
     applyContentVisibility();
     if (isStaleSingleTuneRender()) return false;
@@ -11323,6 +11461,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
     if (selector) selector.disabled = true;
     if (groupSelector) groupSelector.disabled = true;
+    if (simpleTocSelector) simpleTocSelector.disabled = true;
 
     try {
       if (showWorkingBanner) {
@@ -11345,6 +11484,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     } finally {
       if (selector) selector.disabled = false;
       if (groupSelector) groupSelector.disabled = false;
+      if (simpleTocSelector) simpleTocSelector.disabled = false;
       if (showWorkingBanner) setInstrumentWorkingBannerVisible(false);
     }
   }
