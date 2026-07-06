@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.1";
+  const WEBSITE_BUILDER_VERSION = "1.2.2";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -4932,8 +4932,14 @@
         id: "bodyWidth",
         type: "select",
         options: [
+          { id: "500", name: "500 px" },
+          { id: "550", name: "550 px" },
+          { id: "600", name: "600 px" },
+          { id: "650", name: "650 px" },
           { id: "700", name: "700 px" },
+          { id: "750", name: "750 px" },
           { id: "800", name: "800 px" },
+          { id: "850", name: "850 px" },
           { id: "900", name: "900 px" },
           { id: "1000", name: "1000 px" },
           { id: "1100", name: "1100 px" },
@@ -5254,7 +5260,9 @@
             </li>
             <li id="instructions-setting-player-position"><b>Player controller position</b> places the player controls above or below the notation.</li>
             <li id="instructions-setting-notation-width"><b>Notation width relative to page body</b> controls how much of the page width is used by both the notation and its player.</li>
-            <li id="instructions-setting-body-width"><b>Maximum website body width</b> controls the overall maximum width of the exported site.</li>
+            <li id="instructions-setting-body-width"><b>Maximum website body width</b> controls the overall maximum width of the exported site.
+              <p class="instructions-note"><b>Digital music stand use-case tip:</b> For vertically short/square tunes that already render in a fixed number of notation lines, such as a six-line tune, try <b>700 px or lower</b> when building a website for tablet landscape viewing. The <b>700 px</b>, <b>650 px</b>, <b>600 px</b>, <b>550 px</b>, and <b>500 px</b> choices can make the rendered notation more compact vertically, which may help the complete tune fit on one screen without scrolling.<br/><br/>Use the widest of these values that still lets the full tune fit comfortably, because lower values also make the notation smaller. Always preview representative tunes on the target tablet, since title length, metadata, lyrics, chords, annotations, and notation spacing can affect the final height.</p>
+            </li>
             <li id="instructions-setting-include-table-of-contents"><b>Include table of contents</b> controls whether the exported site includes the tune-navigation Table of Contents.
               <ul>
                 <li><b>Disabled</b> omits the Table of Contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
@@ -8401,7 +8409,7 @@ fiddle: {
     const embeddedOpenMarkup = embeddedDeployment ? '  <div class="abcjs-eskin-embedded-site">\n' : "";
     const embeddedCloseMarkup = embeddedDeployment ? '  </div>\n' : "";
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
-    const bodyWidth = Math.max(700, Math.min(1800, Number(s.bodyWidth) || 1180));
+    const bodyWidth = Math.max(500, Math.min(1800, Number(s.bodyWidth) || 1180));
     const showTuneNumbers = s.tuneNumbers !== "hide";
     const showSectionHeaderNumbers = String(s.includeSectionHeaderNumbers || DEFAULT_SETTINGS.includeSectionHeaderNumbers) !== "hide";
     const shouldShowNumber = tune => tune.isSectionHeader ? showSectionHeaderNumbers : showTuneNumbers;
