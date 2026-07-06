@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.2";
+  const WEBSITE_BUILDER_VERSION = "1.2.3";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1269,6 +1269,12 @@
   const BACK_TO_TUNE_TOP_BOTTOM_BUTTON_OPTIONS = [
     { id: "disabled", name: "Disabled" },
     { id: "enabled", name: "Enabled" }
+  ];
+
+  const TITLE_AND_TOC_LABEL_FONT_SIZE_OPTIONS = [
+    { id: "small", name: "Small" },
+    { id: "medium", name: "Medium" },
+    { id: "large", name: "Large" }
   ];
 
   const SOUNDFONT_OPTIONS = [
@@ -1934,6 +1940,7 @@
     cursorColor: "green",
     cursorAutoscrollGuardBand: "large",
     showTuneDividers: "show",
+    titleAndTableOfContentsLabelFontSize: "medium",
     includeTableOfContents: "showSearch",
     tableOfContentsMaxColumns: "4",
     tableOfContentsGapSize: "medium",
@@ -2067,6 +2074,10 @@
 
     if (!optionIds(BACK_TO_TUNE_TOP_BOTTOM_BUTTON_OPTIONS).has(String(normalized.backToTuneTopBottomButton || ""))) {
       normalized.backToTuneTopBottomButton = DEFAULT_SETTINGS.backToTuneTopBottomButton;
+    }
+
+    if (!optionIds(TITLE_AND_TOC_LABEL_FONT_SIZE_OPTIONS).has(String(normalized.titleAndTableOfContentsLabelFontSize || ""))) {
+      normalized.titleAndTableOfContentsLabelFontSize = DEFAULT_SETTINGS.titleAndTableOfContentsLabelFontSize;
     }
 
     const groupingMode = String(normalized.largeCollectionGrouping || "");
@@ -3570,7 +3581,8 @@
         "instrumentSelector", "abcToolsLinks",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
         "backToTuneTopBottomButton", "tableOfContentsBottomButtons",
-        "cursorAutoscrollGuardBand", "showTuneDividers", "includeSectionHeaderNumbers",
+        "cursorAutoscrollGuardBand", "showTuneDividers",
+        "titleAndTableOfContentsLabelFontSize", "includeSectionHeaderNumbers",
         "showStringInstrumentTablatureNames",
         "titleArticleReverser", "deploymentTarget"
       ],
@@ -3604,7 +3616,7 @@
       });
     });
 
-    if (moved < 37) return false;
+    if (moved < 38) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3660,6 +3672,7 @@
     tableOfContentsMaxColumns: "instructions-setting-table-of-contents-max-columns",
     tableOfContentsGapSize: "instructions-setting-table-of-contents-gap-size",
     showTuneDividers: "instructions-setting-show-tune-dividers",
+    titleAndTableOfContentsLabelFontSize: "instructions-setting-title-and-toc-label-font-size",
     tuneNumbers: "instructions-setting-tune-numbers",
     includeSectionHeaderNumbers: "instructions-setting-include-section-header-numbers",
     tuneOrder: "instructions-setting-tune-order",
@@ -3872,6 +3885,7 @@
       notationWidth: new Set(["50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]),
       bodyWidth: new Set(["500", "550", "600", "650", "700", "750", "800", "850", "900", "1000", "1100", "1180", "1280", "1400", "1600"]),
       showTuneDividers: optionIds(HIDE_SHOW_OPTIONS),
+      titleAndTableOfContentsLabelFontSize: optionIds(TITLE_AND_TOC_LABEL_FONT_SIZE_OPTIONS),
       includeTableOfContents: optionIds(TABLE_OF_CONTENTS_OPTIONS),
       tableOfContentsMaxColumns: optionIds(TABLE_OF_CONTENTS_MAX_COLUMNS_OPTIONS),
       tableOfContentsGapSize: optionIds(TABLE_OF_CONTENTS_GAP_SIZE_OPTIONS),
@@ -5037,6 +5051,12 @@
         options: HIDE_SHOW_OPTIONS
       },
       {
+        name: "Title and Table of Contents label font size",
+        id: "titleAndTableOfContentsLabelFontSize",
+        type: "select",
+        options: TITLE_AND_TOC_LABEL_FONT_SIZE_OPTIONS
+      },
+      {
         name: "Include numbers on T:* style section headers",
         id: "includeSectionHeaderNumbers",
         type: "select",
@@ -5374,6 +5394,14 @@
                 <li><b>Show</b> is the default and displays the selected theme ornament between tunes and above the footer.</li>
               </ul>
             </li>
+            <li id="instructions-setting-title-and-toc-label-font-size"><b>Title and Table of Contents label font size</b> controls the responsive font sizes of the main website title and the Table of Contents heading on the generated website.
+              <ul>
+                <li><b>Small</b> uses a compact website title and Table of Contents heading. This can be useful when conserving vertical space on tablets or when the website title is long.</li>
+                <li><b>Medium</b> is the default and provides a balanced size between the compact and original presentation.</li>
+                <li><b>Large</b> is a larger size than Medium and matches older version of the tool's default website title and Table of Contents font sizes.</li>
+                <li>This setting does not change tune titles or <code>T:*</code> style section-header titles.</li>
+              </ul>
+            </li>
             <li id="instructions-setting-include-section-header-numbers"><b>Include numbers on T:* style section headers</b> controls numbered badges for section header records. Section headers are ABC records whose trimmed <code>T:</code> text starts with <code>*</code>. The exported website removes the leading <code>*</code> and shows the remaining text as a centered section heading instead of notation and playback.
               <ul>
                 <li><b>Hide</b> is the default. Section headers do not show numbers and do not advance the numbering count.</li>
@@ -5705,15 +5733,11 @@
 
           <p id="developer-website-title"><b>Website title</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
-          <p>Controls the main title at the top of the exported website:</p>
-          <p><code>h1 { margin:0; font-size:clamp(1.8rem,4.2vw,2.6rem); line-height:1.08; }</code></p>
-          <p>For example, change <code>2.6rem</code> to <code>2.3rem</code> to make the website title smaller.</p>
+          <p>The <b>Title and Table of Contents label font size</b> setting provides <b>Small</b>, <b>Medium</b>, and <b>Large</b> responsive presets for the main website title. For manual sizing beyond those presets, edit the generated CSS block labeled <code>Title and Table of Contents label font size override</code> and change the <code>font-size</code> value for <code>.hero h1</code>.</p>
 
           <p id="developer-table-of-contents-title"><b>Table of Contents title</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
-          <p>Controls only the <b>Table of Contents</b> heading above the tune links:</p>
-          <p><code>.table-of-contents h2 { color:var(--ink); font-size:clamp(1.7rem,4vw,2.2rem); font-weight:800; line-height:1.1; margin:0 0 20px; }</code></p>
-          <p>For example, change <code>2.2rem</code> to <code>1.9rem</code> to make the Table of Contents title smaller.</p>
+          <p>The <b>Title and Table of Contents label font size</b> setting also provides the responsive size preset for the <b>Table of Contents</b> heading above the tune links. For manual sizing beyond those presets, edit the generated CSS block labeled <code>Title and Table of Contents label font size override</code> and change the <code>font-size</code> value for <code>.table-of-contents h2</code>.</p>
 
           <p id="developer-section-header-title-font"><b>T:* style section headers</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -8410,6 +8434,23 @@ fiddle: {
     const embeddedCloseMarkup = embeddedDeployment ? '  </div>\n' : "";
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
     const bodyWidth = Math.max(500, Math.min(1800, Number(s.bodyWidth) || 1180));
+    const titleAndTocLabelFontSizes = {
+      small: {
+        title: "clamp(1.4rem,3.2vw,1.9rem)",
+        toc: "clamp(1.3rem,3vw,1.6rem)"
+      },
+      medium: {
+        title: "clamp(1.6rem,3.8vw,2.25rem)",
+        toc: "clamp(1.5rem,3.5vw,1.9rem)"
+      },
+      large: {
+        title: "clamp(1.8rem,4.2vw,2.6rem)",
+        toc: "clamp(1.7rem,4vw,2.2rem)"
+      }
+    };
+    const titleAndTocLabelFontSize =
+      titleAndTocLabelFontSizes[String(s.titleAndTableOfContentsLabelFontSize || DEFAULT_SETTINGS.titleAndTableOfContentsLabelFontSize)] ||
+      titleAndTocLabelFontSizes.large;
     const showTuneNumbers = s.tuneNumbers !== "hide";
     const showSectionHeaderNumbers = String(s.includeSectionHeaderNumbers || DEFAULT_SETTINGS.includeSectionHeaderNumbers) !== "hide";
     const shouldShowNumber = tune => tune.isSectionHeader ? showSectionHeaderNumbers : showTuneNumbers;
@@ -9801,7 +9842,20 @@ fiddle: {
 ${customThemeCss}
     ${repeatButtonHighlightCss}
     ${whistleTabCss}
-    ${embeddedDeploymentCss}    
+    ${embeddedDeploymentCss}
+
+    /*
+      Title and Table of Contents label font size override.
+      Large preserves the Website Builder's original sizes; Medium and Small
+      provide progressively more compact responsive title treatment.
+    */
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site .hero h1" : ".hero h1"} {
+      font-size:${titleAndTocLabelFontSize.title} !important;
+    }
+    ${embeddedDeployment ? ".abcjs-eskin-embedded-site .table-of-contents h2" : ".table-of-contents h2"} {
+      font-size:${titleAndTocLabelFontSize.toc} !important;
+    }
+
     .abc-tools-link {
       left:0;
       right:auto;
