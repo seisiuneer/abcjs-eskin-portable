@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.3";
+  const WEBSITE_BUILDER_VERSION = "1.2.9";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1275,6 +1275,14 @@
     { id: "small", name: "Small" },
     { id: "medium", name: "Medium" },
     { id: "large", name: "Large" }
+  ];
+
+  const PRINT_TITLE_PAGE_AND_TEXT_OPTIONS = [
+    { id: "disabled", name: "Disabled" },
+    { id: "titleOnly", name: "Title page only" },
+    { id: "textOnly", name: "Text before tunes only" },
+    { id: "titleWithText", name: "Title page including text before tunes" },
+    { id: "titleThenText", name: "Title page, text before tunes on own pages" }
   ];
 
   const SOUNDFONT_OPTIONS = [
@@ -1964,6 +1972,7 @@
     largeCollectionGrouping: "disabled",
     tuneOrder: "preserve",
     largeCollectionGroupingBatchSize: "100",
+    printTitlePageAndTextBeforeTunes: "disabled",
     deploymentTarget: "standalone"
   };
 
@@ -2078,6 +2087,10 @@
 
     if (!optionIds(TITLE_AND_TOC_LABEL_FONT_SIZE_OPTIONS).has(String(normalized.titleAndTableOfContentsLabelFontSize || ""))) {
       normalized.titleAndTableOfContentsLabelFontSize = DEFAULT_SETTINGS.titleAndTableOfContentsLabelFontSize;
+    }
+
+    if (!optionIds(PRINT_TITLE_PAGE_AND_TEXT_OPTIONS).has(String(normalized.printTitlePageAndTextBeforeTunes || ""))) {
+      normalized.printTitlePageAndTextBeforeTunes = DEFAULT_SETTINGS.printTitlePageAndTextBeforeTunes;
     }
 
     const groupingMode = String(normalized.largeCollectionGrouping || "");
@@ -3570,7 +3583,8 @@
       website_settings_text_fields: [
         "title", "subtitle", "footer",
         "includeTuneHeading",
-        "includeCollectionIntro", "collectionIntro"
+        "includeCollectionIntro", "collectionIntro",
+        "printTitlePageAndTextBeforeTunes"
       ],
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
@@ -3616,7 +3630,7 @@
       });
     });
 
-    if (moved < 38) return false;
+    if (moved < 39) return false;
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
@@ -3686,6 +3700,7 @@
     tableOfContentsBottomButtons: "instructions-setting-table-of-contents-bottom-buttons",
     backToTuneTopBottomButton: "instructions-setting-back-to-tune-top-bottom-button",
     titleArticleReverser: "instructions-setting-title-article-reverser",
+    printTitlePageAndTextBeforeTunes: "instructions-setting-print-title-page-and-text-before-tunes",
     deploymentTarget: "instructions-setting-deployment-target",
 
     injectSoundSettings: "instructions-setting-inject-sound-settings",
@@ -3899,6 +3914,7 @@
       largeCollectionGrouping: new Set([...optionIds(LARGE_COLLECTION_GROUPING_OPTIONS), "rhythmTagHundred"]),
       tuneOrder: optionIds(TUNE_ORDER_OPTIONS),
       largeCollectionGroupingBatchSize: optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS),
+      printTitlePageAndTextBeforeTunes: optionIds(PRINT_TITLE_PAGE_AND_TEXT_OPTIONS),
       deploymentTarget: optionIds(DEPLOYMENT_TARGET_OPTIONS)
     };
 
@@ -4895,7 +4911,7 @@
       },
       { name: "Website title", id: "title", type: "text" },
       { name: "Subtitle", id: "subtitle", type: "text" },
-      { name: "Footer text", id: "footer", type: "textarea", height: 38 },
+      { name: "Footer text", id: "footer", type: "textarea", height: 76 },
       {
         name: "Include tune title and meta text above each tune",
         id: "includeTuneHeading",
@@ -4910,7 +4926,7 @@
         name: "Text before all the tunes",
         id: "collectionIntro",
         type: "textarea",
-        height: 46
+        height: 92
       },
       { name: "Music genre visual theme", id: "theme", type: "select", options: themeOptionsForDisplay() },
       { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
@@ -5075,6 +5091,12 @@
         options: TITLE_ARTICLE_REVERSE_OPTIONS
       },
       {
+        name: "Print title page and text before tunes",
+        id: "printTitlePageAndTextBeforeTunes",
+        type: "select",
+        options: PRINT_TITLE_PAGE_AND_TEXT_OPTIONS
+      },
+      {
         name: "Deployment target",
         id: "deploymentTarget",
         type: "select",
@@ -5168,6 +5190,7 @@
               <li><a href="#instructions-saved-settings">Saved settings</a></li>
               <li><a href="#instructions-build-save">Build and save the website</a></li>
               <li><a href="#instructions-generated-site">Using the generated website</a></li>
+              <li><a href="#instructions-printing">Printing the generated website</a></li>
               <li><a href="#instructions-clear">Clearing the current collection</a></li>
               <li><a href="#instructions-abctools">ABC Transcription Tools compatibility</a></li>
               <li><a href="#instructions-theme-builder">abcjs-eskin Website Theme Builder</a></li>
@@ -5257,6 +5280,16 @@
             <li id="instructions-setting-include-tune-heading"><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>
             <li id="instructions-setting-include-collection-intro">The <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
             <li id="instructions-setting-collection-intro"><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>
+            <li id="instructions-setting-print-title-page-and-text-before-tunes"><b>Print title page and text before tunes</b> controls optional front-matter pages when a standalone generated website is printed from the browser or saved as PDF.
+              <ul>
+                <li><b>Disabled</b> is the default. Printing only includes the tune(s).</li>
+                <li><b>Title page only</b> prints the website title and subtitle (if either are not blank) on its own page before the tune(s).</li>
+                <li><b>Text before tunes only</b> prints the text from <b>Text before all the tunes</b> (if enabled and not blank) on its own page followed by the tune(s). No title page is printed.</li>
+                <li><b>Title page including text before tunes</b> prints the title and subtitle (if either are not blank) on its own page with text from <b>Text before all the tunes</b> (if enabled and not blank) on the same page, followed by the tune(s).</li>
+                <li><b>Title page, text before tunes on own pages</b> prints the title and subtitle (if either are not blank) on one page, then text from <b>Text before all the tunes</b> (if enabled and not blank) on a separate page, followed by the tune(s).</li>
+                <li>This setting applies only to <b>Standalone website</b> exports. Embedded website exports intentionally do not include Website Builder print CSS because the host page's layout and print styles can affect pagination and visibility.</li>
+              </ul>
+            </li>
           </ul>
 
           <p id="instructions-configure-style-display"><b>Style &amp; Options</b></p>
@@ -5541,7 +5574,23 @@
             <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Table of contents buttons also below tunes</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation. If <b>Add back to top-of-tune button at bottom of tunes</b> is enabled, the lower Top of Tune button also stops playback, hides all play cursors, and returns to the top of the current tune.</li>
           </ul>
 
-          <h3 id="instructions-clear">8. Clearing the current collection</h3>
+          <h3 id="instructions-printing">8. Printing the generated website</h3>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p>Standalone generated websites include print-only CSS for browser printing and saving to PDF.</p>
+          <ul>
+            <li>Each printed tune starts on a new page.</li>
+            <li>Only the rendered notation area is printed for each tune.</li>
+            <li>In <b>Single</b> tune display mode, only the notation for the one tune currently displayed is printed.</li>
+            <li>In <b>Multiple</b> tune display mode, the notation for all tunes currently displayed on the page is printed. If the website uses a <b>Tune Section</b> selector, only the tunes in the currently displayed section are printed.</li>
+            <li><b>Print title page and text before tunes</b> can optionally print the website title/subtitle, included text before the tunes (if enabled), or both before the notation pages.</li>
+            <li>The printing feature supports tunes whose complete rendered notation fits on a single printed page. Long tunes with many staves may not split properly between pages.</li>
+            <li>Any page headers or footers added by the browser itself, such as a URL, date, or page number, are controlled by the browser's print dialog and are not part of the generated website. Turn those browser options off when a notation-only page is required.</li>
+          </ul>
+          <div class="instructions-warning">
+            Embedded website exports intentionally do not include the Website Builder print CSS. Directly embedded HTML can inherit layout and print rules from the host website, so printing behavior and pagination depend on the host page. Use a standalone generated website when the Website Builder's notation-only print layout and optional print front matter are required.
+          </div>
+
+          <h3 id="instructions-clear">9. Clearing the current collection</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Click the small <b>Clear</b> button beside the <b>Loaded Tunes</b> label to remove all currently loaded files and tunes from the builder.
@@ -5549,7 +5598,7 @@
             This does not erase saved website settings.
           </p>
 
-          <h3 id="instructions-abctools">9. <b>ABC Transcription Tools</b> compatibility</h3>
+          <h3 id="instructions-abctools">10. <b>ABC Transcription Tools</b> compatibility</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             The Website Builder uses <code>abcjs-eskin-portable</code> for notation rendering and playback,
@@ -5597,7 +5646,7 @@
             Other PDF-only annotations in that block, such as Table of Contents, index, QR-code, PDF-quality,
             and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
           </p>
-          <h3 id="instructions-theme-builder">10. abcjs-eskin Website Theme Builder</h3>
+          <h3 id="instructions-theme-builder">11. abcjs-eskin Website Theme Builder</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             The <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-theme-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Theme Builder</a></b>
@@ -5611,7 +5660,7 @@
             <li>Imported custom themes are saved in this browser immediately, even if you close the settings dialog without clicking <b>Apply</b>. Resetting all settings removes the imported custom theme.</li>
           </ul>
 
-          <h3 id="instructions-launching">11. Launching from other ABC tools</h3>
+          <h3 id="instructions-launching">12. Launching from other ABC tools</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             This <b>Website Builder</b> can also be opened directly from compatible abcjs-eskin tools without first saving an ABC file.
@@ -5628,7 +5677,7 @@
             After the transfer, you can still use <b>Load ABC Files</b> to add additional ABC files to the collection before building the website.
           </div>
 
-          <h3 id="instructions-notes">12. Notes</h3>
+          <h3 id="instructions-notes">13. Notes</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ul>
             <li>The exported website requires internet access to load the linked abcjs-eskin-portable
@@ -5644,7 +5693,7 @@
             <li>Use hyperlinks such as <code>&lt;a href=&quot;https://example.com&quot;&gt;Website&lt;/a&gt;</code> in the subtitle, footer, or optional text fields. Add <code>target=&quot;_blank&quot;</code> to open the link in a new tab. HTTP and HTTPS protocols are supported; unsafe link protocols are shown as ordinary text.</li>
           </ul>
 
-          <h3 id="instructions-developer-customization">13. Developer Customization</h3>
+          <h3 id="instructions-developer-customization">14. Developer Customization</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div class="instructions-note">
             <b>Developer Customization topics</b>
@@ -5684,7 +5733,7 @@
             <li><code>Table of Contents card customization:</code>, <code>TOC search customization:</code>, and <code>TOC link grid customization:</code> TOC panel, search field, and tune-link layout.</li>
             <li><code>Tune card customization:</code>, <code>Tune card gap customization:</code>, and <code>Mobile card spacing customization:</code> spacing and styling for tune panels.</li>
             <li><code>Section header panel spacing customization:</code>, <code>Section header title side padding customization:</code>, and <code>Responsive section header customization:</code> T:* section-header layout.</li>
-            <li><code>Print CSS customization:</code> print/PDF-only rules.</li>
+            <li><code>Print front matter customization:</code> print-only title/subtitle and text-before-tunes page layout, and <code>Standalone website print CSS:</code> notation-only tune print/PDF rules for standalone exports.</li>
           </ul>
 
           <p id="developer-responsive-font-size-maximums"><b>Changing responsive font-size maximums in an exported website</b></p>
@@ -5757,7 +5806,9 @@
 
           <p id="developer-print-css"><b>Print CSS</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
-          <p>The generated CSS includes a documented <code>@media print</code> block for browser printing or saving to PDF. Use that block for print-only changes, such as hiding controls, removing shadows, changing print width, or improving page breaks, without changing the on-screen layout.</p>
+          <p>Standalone generated websites include documented print CSS after the theme and custom-theme CSS. The <code>Standalone website print CSS</code> block hides normal non-notation website content, hides the playback cursor, preserves the current Single/Multiple and Tune Section visibility state, and starts each visible tune on a new printed page.</p>
+          <p>The <code>Print front matter customization</code> block controls the print-only title/subtitle and text-before-tunes pages generated by <b>Print title page and text before tunes</b>. The selected setting and available Text &amp; Content values determine which hidden print-front-matter sections are generated. The print stylesheet shows those sections only when printing; no print-specific runtime JavaScript is used.</p>
+          <p>The notation print layout is intended for tunes whose complete rendered notation fits on one printed page. Long tunes with many staves may not split correctly between pages. Embedded website exports intentionally omit the Website Builder print CSS because host-page layout and print styles can change visibility and pagination.</p>
 
           <p id="developer-display-instrument-selector-items"><b>Adding or removing instruments from the Display / Instrument selector</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -5915,7 +5966,7 @@ fiddle: {
           <p>The generated CSS also includes a <code>@media (prefers-reduced-motion: reduce)</code> rule for animated background themes. Leave that rule in place so users who request reduced motion do not get the background animation.</p>
 
           <hr style="margin-top:20px;">
-          <h3 id="instructions-tip-jars">14. Tip Jars</h3>
+          <h3 id="instructions-tip-jars">15. Tip Jars</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div style="text-align:left;margin-bottom:20px;">
             <p class="instructions-title">This tool was created by</p>
@@ -5934,7 +5985,7 @@ fiddle: {
             </div>
           </div>
           <hr>
-          <h3 id="instructions-source-code">15. Source Code on GitHub</h3>
+          <h3 id="instructions-source-code">16. Source Code on GitHub</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <div style="text-align:left;margin-bottom:20px;">
             The source code for this tool is available on GitHub.
@@ -8430,6 +8481,66 @@ fiddle: {
       : "";
     const deploymentTarget = String(s.deploymentTarget || DEFAULT_SETTINGS.deploymentTarget);
     const embeddedDeployment = deploymentTarget === "embedded";
+    const printTitlePageAndTextBeforeTunes = String(
+      s.printTitlePageAndTextBeforeTunes ||
+      DEFAULT_SETTINGS.printTitlePageAndTextBeforeTunes
+    );
+    const hasPrintTitleContent = Boolean(
+      String(s.title || "").trim() || String(s.subtitle || "").trim()
+    );
+    const hasPrintTextBeforeTunes = Boolean(hasCollectionIntro);
+    const printTitleMarkup = String(s.title || "").trim()
+      ? `<h1>${title}</h1>`
+      : "";
+    const printSubtitleMarkup = subtitle.trim()
+      ? `<p class="print-front-matter-subtitle">${subtitle}</p>`
+      : "";
+    const printTitleBlockMarkup = hasPrintTitleContent
+      ? `<div class="print-front-matter-title-block">${printTitleMarkup}${printSubtitleMarkup}</div>`
+      : "";
+    const printTextBeforeTunesMarkup = hasPrintTextBeforeTunes
+      ? `<div class="print-front-matter-text-block"><p>${collectionIntro}</p></div>`
+      : "";
+
+    let printFrontMatterMarkup = "";
+
+    if (!embeddedDeployment) {
+      if (
+        printTitlePageAndTextBeforeTunes === "titleOnly" &&
+        hasPrintTitleContent
+      ) {
+        printFrontMatterMarkup =
+          `<section class="print-front-matter print-title-page">${printTitleBlockMarkup}</section>`;
+      } else if (
+        printTitlePageAndTextBeforeTunes === "textOnly" &&
+        hasPrintTextBeforeTunes
+      ) {
+        printFrontMatterMarkup =
+          `<section class="print-front-matter print-text-page">${printTextBeforeTunesMarkup}</section>`;
+      } else if (
+        printTitlePageAndTextBeforeTunes === "titleWithText" &&
+        (hasPrintTitleContent || hasPrintTextBeforeTunes)
+      ) {
+        printFrontMatterMarkup =
+          `<section class="print-front-matter print-title-with-text-page">${printTitleBlockMarkup}${printTextBeforeTunesMarkup}</section>`;
+      } else if (
+        printTitlePageAndTextBeforeTunes === "titleThenText"
+      ) {
+        const printPages = [];
+        if (hasPrintTitleContent) {
+          printPages.push(
+            `<section class="print-front-matter print-title-page">${printTitleBlockMarkup}</section>`
+          );
+        }
+        if (hasPrintTextBeforeTunes) {
+          printPages.push(
+            `<section class="print-front-matter print-text-page">${printTextBeforeTunesMarkup}</section>`
+          );
+        }
+        printFrontMatterMarkup = printPages.join("\n");
+      }
+    }
+
     const embeddedOpenMarkup = embeddedDeployment ? '  <div class="abcjs-eskin-embedded-site">\n' : "";
     const embeddedCloseMarkup = embeddedDeployment ? '  </div>\n' : "";
     const width = Math.max(50, Math.min(100, Number(s.notationWidth) || 100));
@@ -8979,6 +9090,311 @@ fiddle: {
       max-width:100% !important;
     }`
       : "";
+
+    const printFrontMatterCss = `
+    /*
+      Print front matter customization:
+      Print-only title/subtitle and optional text-before-tunes pages are generated
+      as hidden HTML and shown only by the standalone website print stylesheet.
+      The print front-matter page uses a deliberately sub-page physical-height box
+      and physical print-unit vertical positioning instead of viewport units or
+      percentage positioning. This gives Safari, Chrome, and Firefox the same print
+      geometry and avoids Safari creating extra pages around viewport-sized boxes.
+    */
+    .print-front-matter {
+      display:none;
+    }
+
+    @media print {
+      .print-front-matter {
+        display:block !important;
+        visibility:visible !important;
+        position:relative !important;
+        float:none !important;
+        clear:both !important;
+        box-sizing:border-box !important;
+        width:100% !important;
+        max-width:none !important;
+        height:8.5in !important;
+        min-height:0 !important;
+        margin:0 !important;
+        padding:0 8% !important;
+        overflow:hidden !important;
+        color:#000 !important;
+        -webkit-text-fill-color:#000 !important;
+        background:#fff !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        filter:none !important;
+        opacity:1 !important;
+        text-align:center !important;
+        text-shadow:none !important;
+        transform:none !important;
+        animation:none !important;
+        break-after:page !important;
+        page-break-after:always !important;
+      }
+
+      .print-front-matter::before,
+      .print-front-matter::after,
+      .print-front-matter-title-block::before,
+      .print-front-matter-title-block::after,
+      .print-front-matter-text-block::before,
+      .print-front-matter-text-block::after {
+        display:none !important;
+        content:none !important;
+      }
+
+      .print-front-matter-title-block,
+      .print-front-matter-text-block {
+        display:block !important;
+        visibility:visible !important;
+        position:absolute !important;
+        left:8% !important;
+        right:8% !important;
+        width:auto !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        color:#000 !important;
+        -webkit-text-fill-color:#000 !important;
+        background:none !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        filter:none !important;
+        opacity:1 !important;
+        text-align:center !important;
+        text-shadow:none !important;
+        transform:none !important;
+        animation:none !important;
+      }
+
+      .print-title-page .print-front-matter-title-block,
+      .print-title-with-text-page .print-front-matter-title-block {
+        top:2.35in !important;
+      }
+
+      .print-text-page .print-front-matter-text-block {
+        top:2.35in !important;
+      }
+
+      .print-title-with-text-page .print-front-matter-text-block {
+        top:5.25in !important;
+      }
+
+      .print-front-matter h1,
+      .print-front-matter .print-front-matter-subtitle,
+      .print-front-matter .print-front-matter-text-block p {
+        display:block !important;
+        visibility:visible !important;
+        position:static !important;
+        width:auto !important;
+        max-width:none !important;
+        margin-left:auto !important;
+        margin-right:auto !important;
+        padding:0 !important;
+        color:#000 !important;
+        -webkit-text-fill-color:#000 !important;
+        background:none !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        clip-path:none !important;
+        filter:none !important;
+        mix-blend-mode:normal !important;
+        opacity:1 !important;
+        text-align:center !important;
+        text-shadow:none !important;
+        transform:none !important;
+        animation:none !important;
+      }
+
+      .print-front-matter a {
+        display:inline !important;
+        visibility:visible !important;
+        position:static !important;
+        color:#000 !important;
+        -webkit-text-fill-color:#000 !important;
+        background:none !important;
+        border:0 !important;
+        box-shadow:none !important;
+        filter:none !important;
+        opacity:1 !important;
+        text-decoration-color:#000 !important;
+        text-shadow:none !important;
+        transform:none !important;
+        animation:none !important;
+      }
+
+      .print-front-matter h1 {
+        margin-top:0 !important;
+        margin-bottom:0 !important;
+        font-size:2.25rem !important;
+        line-height:1.08 !important;
+      }
+
+      .print-front-matter .print-front-matter-subtitle {
+        margin-top:18px !important;
+        margin-bottom:0 !important;
+        font-size:1.25rem !important;
+        line-height:1.4 !important;
+      }
+
+      .print-front-matter .print-front-matter-text-block p {
+        max-width:82ch !important;
+        margin-top:0 !important;
+        margin-bottom:0 !important;
+        font-size:1.1rem !important;
+        line-height:1.5 !important;
+      }
+
+      .print-front-matter br {
+        display:block !important;
+      }
+    }`;
+
+    const standalonePrintCss = embeddedDeployment
+      ? ""
+      : `
+    ${printFrontMatterCss}
+
+    /*
+      Standalone website print CSS:
+      Browser printing and Save as PDF output include only the notation for ordinary
+      tunes that are currently displayed. Single mode therefore prints the one visible
+      tune; Multiple mode prints the visible tunes in the current Tune Section. Each
+      printed tune starts on a new page, and playback cursors are always hidden.
+    */
+    @media print {
+      html,
+      body {
+        margin:0 !important;
+        padding:0 !important;
+        color:#000 !important;
+        background:#fff !important;
+      }
+
+      html::before,
+      html::after,
+      body::before,
+      body::after,
+      main.page-width::before,
+      main.page-width::after {
+        display:none !important;
+        content:none !important;
+      }
+
+      .hero,
+      .instrument-working-overlay,
+      .collection-intro,
+      .table-of-contents,
+      .site-footer,
+      .section-divider,
+      .score-panel.section-header-panel {
+        display:none !important;
+      }
+
+      main.page-width {
+        display:block !important;
+        visibility:visible !important;
+        width:100% !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+
+      main > article.score-panel[data-key][hidden] {
+        display:none !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden]) {
+        display:block !important;
+        visibility:visible !important;
+        position:static !important;
+        float:none !important;
+        clear:both !important;
+        width:100% !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:visible !important;
+        color:#000 !important;
+        background:#fff !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        transform:none !important;
+        break-inside:auto !important;
+        page-break-inside:auto !important;
+        break-after:page !important;
+        page-break-after:always !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden]) > :not(.notation-wrap) {
+        display:none !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden]) .notation-wrap {
+        display:block !important;
+        visibility:visible !important;
+        position:static !important;
+        float:none !important;
+        clear:both !important;
+        width:100% !important;
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:visible !important;
+        transform:none !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden]) .paper {
+        display:block !important;
+        visibility:visible !important;
+        position:static !important;
+        float:none !important;
+        clear:both !important;
+        width:100% !important;
+        max-width:none !important;
+        min-height:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+        color:#000 !important;
+        background:#fff !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        transform:none !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden]) .paper svg {
+        display:block !important;
+        position:static !important;
+        float:none !important;
+        width:100% !important;
+        max-width:100% !important;
+        height:auto !important;
+        overflow:hidden !important;
+        transform:none !important;
+      }
+
+      main > article.score-panel[data-key]:not([hidden])::before,
+      main > article.score-panel[data-key]:not([hidden])::after,
+      main > article.score-panel[data-key]:not([hidden]) .notation-wrap::before,
+      main > article.score-panel[data-key]:not([hidden]) .notation-wrap::after,
+      main > article.score-panel[data-key]:not([hidden]) .paper::before,
+      main > article.score-panel[data-key]:not([hidden]) .paper::after {
+        display:none !important;
+        content:none !important;
+      }
+
+      .abcjs-cursor {
+        display:none !important;
+      }
+    }`;
 
     const repeatButtonHighlightCss = `
     /*
@@ -9820,24 +10236,7 @@ fiddle: {
       background-color:#fff !important;
       background-image:none !important;
     }
-    /*
-      Print CSS customization: these rules apply only when the exported website is
-      printed or saved as PDF from the browser. They remove interactive controls and
-      shadows, use the full printable page width, and try to keep tune cards from
-      splitting across pages. Edit only this @media print block for print-only changes.
-    */
-    @media print {
-      /* Print page colors: use a white page and normal text for better printer/PDF output. */
-      body { color:#000; background:#fff; }
-      /* Print width: use the full printable area instead of the on-screen maximum width. */
-      .page-width { width:100%; margin:0; }
-      /* Print card style: remove shadows to avoid gray boxes in printed output. */
-      .collection-intro, .table-of-contents, .score-panel { box-shadow:none; }
-      /* Print controls: hide browser-only navigation, playback, instrument, and search controls. */
-      .back-to-toc, .abc-tools-link, .bottom-toc-row, .audio-controls, .site-instrument-selector, .instrument-working-overlay, .toc-search { display:none !important; }
-      /* Print pagination: avoid splitting tune and section-header cards across pages when possible. */
-      .score-panel { break-inside:avoid; page-break-inside:avoid; }
-    }
+
 
 ${customThemeCss}
     ${repeatButtonHighlightCss}
@@ -10016,9 +10415,12 @@ ${customThemeCss}
         text-align:center !important;
       }
     }
+
+    ${standalonePrintCss}
   </style>
 </head>
 <body>
+${printFrontMatterMarkup}
 ${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-instrument-selector" : ""}">
     <div class="page-width">
       <h1>${title}</h1>
