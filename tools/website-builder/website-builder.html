@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.13";
+  const WEBSITE_BUILDER_VERSION = "1.2.17";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -5365,6 +5365,7 @@
                 <li><b>Single</b> mode is useful for very long tunes, such as classical arrangements, where it makes sense to show and prepare only one tune at a time.</li>
               </ul>
               <p>In <b>Single</b> mode, the Table of Contents cannot be disabled because it is needed to choose the tune to display. If <b>Include table of contents</b> is set to <b>Disabled</b> and you change <b>Tune Display</b> to <b>Single</b>, the builder changes the Table of Contents setting to <b>Enabled</b>. The <b>Disabled</b> choice remains visible, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the setting back to <b>Enabled</b>.</p>
+              <p>To create a website with one tune and no Table of Contents, load only that tune, set <b>Tune Display</b> to <b>Multiple</b>, and set <b>Include table of contents</b> to <b>Disabled</b>. Multiple mode does not require a Table of Contents, so the one tune is displayed directly.</p>
             </li>
             <li id="instructions-setting-instrument-selector"><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
               <ul>
@@ -8442,7 +8443,7 @@ fiddle: {
       return { opens, closes };
     }
 
-    return lines.map(line => {
+    const formattedLines = lines.map(line => {
       const trimmed = line.trim();
       if (!trimmed) return "";
 
@@ -8453,7 +8454,18 @@ fiddle: {
 
       depth = Math.max(0, depth + counts.opens - counts.closes);
       return formatted;
-    }).join("\n");
+    });
+
+    const compactLines = [];
+    formattedLines.forEach(line => {
+      if (!line && (!compactLines.length || !compactLines[compactLines.length - 1])) return;
+      compactLines.push(line);
+    });
+    while (compactLines.length && !compactLines[compactLines.length - 1]) {
+      compactLines.pop();
+    }
+
+    return compactLines.join("\n");
   }
 
   function generateSite(previewMode = false) {
@@ -8708,13 +8720,20 @@ fiddle: {
     </div>`
       : "";
 
+    const tocLinksMarkup = `<div class="toc-links">
+        ${toc}
+    </div>`;
+
+    const tocBodyMarkup = useSimpleTableOfContentsDropdown
+      ? simpleTocMarkup
+      : [tocSearchMarkup, tocLinksMarkup]
+          .filter(markup => String(markup || "").trim())
+          .join("\n    ");
+
     const tocMarkup = includeTableOfContents
       ? `<nav class="table-of-contents page-width${useSimpleTableOfContentsDropdown ? " simple-toc-mode" : ""}" id="table-of-contents" aria-labelledby="toc-title">
     <h2 id="toc-title">${escapeHtml(initialTocTitle)}</h2>
-    ${useSimpleTableOfContentsDropdown ? simpleTocMarkup : `${tocSearchMarkup}
-    <div class="toc-links">
-        ${toc}
-    </div>`}
+    ${tocBodyMarkup}
   </nav>`
       : "";
 
@@ -8779,6 +8798,12 @@ fiddle: {
     const workingBannerMarkup = `<div id="instrument-working-overlay" class="instrument-working-overlay" hidden>
       <div id="instrument-working-banner" class="instrument-working-banner" role="status" aria-live="polite" aria-atomic="true">Working...</div>
     </div>`;
+
+    const bodySectionMarkup = [
+      workingBannerMarkup,
+      collectionIntroMarkup,
+      tocMarkup
+    ].filter(markup => String(markup || "").trim()).join("\n\n  ");
 
     const articleBlocks = tunes.map((tune, index) => {
       const showThisNumber = shouldShowNumber(tune);
@@ -8905,6 +8930,7 @@ fiddle: {
     .whistle_small { font-family:'TinWhistleFingering'; font-size:32px; }
     .hiddentabline { display:none; }`
       : "";
+
     const embeddedDeploymentCss = embeddedDeployment
       ? `
     /*
@@ -9257,10 +9283,12 @@ fiddle: {
       }
     }`;
 
+    const normalizedPrintFrontMatterCss = String(printFrontMatterCss || "")
+      .replace(/^\n+|\n+$/g, "");
+
     const standalonePrintCss = embeddedDeployment
       ? ""
-      : `
-    ${printFrontMatterCss}
+      : `${normalizedPrintFrontMatterCss}
 
     /*
       Standalone website print CSS:
@@ -9402,6 +9430,9 @@ fiddle: {
       }
     }`;
 
+    const generatedPrintCss = String(standalonePrintCss || "")
+      .replace(/^\n+|\n+$/g, "");
+
     const repeatButtonHighlightCss = `
     /*
       Play bar repeat button highlight customization: these values are generated
@@ -9431,6 +9462,23 @@ fiddle: {
       fill:var(--abcjs-repeat-active-fg) !important;
       stroke:var(--abcjs-repeat-active-fg) !important;
     }`;
+
+    const generatedSupplementalCss = [
+      customThemeCss,
+      repeatButtonHighlightCss,
+      whistleTabCss,
+      embeddedDeploymentCss
+    ].map(css => String(css || "").replace(/^\n+|\n+$/g, ""))
+      .filter(Boolean)
+      .join("\n\n");
+
+    const generatedSupplementalCssBlock = generatedSupplementalCss
+      ? `\n\n${generatedSupplementalCss}\n\n`
+      : "\n\n";
+
+    const generatedPrintCssBlock = generatedPrintCss
+      ? `\n\n${generatedPrintCss}\n`
+      : "\n";
 
     return `<!doctype html>
 <html lang="en">
@@ -10241,15 +10289,7 @@ fiddle: {
       background:#fff !important;
       background-color:#fff !important;
       background-image:none !important;
-    }
-
-
-${customThemeCss}
-    ${repeatButtonHighlightCss}
-    ${whistleTabCss}
-    ${embeddedDeploymentCss}
-
-    /*
+    }${generatedSupplementalCssBlock}    /*
       Title and Table of Contents label font size override.
       Large preserves the Website Builder's original sizes; Medium and Small
       provide progressively more compact responsive title treatment.
@@ -10420,10 +10460,7 @@ ${customThemeCss}
         padding-right:0 !important;
         text-align:center !important;
       }
-    }
-
-    ${standalonePrintCss}
-  </style>
+    }${generatedPrintCssBlock}  </style>
 </head>
 <body>
 ${printFrontMatterMarkup}
@@ -10435,11 +10472,7 @@ ${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-ins
     </div>
   </header>
 
-  ${workingBannerMarkup}
-
-  ${collectionIntroMarkup}
-
-  ${tocMarkup}
+  ${bodySectionMarkup}
 
   <main class="page-width">
     ${articles}
