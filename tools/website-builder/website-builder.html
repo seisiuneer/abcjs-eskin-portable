@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.11";
+  const WEBSITE_BUILDER_VERSION = "1.2.12";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -5287,6 +5287,7 @@
                 <li><b>Text before tunes only</b> prints the text from <b>Text before all the tunes</b> (if enabled and not blank) on its own page followed by the tune(s). No title page is printed.</li>
                 <li><b>Title page including text before tunes</b> prints the title and subtitle (if either are not blank) on its own page with text from <b>Text before all the tunes</b> (if enabled and not blank) on the same page, followed by the tune(s).</li>
                 <li><b>Title page, text before tunes on own pages</b> prints the title and subtitle (if either are not blank) on one page, then text from <b>Text before all the tunes</b> (if enabled and not blank) on a separate page, followed by the tune(s).</li>
+                <li>In <b>Multiple</b> tune display mode, if the generated website has <b>Tune Sections</b>, title-page options append the currently displayed Tune Section name to the printed website title.</li>
                 <li>This setting applies only to <b>Standalone website</b> exports. Embedded website exports intentionally do not include Website Builder print CSS because the host page's layout and print styles can affect pagination and visibility.</li>
               </ul>
             </li>
@@ -5582,6 +5583,7 @@
             <li>Only the rendered notation area is printed for each tune.</li>
             <li>In <b>Single</b> tune display mode, only the notation for the one tune currently displayed is printed.</li>
             <li>In <b>Multiple</b> tune display mode, the notation for all tunes currently displayed on the page is printed. If the website uses a <b>Tune Section</b> selector, only the tunes in the currently displayed section are printed.</li>
+            <li>When printing in <b>Multiple</b> tune display mode from a website with <b>Tune Sections</b>, any enabled print title page appends the current Tune Section name to the website title. For example, <b>My Tune Book</b> becomes <b>My Tune Book - M 1-25</b> while the <b>M 1-25</b> section is displayed.</li>
             <li><b>Print title page and text before tunes</b> can optionally print the website title/subtitle, included text before the tunes (if enabled), or both before the notation pages.</li>
             <li>The printing feature supports tunes whose complete rendered notation fits on a single printed page. Long tunes with many staves may not split properly between pages.</li>
             <li>Longer tunes with many staves or large text blocks under the notation will not split cleanly between printed pages, so this generally works best for traditional Irish music tunes with up to 8 staves of notation or 4 staves of notation with tablature, not orchestral scores or songs with long sets of W: tag verses.</li>
@@ -10473,6 +10475,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   const instrumentSelectorEnabled = ${JSON.stringify(includeInstrumentSelector)};
   const tuneGroupSelectorEnabled = ${JSON.stringify(largeCollectionGroupingEnabled)};
   const showMultipleTunes = ${JSON.stringify(showMultipleTunes)};
+  const printTitleBaseText = ${JSON.stringify(String(s.title || "").trim())};
   const simpleTableOfContentsEnabled = ${JSON.stringify(useSimpleTableOfContentsDropdown)};
   const simpleTocEntries = ${JSON.stringify(simpleTocEntries)};
   const tuneGroups = ${JSON.stringify(tuneGroups)};
@@ -11682,6 +11685,15 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     return group && group.name ? group.name : "Table of Contents";
   }
 
+  function updatePrintFrontMatterTitle(groupId) {
+    const title = document.querySelector(".print-front-matter-title-block h1");
+    if (!title) return;
+
+    title.textContent = showMultipleTunes && tuneGroupSelectorEnabled
+      ? printTitleBaseText + " - " + tuneGroupName(groupId)
+      : printTitleBaseText;
+  }
+
   function updateTableOfContentsTitle(groupId) {
     const title = document.getElementById("toc-title");
     if (!title) return;
@@ -11860,6 +11872,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
   function applyTuneGroup(groupId) {
     activeTuneGroupId = validTuneGroupId(groupId);
+    updatePrintFrontMatterTitle(activeTuneGroupId);
     updateTableOfContentsTitle(activeTuneGroupId);
     rebuildSimpleTocDropdown(activeTuneGroupId);
     applyContentVisibility();
