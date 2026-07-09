@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.17";
+  const WEBSITE_BUILDER_VERSION = "1.2.23";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -3168,7 +3168,9 @@
       fileList.appendChild(li);
     });
 
-    state.tunes.forEach((tune, index) => {
+    const loadedTuneListTunes = state.tunes;
+
+    loadedTuneListTunes.forEach((tune, index) => {
       const li = document.createElement("li");
       const title = titleForWebsiteDisplay(tune.title, tune.isSectionHeader, state.settings.titleArticleReverser);
       const detail = [tune.isSectionHeader ? "Section Header" : "", tune.composer, tune.rhythm, tune.sourceName].filter(Boolean).join(" · ");
@@ -3180,7 +3182,7 @@
     });
 
     document.getElementById("file-count").textContent = state.files.length;
-    document.getElementById("tune-count").textContent = state.tunes.length;
+    document.getElementById("tune-count").textContent = loadedTuneListTunes.length;
     document.getElementById("theme-summary").textContent = themeName(state.settings.theme);
     document.getElementById("display-summary").textContent =
       optionName(TUNE_DISPLAY_OPTIONS, state.settings.tuneDisplay || DEFAULT_SETTINGS.tuneDisplay);
@@ -3378,6 +3380,25 @@
 
     root.dataset.initialized = "true";
     activateWebsiteSettingsTab(lastWebsiteSettingsTabId);
+  }
+
+  function initializeWebsiteSettingsMultilineTextareas() {
+    const modalRoot = getOpenWebsiteSettingsModalRoot();
+    if (!modalRoot) return;
+
+    ["footer", "collectionIntro"].forEach(fieldId => {
+      const field = findWebsiteSettingsField(modalRoot, fieldId);
+      if (!field || field.tagName !== "TEXTAREA" || field.dataset.multilineEnterGuard === "true") return;
+
+      const keepEnterInTextarea = event => {
+        if (event.key !== "Enter") return;
+        event.stopPropagation();
+      };
+
+      field.addEventListener("keydown", keepEnterInTextarea, true);
+      field.addEventListener("keypress", keepEnterInTextarea, true);
+      field.dataset.multilineEnterGuard = "true";
+    });
   }
 
   function moveWebsiteSettingsField(modalRoot, fieldId, destinationId) {
@@ -3634,6 +3655,7 @@
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
+    initializeWebsiteSettingsMultilineTextareas();
     initializeWebsiteSettingsManageActions();
     initializeLargeCollectionGroupingDialogControls();
     initializeTableOfContentsTuneDisplayDialogControls();
@@ -4911,7 +4933,7 @@
       },
       { name: "Website title", id: "title", type: "text" },
       { name: "Subtitle", id: "subtitle", type: "text" },
-      { name: "Footer text", id: "footer", type: "textarea", height: 76 },
+      { name: "Footer text", id: "footer", type: "textarea", height: 114 },
       {
         name: "Include tune title and meta text above each tune",
         id: "includeTuneHeading",
@@ -4926,7 +4948,7 @@
         name: "Text before all the tunes",
         id: "collectionIntro",
         type: "textarea",
-        height: 92
+        height: 138
       },
       { name: "Music genre visual theme", id: "theme", type: "select", options: themeOptionsForDisplay() },
       { name: "Notation / tablature display", id: "displayMode", type: "select", options: DISPLAY_OPTIONS },
@@ -5273,13 +5295,13 @@
           <ul>
             <li id="instructions-setting-title"><b>Website title</b> appears in the main header of the exported site.</li>
             <li id="instructions-setting-subtitle"><b>Subtitle</b> appears below the title. Leave it blank to remove that space.</li>
-            <li id="instructions-setting-footer"><b>Footer text</b> appears at the bottom of the exported page.</li>
+            <li id="instructions-setting-footer"><b>Footer text</b> appears at the bottom of the exported page. Press Enter in this field to create multiple lines.</li>
             <li>Every entered website text field except <b>Website title</b> accepts <code>&lt;br/&gt;</code> tags for controlled line breaks and hyperlinks written as <code>&lt;a href=&quot;URL&quot;&gt;Website&lt;/a&gt;</code>.</li>
             <li>Add <code>target=&quot;_blank&quot;</code> when a hyperlink should open in a new browser tab, for example <code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;Website&lt;/a&gt;</code>.</li>
             <li>Links use colors derived from the selected website theme. Other HTML is displayed as ordinary text. The website title does not interpret HTML tags.</li>
             <li id="instructions-setting-include-tune-heading"><b>Include tune title and meta text above each tune</b> adds the tune title and any available composer or rhythm information above each tune. It is disabled by default.</li>
             <li id="instructions-setting-include-collection-intro">The <b>Include text before all the tunes</b> checkbox must be enabled for the optional collection text to appear.</li>
-            <li id="instructions-setting-collection-intro"><b>Text before all the tunes</b> adds centered introductory text before the collection.</li>
+            <li id="instructions-setting-collection-intro"><b>Text before all the tunes</b> adds centered introductory text before the collection. Press Enter in this field to create multiple lines.</li>
             <li id="instructions-setting-print-title-page-and-text-before-tunes"><b>Print title page and text before tunes</b> controls optional front-matter pages when a standalone generated website is printed from the browser or saved as PDF.
               <ul>
                 <li><b>Disabled</b> is the default. Printing only includes the tune(s).</li>
@@ -5361,7 +5383,7 @@
                 <li><b>Single</b> creates a single-tune website mode. On launch, only the first tune is rendered. When a visitor chooses another tune from the Table of Contents or a Search all sections result, playback stops, the current tune is cleared, and the selected tune is rendered and made ready to play.</li>
                 <li><b>Multiple</b> is the default. All visible tunes in the selected tune section are rendered and ready to play.</li>
                 <li>If <b>Single</b> is selected, the exported website includes a Table of Contents because it is needed to choose which tune is displayed.</li>
-                <li>In <b>Single</b> mode, T:* style section-header links in the Table of Contents and Search all sections results are no-ops. They do not stop playback, change the displayed tune, or scroll the page.</li>
+                <li>In <b>Single</b> mode, T:* style section-header panels are not displayed with the selected tune. Their links in the Table of Contents and Search all sections results are no-ops and do not stop playback, change the displayed tune, or scroll the page.</li>
                 <li><b>Single</b> mode is useful for very long tunes, such as classical arrangements, where it makes sense to show and prepare only one tune at a time.</li>
               </ul>
               <p>In <b>Single</b> mode, the Table of Contents cannot be disabled because it is needed to choose the tune to display. If <b>Include table of contents</b> is set to <b>Disabled</b> and you change <b>Tune Display</b> to <b>Single</b>, the builder changes the Table of Contents setting to <b>Enabled</b>. The <b>Disabled</b> choice remains visible, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the setting back to <b>Enabled</b>.</p>
@@ -5401,7 +5423,7 @@
                 <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
                 <li>The <b>Groups of 100</b> and <b>(groups of 100)</b> value in the options listed above will be replaced by the batch size currently selected in the <b>Large tune collection grouping batch size</b> control below.</li>
                 <li>In generated websites that use the <b>Tune Section</b> selector, the visitor's most recent Tune Section choice is saved in a website-specific localStorage key and restored the next time that generated website is opened.</li>
-                <li>Automatic grouping options group ordinary tunes; use <b>Manual T: section headers</b> when you want existing <code>T:*</code> section-header tunes to define and appear as the group names.</li>
+                <li>With grouping <b>Disabled</b>, <code>T:*</code> section-header tunes are shown normally in the generated website. Other automatic grouping modes omit them. <b>Manual T: section headers</b> uses them only as Tune Section names.</li>
                 <li>If an <b>R: Rhythm tag</b> grouping option is selected and some ordinary tunes do not have <code>R:</code> tags, the builder warns before saving. If you continue, tunes without rhythm tags are placed in an <b>Other</b> rhythm group.</li>
               </ul>
             </li>
@@ -8576,9 +8598,13 @@ fiddle: {
     const titleAndTocLabelFontSize =
       titleAndTocLabelFontSizes[String(s.titleAndTableOfContentsLabelFontSize || DEFAULT_SETTINGS.titleAndTableOfContentsLabelFontSize)] ||
       titleAndTocLabelFontSizes.large;
+    const largeCollectionGroupingMode = String(s.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping);
     const showTuneNumbers = s.tuneNumbers !== "hide";
     const showSectionHeaderNumbers = String(s.includeSectionHeaderNumbers || DEFAULT_SETTINGS.includeSectionHeaderNumbers) !== "hide";
-    const shouldShowNumber = tune => tune.isSectionHeader ? showSectionHeaderNumbers : showTuneNumbers;
+    const shouldShowNumber = tune =>
+      tune.isSectionHeader
+        ? largeCollectionGroupingMode !== "manualSectionHeaders" && showSectionHeaderNumbers
+        : showTuneNumbers;
     const showTuneDividers = String(s.showTuneDividers || DEFAULT_SETTINGS.showTuneDividers) !== "hide";
     const footerOrnamentMarkup = showTuneDividers
       ? `<div class="ornament" aria-hidden="true">${t.ornament}</div>`
@@ -8595,7 +8621,6 @@ fiddle: {
     const tableOfContentsGridRules = tableOfContentsGridCss(s);
     const abcToolsLinkMode = String(s.abcToolsLinks || "disabled");
     const titleArticleMode = String(s.titleArticleReverser || DEFAULT_SETTINGS.titleArticleReverser);
-    const largeCollectionGroupingMode = String(s.largeCollectionGrouping || DEFAULT_SETTINGS.largeCollectionGrouping);
     const tuneOrderMode = String(s.tuneOrder || DEFAULT_SETTINGS.tuneOrder);
     const largeCollectionBatchSizeMode = String(s.largeCollectionGroupingBatchSize || DEFAULT_SETTINGS.largeCollectionGroupingBatchSize);
     const largeCollectionPlan = buildLargeCollectionGroups(state.tunes, largeCollectionGroupingMode, tuneOrderMode, titleArticleMode, largeCollectionBatchSizeMode);
@@ -8673,13 +8698,16 @@ fiddle: {
       };
     });
 
-    const toc = tunes.map(tune => {
+    const displayedTunes = largeCollectionGroupingMode === "manualSectionHeaders"
+      ? tunes.filter(tune => !tune.isSectionHeader)
+      : tunes;
+
+    const toc = displayedTunes.map(tune => {
       const hiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
       return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle)}" data-section-header="${tune.isSectionHeader ? "true" : "false"}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
     }).join("\n        ");
 
-    const simpleTocEntries = tunes
-      .filter(tune => !tune.isSectionHeader)
+    const simpleTocEntries = displayedTunes
       .map(tune => ({
         groupId: tune.groupId,
         targetId: `tune-${tune.key}`,
@@ -8805,10 +8833,10 @@ fiddle: {
       tocMarkup
     ].filter(markup => String(markup || "").trim()).join("\n\n  ");
 
-    const articleBlocks = tunes.map((tune, index) => {
+    const articleBlocks = displayedTunes.map((tune, index) => {
       const showThisNumber = shouldShowNumber(tune);
       const groupHiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
-      const dividerMarkup = index > 0 && showTuneDividers && tunes[index - 1] && tunes[index - 1].groupId === tune.groupId
+      const dividerMarkup = index > 0 && showTuneDividers && displayedTunes[index - 1] && displayedTunes[index - 1].groupId === tune.groupId
         ? `
       <div class="section-divider" data-group-divider="true" data-group="${escapeHtml(tune.groupId)}"${groupHiddenAttr} aria-hidden="true"><span>${t.ornament}</span></div>`
         : "";
@@ -8886,7 +8914,7 @@ fiddle: {
 
     const articles = articleBlocks.join("");
 
-    const abcBlocks = tunes
+    const abcBlocks = displayedTunes
       .filter(tune => !tune.isSectionHeader)
       .map(tune =>
         `<script type="text/plain" id="${tune.key}-abc">\n${safeScriptText(tune.exportedAbc)}\n<\/script>`
@@ -9681,6 +9709,9 @@ fiddle: {
       flex-direction:column;
       align-items:center;
       justify-content:center;
+    }
+    .section-header-panel[hidden] {
+      display:none;
     }
     .section-header-panel .section-header-number {
       margin:0 auto 12px;
