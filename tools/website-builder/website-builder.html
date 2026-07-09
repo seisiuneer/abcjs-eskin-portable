@@ -1112,7 +1112,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.23";
+  const WEBSITE_BUILDER_VERSION = "1.2.24";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -5754,7 +5754,7 @@
           <ul>
             <li><code>Theme customization:</code> main CSS variables for colors, rounded corners, and panel shadows.</li>
             <li><code>Page width customization:</code> maximum content width for the exported website.</li>
-            <li><code>Header styling customization:</code> top banner background, spacing, and accent border.</li>
+            <li><code>Header styling customization:</code>, <code>Header subtitle customization:</code>, and <code>Header selector label color customization:</code> top banner background and header text colors.</li>
             <li><code>Table of Contents card customization:</code>, <code>TOC search customization:</code>, and <code>TOC link grid customization:</code> TOC panel, search field, and tune-link layout.</li>
             <li><code>Tune card customization:</code>, <code>Tune card gap customization:</code>, and <code>Mobile card spacing customization:</code> spacing and styling for tune panels.</li>
             <li><code>Section header panel spacing customization:</code>, <code>Section header title side padding customization:</code>, and <code>Responsive section header customization:</code> T:* section-header layout.</li>
@@ -5786,6 +5786,12 @@
           <p>Controls the top banner background, vertical padding, alignment, and accent border:</p>
           <p><code>.hero { padding:44px 0 38px; color:#fff; background:...; text-align:center; border-bottom:6px solid var(--accent); }</code></p>
           <p>Adjust <code>padding</code> to make the header taller or shorter. Change <code>background</code> to customize the header color or gradient.</p>
+          <p>After changing the header background, use these selectors to change header text colors for contrast:</p>
+          <ul>
+            <li><code>.hero h1 { color:#fff; }</code> changes the website title color.</li>
+            <li><code>.hero-copy { color:#fff; }</code> changes the subtitle color.</li>
+            <li><code>.site-instrument-selector label { color:#fff; }</code> changes the <b>Display / Instrument:</b> and <b>Tune Section:</b> label colors when either selector is present.</li>
+          </ul>
 
           <p id="developer-table-of-contents-styling"><b>Table of Contents styling</b></p>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-developer-customization">Back to Developer Customization</a></p>
@@ -9567,14 +9573,18 @@ fiddle: {
         Font size customization: website title at the top of the exported website.
         To make it smaller or larger, change the last clamp() value, 2.6rem.
         The first value is the minimum size; the middle value controls responsive scaling.
+        To change the header title color for contrast, add a color value to this rule,
+        for example: color:#fff;
       */
       font-size:clamp(1.8rem,4.2vw,2.6rem);
       line-height:1.08;
     }
     /*
       Header subtitle customization: controls the optional subtitle width, spacing,
-      and size below the website title. Increase max-width for longer lines; adjust
-      margin-top to move the subtitle closer to or farther from the title.
+      size, and color below the website title. Increase max-width for longer lines;
+      adjust margin-top to move the subtitle closer to or farther from the title.
+      To change the subtitle color for contrast, add a color value to .hero-copy,
+      for example: color:#fff;
     */
     .hero-copy { max-width:780px; margin:10px auto 0; font-size:1.25rem; }
     .hero-copy a,
@@ -9931,6 +9941,12 @@ fiddle: {
       align-items:center;
       gap:10px;
     }
+    /*
+      Header selector label color customization: controls the text color of the
+      "Display / Instrument:" and "Tune Section:" labels when those selectors are
+      present. Add or change color here for contrast with a custom header background,
+      for example: color:#fff;
+    */
     .site-instrument-selector label {
       font-weight:800;
       white-space:nowrap;
