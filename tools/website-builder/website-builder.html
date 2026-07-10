@@ -814,6 +814,32 @@
       border-radius: 4px;
     }
 
+
+    .website-builder-guided-tour-launch-button {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 2400;
+      appearance: none;
+      min-width: 124px;
+      padding: 9px 16px;
+      color: #fff;
+      background: #687178;
+      border: 1px solid #565e64;
+      border-radius: 6px;
+      box-shadow: 0 3px 9px rgba(0,0,0,.28);
+      font: 750 14px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .website-builder-guided-tour-launch-button:hover,
+    .website-builder-guided-tour-launch-button:focus-visible {
+      background: #565e64;
+      outline: 2px solid rgba(255,255,255,.85);
+      outline-offset: 2px;
+    }
+
     .button {
       appearance: none;
       border: 0;
@@ -1059,6 +1085,7 @@
   </style>
 </head>
 <body>
+  <button id="website-builder-guided-tour-launch-button" class="website-builder-guided-tour-launch-button" type="button">Guided Tour</button>
   <header class="app-header">
     <h1>abcjs-eskin Website Builder</h1>
     <p>
@@ -5207,9 +5234,9 @@
               <li><a href="#instructions-overview">Overview</a></li>
               <li><a href="#instructions-open-files">Load ABC files</a></li>
               <li><a href="#instructions-projects">Load and save projects</a></li>
-              <li><a href="#instructions-preview">Preview the website</a></li>
               <li><a href="#instructions-configure">Configure the website</a></li>
               <li><a href="#instructions-saved-settings">Saved settings</a></li>
+              <li><a href="#instructions-preview">Preview the website</a></li>
               <li><a href="#instructions-build-save">Build and save the website</a></li>
               <li><a href="#instructions-generated-site">Using the generated website</a></li>
               <li><a href="#instructions-printing">Printing the generated website</a></li>
@@ -5233,7 +5260,9 @@
             individual tune sections, T:* style section headers, playback controls, cursor tracking, autoscroll, decorative 
             ornaments between tunes, and links back to the Table of Contents.
           </p>
-          
+          <p class="instructions-note">
+            On desktop browsers, a guided tour showing the creation of a simple tunebook website is available by clicking the <b>Guided Tour</b> button at the top left of the window.
+          </p>
           <p style="text-align: center;"><a href="https://youtu.be/aR65uUj2TvQ" target="_blank">abcjs-eskin Website Builder Zoom Webinar Video</a></p>
 
           <h3 id="instructions-open-files">1. Load ABC files</h3>
@@ -5273,11 +5302,7 @@
             <li>Project files are separate from exported websites. Use <b>Build and Save Website</b> when you want the final generated website HTML file.</li>
           </ol>
 
-          <h3 id="instructions-preview">3. Preview the website</h3>
-          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <p>After loading at least one tune and applying all the settings for the website, click <b>Preview</b> to generate the website with the currently loaded ABC and applied settings and open it in a new browser tab.</p>
-
-          <h3 id="instructions-configure">4. Configure the website</h3>
+          <h3 id="instructions-configure">3. Configure the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>Click <b>Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
           <div class="instructions-note">
@@ -5540,7 +5565,7 @@
           </div>
 
 
-          <h3 id="instructions-saved-settings">5. Saved settings</h3>
+          <h3 id="instructions-saved-settings">4. Saved settings</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <p>
             Website settings are stored in this browser using <code>localStorage</code> when
@@ -5555,6 +5580,10 @@
             <li>Loaded settings and any included custom theme do not become the active browser-stored settings until you click <b>Apply</b>.</li>
             <li>Dropping a standalone custom theme file onto the settings dialog saves the custom theme immediately, but does not change the selected website theme unless you choose <b>Custom</b> and click <b>Apply</b>.</li>
           </ul>
+
+          <h3 id="instructions-preview">5. Preview the website</h3>
+          <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
+          <p>After loading at least one tune and applying all the settings for the website, click <b>Preview</b> to generate the website with the currently loaded ABC and applied settings and open it in a new browser tab. Click <b>Close Preview</b> at the top right of the previewed website to close the tab and return to the Website Builder.</p>
 
           <h3 id="instructions-build-save">6. Build and save the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
@@ -9514,6 +9543,44 @@ fiddle: {
       ? `\n\n${generatedPrintCss}\n`
       : "\n";
 
+    const previewCloseButtonCss = previewMode
+      ? `
+    .website-preview-close-button {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 2147483646;
+      appearance: none;
+      min-width: 132px;
+      padding: 10px 17px;
+      color: #fff;
+      background: #087cff;
+      border: 1px solid #005fca;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.32);
+      font: 750 14px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+
+    .website-preview-close-button:hover,
+    .website-preview-close-button:focus-visible {
+      background: #0068da;
+      outline: 3px solid rgba(255,255,255,.92);
+      outline-offset: 2px;
+    }
+
+    @media print {
+      .website-preview-close-button {
+        display: none !important;
+      }
+    }
+`
+      : "";
+
+    const previewCloseButtonMarkup = previewMode
+      ? '<button class="website-preview-close-button" type="button" onclick="window.close();" title="Close this preview and return to the Website Builder">Close Preview</button>'
+      : "";
+
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -10507,9 +10574,10 @@ fiddle: {
         padding-right:0 !important;
         text-align:center !important;
       }
-    }${generatedPrintCssBlock}  </style>
+    }${generatedPrintCssBlock}${previewCloseButtonCss}  </style>
 </head>
 <body>
+${previewCloseButtonMarkup}
 ${printFrontMatterMarkup}
 ${embeddedOpenMarkup}  <header class="hero${includeSiteSelector ? " has-site-instrument-selector" : ""}">
     <div class="page-width">
@@ -12285,13 +12353,13 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   async function previewSite() {
     if (!state.tunes.length) {
       setStatus("Load at least one ABC tune before previewing.", true);
-      return;
+      return null;
     }
 
     const previewWindow = window.open("", "_blank");
     if (!previewWindow) {
       setStatus("The preview tab could not be opened. Allow pop-ups for this site and try again.", true);
-      return;
+      return null;
     }
 
     try {
@@ -12303,14 +12371,14 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
         previewWindow.close();
         await showCustomThemeRequiredDialog();
         setStatus("Load a custom theme before previewing a website with the Custom theme.", true);
-        return;
+        return null;
       }
 
       const shouldContinueWithMissingRhythms = await confirmBuildWithMissingRhythmTags(state.settings);
       if (!shouldContinueWithMissingRhythms) {
         previewWindow.close();
         setStatus("Website preview canceled because some tunes are missing R: Rhythm tags.");
-        return;
+        return null;
       }
 
       const site = generateSite(true);
@@ -12320,6 +12388,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       previewWindow.location.replace(previewUrl);
       setTimeout(() => URL.revokeObjectURL(previewUrl), 60000);
       setStatus("Opened website preview in a new browser tab.");
+      return previewWindow;
     } catch (error) {
       try {
         previewWindow.close();
@@ -12328,6 +12397,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       }
       console.error(error);
       setStatus(error && error.message ? error.message : String(error), true);
+      return null;
     }
   }
 
@@ -12466,6 +12536,46 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     }
   }
 
+  window.WebsiteBuilderGuidedTourAPI = Object.freeze({
+    hasLoadedTunes() {
+      return state.tunes.length > 0;
+    },
+
+    loadExampleProject(rawProject) {
+      const validation = validateProjectFileData(rawProject);
+      if (!validation.project) {
+        throw new Error(validation.errors.join("\n"));
+      }
+
+      applyProjectToLiveState(validation.project, "Guided Tour Example Project");
+      renderState();
+      setStatus(`Loaded the Guided Tour example project with ${validation.project.records.length} traditional Irish tunes.`);
+      return true;
+    },
+
+    openSettings() {
+      void openSettings();
+    },
+
+    previewSite() {
+      return previewSite();
+    },
+
+    saveSite() {
+      return saveSite();
+    },
+
+    applyOpenSettingsDialog() {
+      const buttons = Array.from(document.querySelectorAll(
+        ".modal_flat_ok, .modal_default_ok, [class*='modal_'][class*='_ok']"
+      ));
+      const button = buttons[buttons.length - 1];
+      if (button) button.click();
+      return Boolean(button);
+    },
+
+  });
+
   fileInput.addEventListener("change", event => {
     readFiles(event.target.files).catch(error => {
       console.error(error);
@@ -12487,5 +12597,6 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   loadInitialShareLinkTunes();
 })();
 </script>
+<script src="website-builder-guided-tour.js"></script>
 </body>
 </html>
