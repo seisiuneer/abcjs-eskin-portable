@@ -1866,9 +1866,37 @@
       }
     }
 
+    .theme-builder-guided-tour-launch-button {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 2400;
+      appearance: none;
+      min-width: 124px;
+      padding: 9px 16px;
+      color: #fff;
+      background: #687178;
+      border: 1px solid #565e64;
+      border-radius: 6px;
+      box-shadow: 0 3px 9px rgba(0,0,0,.28);
+      font: 750 14px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      cursor: pointer;
+    }
+
+    .theme-builder-guided-tour-launch-button:hover,
+    .theme-builder-guided-tour-launch-button:focus-visible {
+      background: #565e64;
+      outline: 2px solid rgba(255,255,255,.85);
+      outline-offset: 2px;
+    }
+
   </style>
 </head>
 <body>
+  <button id="theme-builder-guided-tour-launch-button"
+          class="theme-builder-guided-tour-launch-button"
+          type="button">Guided Tour</button>
   <header class="app-header">
     <h1>abcjs-eskin Website Theme Builder</h1>
     <p>
@@ -3565,49 +3593,27 @@
       }
 
       .theme-builder-return-button {
-        position: fixed !important;
-        z-index: 2147483647 !important;
-        top: 14px !important;
-        right: 14px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-width: 230px !important;
-        min-height: 48px !important;
-        padding: 12px 18px !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        background: #174a8b !important;
-        border: 3px solid #ffffff !important;
-        border-radius: 10px !important;
-        box-shadow: 0 6px 18px rgba(0,0,0,.35) !important;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-        font-size: 17px !important;
-        font-weight: 900 !important;
-        line-height: 1.15 !important;
-        text-align: center !important;
-        text-decoration: none !important;
-        text-shadow: none !important;
-        cursor: pointer !important;
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 2147483646;
+        appearance: none;
+        min-width: 132px;
+        padding: 10px 17px;
+        color: #fff;
+        background: #087cff;
+        border: 1px solid #005fca;
+        border-radius: 6px;
+        box-shadow: 0 3px 10px rgba(0,0,0,.32);
+        font: 750 14px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        cursor: pointer;
       }
 
       .theme-builder-return-button:hover,
       .theme-builder-return-button:focus-visible {
-        background: #0f3566 !important;
-        outline: 4px solid #f2c14e !important;
-        outline-offset: 2px !important;
-      }
-
-      @media (max-width: 640px) {
-        .theme-builder-return-button {
-          top: 8px !important;
-          right: 8px !important;
-          min-width: 0 !important;
-          max-width: calc(100vw - 16px) !important;
-          min-height: 42px !important;
-          padding: 10px 12px !important;
-          font-size: 15px !important;
-        }
+        background: #0068da;
+        outline: 3px solid rgba(255,255,255,.92);
+        outline-offset: 2px;
       }
     `);
   }
@@ -3684,20 +3690,68 @@
   }
 
   function openFullThemePreview() {
+    const modalRoot = getOpenThemeBuilderModalRoot();
+    if (!modalRoot) {
+      setStatus("The Theme Builder is not ready for a full screen preview.", true);
+      return null;
+    }
+
     const theme = normalizeCustomTheme(getCurrentThemeFromOpenThemeBuilderDialog());
     updateThemeBuilderPayloadField();
 
     const previewWindow = window.open("", "_blank");
+
     if (!previewWindow) {
-      setStatus("Full Screen Preview could not be opened. Please allow pop-up windows for this page and try again.", true);
-      return;
+      setStatus(
+        "Full Screen Preview could not be opened. Please allow pop-up windows for this page and try again.",
+        true
+      );
+      return null;
     }
 
-    previewWindow.document.open();
-    previewWindow.document.write(fullThemePreviewDocumentHtml(theme));
-    previewWindow.document.close();
-    previewWindow.focus();
-    setStatus("Opened a full simulated website preview in a new window.");
+    try {
+      previewWindow.document.open();
+      previewWindow.document.write(
+        '<!doctype html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>Building theme preview...</title></head>' +
+        '<body style="font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif;padding:24px;">' +
+        '<p>Building theme preview...</p></body></html>'
+      );
+      previewWindow.document.close();
+
+      const previewHtml = fullThemePreviewDocumentHtml(theme);
+      const previewBlob = new Blob(
+        [previewHtml],
+        { type: "text/html;charset=utf-8" }
+      );
+      const previewUrl = URL.createObjectURL(previewBlob);
+
+      previewWindow.location.replace(previewUrl);
+
+      setTimeout(function () {
+        URL.revokeObjectURL(previewUrl);
+      }, 60000);
+
+      setStatus("Opened a full simulated website preview in a new window.");
+      return previewWindow;
+    } catch (error) {
+      try {
+        previewWindow.close();
+      } catch (closeError) {
+        console.warn(
+          "Unable to close the preview tab after a preview error.",
+          closeError
+        );
+      }
+
+      console.error(error);
+      setStatus(
+        error && error.message ? error.message : String(error),
+        true
+      );
+      return null;
+    }
   }
 
   function updateThemeBuilderPreview() {
@@ -4835,6 +4889,9 @@
           for the <b><a href="https://michaeleskin.com/abcjs-eskin-portable/website-builder/website-builder.html" target="_blank" rel="noopener noreferrer" style="color:#1a73e8; text-decoration:underline;">abcjs-eskin Website Builder</a></b>.
           Use it to design a custom theme, save the custom theme file, then import that file into
           the main <b>abcjs-eskin Website Builder</b> or copy it into the <b>abcjs-eskin Website Builder</b> source code as a new built-in theme.
+        </p>
+        <p>
+          On desktop browsers, a guided tour is available by clicking the <b>Guided Tour</b> button at the top left of the window.
         </p>
         <p>
           The controls are organized into three tabs: <b>Theme Basics</b>, <b>Header &amp; Shadows</b>, and <b>Colors</b>.
@@ -6824,10 +6881,140 @@
     };
   }
 
+  function setThemeBuilderFieldForGuidedTour(fieldId, value) {
+    const field = document.getElementById("theme_builder_field_" + fieldId);
+    if (!field) return false;
+
+    if (field.type === "checkbox") {
+      field.checked = !!value;
+    } else {
+      field.value = String(value);
+    }
+
+    if (fieldId === "heroBegin" || fieldId === "heroEnd") {
+      const modalRoot = getOpenThemeBuilderModalRoot();
+      if (modalRoot) updateHeroCssFieldFromGradient(modalRoot);
+    }
+
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    syncThemeBuilderColorPickers(true);
+    updateThemeBuilderPreview();
+    return true;
+  }
+
+  window.WebsiteThemeBuilderGuidedTourAPI = Object.freeze({
+    isReady() {
+      return Boolean(
+        document.getElementById("theme-builder-root") &&
+        document.getElementById("theme-builder-save-action") &&
+        document.getElementById("theme-builder-built-in-theme")
+      );
+    },
+
+    hasCurrentThemeChanges() {
+      const currentTheme = normalizeCustomTheme(
+        getCurrentThemeFromOpenThemeBuilderDialog()
+      );
+      const defaultTheme = normalizeCustomTheme(DEFAULT_CUSTOM_THEME);
+
+      // The hero string is derived from the two header color fields, so compare
+      // the editable source fields rather than its generated representation.
+      const comparableFields = CUSTOM_THEME_FIELDS.filter(
+        fieldId => fieldId !== "hero"
+      );
+
+      return comparableFields.some(fieldId =>
+        currentTheme[fieldId] !== defaultTheme[fieldId]
+      );
+    },
+
+    resetToDefaultTheme() {
+      const defaultTheme = normalizeCustomTheme(DEFAULT_CUSTOM_THEME);
+      state.customTheme = defaultTheme;
+      latestThemeBuilderTheme = defaultTheme;
+      applyThemeValuesInOpenThemeBuilderDialog(defaultTheme);
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setStatus("The Theme Builder has been reset for the Guided Tour.");
+    },
+
+    loadTraditionalIrishTheme() {
+      const selector = document.getElementById("theme-builder-built-in-theme");
+      if (selector) selector.value = "irish";
+
+      const sourceTheme = normalizeCustomTheme({
+        ...themeCss("irish"),
+        name: optionName(THEME_OPTIONS, "irish")
+      });
+
+      applyThemeValuesInOpenThemeBuilderDialog(sourceTheme);
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setStatus("Loaded Traditional Irish Music as the starting point.");
+    },
+
+    showTab(tabId) {
+      activateThemeBuilderTab(tabId);
+    },
+
+    setThemeName(value) {
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setThemeBuilderFieldForGuidedTour("name", value);
+    },
+
+    setHeaderColors(beginColor, endColor) {
+      activateThemeBuilderTab("theme_builder_layout_panel");
+      setThemeBuilderFieldForGuidedTour("heroBegin", beginColor);
+      setThemeBuilderFieldForGuidedTour("heroEnd", endColor);
+    },
+
+    setHeaderFont(fontValue) {
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setThemeBuilderFieldForGuidedTour("font", fontValue);
+    },
+
+    setAccentColor(color) {
+      activateThemeBuilderTab("theme_builder_colors_panel");
+      setThemeBuilderFieldForGuidedTour("accent", color);
+    },
+
+    setOrnament(value) {
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setThemeBuilderFieldForGuidedTour("ornament", value);
+    },
+
+    setHeaderGraphics(enabled) {
+      activateThemeBuilderTab("theme_builder_basic_panel");
+      setThemeBuilderFieldForGuidedTour("includeHeaderGraphics", !!enabled);
+    },
+
+    openFullScreenPreview() {
+      return openFullThemePreview();
+    },
+
+    closeImageSampler() {
+      const panel = document.getElementById("theme-builder-color-sampler-panel");
+      if (!panel || panel.hidden) return false;
+
+      const hideButton = document.getElementById("theme-builder-color-sampler-hide-action");
+      if (hideButton) {
+        hideButton.click();
+      } else {
+        panel.hidden = true;
+      }
+
+      return true;
+    },
+
+    async saveThemeFile() {
+      await saveCustomThemeFromBuilder();
+    }
+  });
+
   window.addEventListener("DOMContentLoaded", () => {
     void openThemeBuilder();
   });
 })();
 </script>
+<script src="website-theme-builder-guided-tour.js?v=1"></script>
 </body>
 </html>
