@@ -1139,7 +1139,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.24";
+  const WEBSITE_BUILDER_VERSION = "1.2.32";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2071,6 +2071,7 @@
 
   function settingsWithInstrumentSelectorRequiredSoundInjection(settings) {
     const normalized = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+    delete normalized.printOneTuneButtons;
 
     if (instrumentSelectorRequiresSoundInjection(normalized)) {
       normalized.injectSoundSettings = true;
@@ -3640,10 +3641,10 @@
         "includeTableOfContents", "tableOfContentsMaxColumns", "tuneNumbers",
         "tableOfContentsGapSize",
         "tuneOrder", "tuneDisplay",
-        "instrumentSelector", "abcToolsLinks",
         "largeCollectionGrouping", "largeCollectionGroupingBatchSize",
-        "backToTuneTopBottomButton", "tableOfContentsBottomButtons",
-        "cursorAutoscrollGuardBand", "showTuneDividers",
+        "instrumentSelector", "abcToolsLinks",
+        "backToTuneTopBottomButton",
+        "tableOfContentsBottomButtons", "cursorAutoscrollGuardBand", "showTuneDividers",
         "titleAndTableOfContentsLabelFontSize", "includeSectionHeaderNumbers",
         "showStringInstrumentTablatureNames",
         "titleArticleReverser", "deploymentTarget"
@@ -5062,12 +5063,6 @@
         options: TUNE_ORDER_OPTIONS
       },
       {
-        name: "Display/Instrument selector dropdown",
-        id: "instrumentSelector",
-        type: "select",
-        options: INSTRUMENT_SELECTOR_OPTIONS
-      },
-      {
         name: "Large tune collection grouping",
         id: "largeCollectionGrouping",
         type: "select",
@@ -5080,7 +5075,13 @@
         options: LARGE_COLLECTION_BATCH_SIZE_OPTIONS
       },
       {
-        name: "Add ABC Transcription Tools link buttons to each tune",
+        name: "Display/Instrument selector dropdown",
+        id: "instrumentSelector",
+        type: "select",
+        options: INSTRUMENT_SELECTOR_OPTIONS
+      },
+      {
+        name: "Add ABC Transcription Tools buttons to each tune",
         id: "abcToolsLinks",
         type: "select",
         options: ABC_TOOLS_LINK_OPTIONS
@@ -5092,13 +5093,13 @@
         options: TUNE_DISPLAY_OPTIONS
       },
       {
-        name: "Add back to top-of-tune button at bottom of tunes",
+        name: "Add \"Back to Top-of-Tune\" buttons below each tune",
         id: "backToTuneTopBottomButton",
         type: "select",
         options: BACK_TO_TUNE_TOP_BOTTOM_BUTTON_OPTIONS
       },
       {
-        name: "Table of contents buttons also below tunes",
+        name: "Add \"Table of Contents\" buttons below each tune",
         id: "tableOfContentsBottomButtons",
         type: "select",
         options: TABLE_OF_CONTENTS_BOTTOM_BUTTON_OPTIONS
@@ -5414,30 +5415,6 @@
               <p>In <b>Single</b> mode, the Table of Contents cannot be disabled because it is needed to choose the tune to display. If <b>Include table of contents</b> is set to <b>Disabled</b> and you change <b>Tune Display</b> to <b>Single</b>, the builder changes the Table of Contents setting to <b>Enabled</b>. The <b>Disabled</b> choice remains visible, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the setting back to <b>Enabled</b>.</p>
               <p>To create a website with one tune and no Table of Contents, load only that tune, set <b>Tune Display</b> to <b>Multiple</b>, and set <b>Include table of contents</b> to <b>Disabled</b>. Multiple mode does not require a Table of Contents, so the one tune is displayed directly.</p>
             </li>
-            <li id="instructions-setting-instrument-selector"><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
-              <ul>
-                <li><b>Hide</b> does not add a Display/Instrument selector dropdown to the website header.</li>
-                <li><b>Show</b> includes the standard display and melody-instrument choices.</li>
-                <li><b>Show (add Bass & Chords Only)</b> behaves like <b>Show</b> and also adds a final <b>Bass & Chords Only</b> selector choice.</li>
-                <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
-                <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
-                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
-                <li>With <b>Show (add Bass & Chords Only)</b>, the user can also choose <b>Bass & Chords Only</b> from the bottom of the instrument selector.</li>
-                <li><b>Bass & Chords Only</b> mutes the melody and only plays the bass and chords. If this instrument is selected and there are no chords in a tune, that tune will play only silence.</li>
-                <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
-                <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
-              </ul>
-            </li>
-            <li id="instructions-setting-abc-tools-links"><b>Add ABC Transcription Tools link buttons to each tune</b> optionally adds a button above the top left of each ordinary tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. These buttons are not added to T:* style section headers.
-              <ul>
-                <li><b>Disabled</b> does not add ABC Transcription Tools link buttons to the exported website.</li>
-                <li><b>Add Open in Player buttons</b> adds a button labeled <b>Play in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools Player.</li>
-                <li><b>Add Open in Editor buttons</b> adds a button labeled <b>Edit in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools ABC editor.</li>
-                <li><b>Add Open in Full Screen buttons</b> adds a button labeled <b>Open in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools full-screen view.</li>
-                <li>The opened tune can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options.</li>
-                <li>If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in the <b>ABC Transcription Tools</b>.</li>
-              </ul>
-            </li>
             <li id="instructions-setting-large-collection-grouping"><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections. 
               <ul>
                 <li><b>Disabled</b> is the default.</li>
@@ -5458,8 +5435,32 @@
                 <li><b>100</b> is the default.</li>
                 <li><b>Unlimited</b> disables batch splitting while still allowing the selected grouping mode to create its main groups.</li>
               </ul>
-            </li><li id="instructions-setting-back-to-tune-top-bottom-button"><b>Add back to top-of-tune button at bottom of tunes</b> adds an extra <b>Top of Tune</b> button below each tune. Clicking the button stops playback, hides all play cursors, and returns to the top of the tune. <b>Disabled</b> is the default.</li>
-            <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Table of contents buttons also below tunes</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel. If <b>Include table of contents</b> is set to <b>Disabled</b>, this setting is automatically forced to <b>Disabled</b>. <b>Disabled</b> is the default.</li>
+            </li><li id="instructions-setting-instrument-selector"><b>Display/Instrument selector dropdown</b> adds a <b>Display / Instrument</b> selector at the top of the exported website just below the title and subtitle. It is shown by default.
+              <ul>
+                <li><b>Hide</b> does not add a Display/Instrument selector dropdown to the website header.</li>
+                <li><b>Show</b> includes the standard display and melody-instrument choices.</li>
+                <li><b>Show (add Bass & Chords Only)</b> behaves like <b>Show</b> and also adds a final <b>Bass & Chords Only</b> selector choice.</li>
+                <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
+                <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
+                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
+                <li>With <b>Show (add Bass & Chords Only)</b>, the user can also choose <b>Bass & Chords Only</b> from the bottom of the instrument selector.</li>
+                <li><b>Bass & Chords Only</b> mutes the melody and only plays the bass and chords. If this instrument is selected and there are no chords in a tune, that tune will play only silence.</li>
+                <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
+                <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
+              </ul>
+            </li>
+            <li id="instructions-setting-abc-tools-links"><b>Add ABC Transcription Tools buttons to each tune</b> optionally adds a button above the top left of each ordinary tune on wider screens; on narrow/mobile phone screens, the tune action buttons stack neatly above the title. These buttons are not added to T:* style section headers.
+              <ul>
+                <li><b>Disabled</b> does not add ABC Transcription Tools buttons to the exported website.</li>
+                <li><b>Add Open in Player buttons</b> adds a button labeled <b>Play in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools Player.</li>
+                <li><b>Add Open in Editor buttons</b> adds a button labeled <b>Edit in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools ABC editor.</li>
+                <li><b>Add Open in Full Screen buttons</b> adds a button labeled <b>Open in ABC Transcription Tools</b>, which opens the tune in the ABC Transcription Tools full-screen view.</li>
+                <li>The opened tune can be played, used for tune training, edited, transposed, or displayed using the available instrument tablature options.</li>
+                <li>If the generated share link for a tune would be longer than 8100 characters, the generated website will show a message when the button is clicked instead of opening the tune in the <b>ABC Transcription Tools</b>.</li>
+              </ul>
+            </li>
+            <li id="instructions-setting-back-to-tune-top-bottom-button"><b>Add "Back to Top-of-Tune" buttons below each tune</b> adds an extra <b>Top of Tune</b> button below each tune. Clicking the button stops playback, hides all play cursors, and returns to the top of the tune. <b>Disabled</b> is the default.</li>
+            <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Add "Table of Contents" buttons below each tune</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel. If <b>Include table of contents</b> is set to <b>Disabled</b>, this setting is automatically forced to <b>Disabled</b>. <b>Disabled</b> is the default.</li>
             <li id="instructions-setting-cursor-autoscroll-guard-band"><b>Playback autoscroll view ahead</b> controls how much upcoming music the generated website tries to keep visible below the playback cursor while the music autoscrolls.
               <ul>
                 <li><b>Small</b> keeps the cursor visible with a compact view-ahead area.</li>
@@ -5624,7 +5625,7 @@
             <li>If the generated website includes both a Table of Contents search bar and the <b>Search all sections</b> button, the ordinary search field continues to filter only the currently selected tune section. Click <b>Search all sections</b> to search across every tune section without changing the currently displayed Table of Contents. The custom result list shows at most 50 matches, includes each match's tune section name, and reports when only the first matches are shown. Choosing a result switches to that tune section and jumps directly to the selected tune.</li>
             <li>Click the notation itself to pause or resume playback. Tunes marked with <code>%website_builder_no_play_controller</code> do not show a play controller and do not support click-to-play-or-pause notation behavior.</li>
             <li>During playback, the cursor follows the music and the page scrolls smoothly as needed.</li>
-            <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Table of contents buttons also below tunes</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation. If <b>Add back to top-of-tune button at bottom of tunes</b> is enabled, the lower Top of Tune button also stops playback, hides all play cursors, and returns to the top of the current tune.</li>
+            <li>If the Table of Contents is included, use a tune's Table of Contents button to stop playback, hide all play cursors, and return to the top of the Table of Contents. If <b>Add "Table of Contents" buttons below each tune</b> is enabled, the same button is also shown below each tune, below the play controller when the controller is below the notation. If <b>Add "Back to Top-of-Tune" buttons below each tune</b> is enabled, the lower Top of Tune button also stops playback, hides all play cursors, and returns to the top of the current tune.</li>
           </ul>
 
           <h3 id="instructions-printing">8. Printing the generated website</h3>
@@ -5641,7 +5642,7 @@
             <li>Any page headers or footers added by the browser itself, such as a URL, date, or page number, are controlled by the browser's print dialog and are not part of the generated website. Turn those browser options off when a notation-only page is required.</li>
           </ul>
           <div class="instructions-warning">
-            Embedded website exports intentionally do not include the Website Builder print CSS. Directly embedded HTML can inherit layout and print rules from the host website, so printing behavior and pagination depend on the host page. Use a standalone generated website when the Website Builder's notation-only print layout and optional print front matter are required.
+            Embedded website exports intentionally do not include the Website Builder's full print layout. Printing and pagination can inherit rules from the host website. Use a standalone generated website when consistent notation-only pagination and optional print front matter are required.
           </div>
 
           <h3 id="instructions-clear">9. Clearing the current collection</h3>
@@ -9493,8 +9494,7 @@ fiddle: {
       }
     }`;
 
-    const generatedPrintCss = String(standalonePrintCss || "")
-      .replace(/^\n+|\n+$/g, "");
+    const generatedPrintCss = String(standalonePrintCss || "").replace(/^\n+|\n+$/g, "");
 
     const repeatButtonHighlightCss = `
     /*
@@ -9933,11 +9933,11 @@ fiddle: {
       padding for button size or background/border for button color.
     */
     .back-to-toc { position:absolute; top:50%; right:0; transform:translateY(-50%); padding:7px 10px; color:#fff; background:var(--primary); border:1px solid var(--accent); text-decoration:none; font-size:.8rem; font-weight:800; }
-    .bottom-toc-row { display:flex; justify-content:flex-end; align-items:center; gap:10px; width:100%; margin:14px 0 0; }
-    .bottom-toc-row.has-top-of-tune { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; width:100%; }
+    .bottom-toc-row,
+    .bottom-toc-row.has-top-of-tune { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; margin:14px 0 0; }
     .bottom-toc-row .back-to-toc { position:static; display:inline-flex; align-items:center; justify-content:center; transform:none; white-space:nowrap; padding:7px 10px; line-height:1.2; }
-    .bottom-toc-row.has-top-of-tune .bottom-top-of-tune-link { grid-column:1; justify-self:start; align-self:center; }
-    .bottom-toc-row.has-top-of-tune .bottom-table-of-contents-link { grid-column:3; justify-self:end; align-self:center; }
+    .bottom-toc-row .bottom-top-of-tune-link { margin-right:auto; }
+    .bottom-toc-row .bottom-table-of-contents-link { margin-left:auto; }
     .abc-tools-link { left:0; right:auto; }
     .score-panel.has-abc-tools-link .tune-header h2 { padding-left:330px; padding-right:330px; }
     @media (min-width:761px) and (max-width:1200px) {
@@ -10326,8 +10326,8 @@ fiddle: {
         padding:7px 10px;
         line-height:1.2;
       }
-      .bottom-toc-row .bottom-top-of-tune-link { order:1; }
-      .bottom-toc-row .bottom-table-of-contents-link { order:2; }
+      .bottom-toc-row .bottom-top-of-tune-link { order:1; margin-right:0; }
+      .bottom-toc-row .bottom-table-of-contents-link { order:2; margin-left:0; }
       .notation-wrap,.audio-controls,.status,.flatten-parts-playback-note { width:100%; }
       .site-instrument-selector {
         flex-direction:column;
@@ -12597,6 +12597,6 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
   loadInitialShareLinkTunes();
 })();
 </script>
-<script src="website-builder-guided-tour.js?v=1"></script>
+<script src="website-builder-guided-tour.js?v=2"></script>
 </body>
 </html>

@@ -597,6 +597,10 @@
   }
 
   function settingsTextPanel() {
+    var textTab = document.querySelector('[data-tab="website_settings_text"]');
+    if (textTab && !textTab.classList.contains("active")) {
+      textTab.click();
+    }
     return document.getElementById("website_settings_text") ||
       document.querySelector(".website-settings-tab-panel.active");
   }
@@ -648,9 +652,9 @@
         body: '<p>The example project includes a website title, subtitle, and footer. These appear in the generated website and give the tunebook a finished appearance.</p><p>It also enables a title page when the website is printed.</p>'
       },
       {
-        title: "4. Style & Site Options",
+        title: "4. Style & Options",
         target: settingsStyleTab,
-        body: '<p>Click <strong>Next</strong> to open the <strong>Style & Site Options</strong> tab and review the main layout and navigation choices used by the example project.</p>',
+        body: '<p>Click <strong>Next</strong> to open the <strong>Style & Options</strong> tab and review the main layout and navigation choices used by the example project.</p>',
         afterNext: async function () {
           var tab = settingsStyleTab();
           if (tab) tab.click();
