@@ -1200,6 +1200,7 @@
   ];
 
   const CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS = [
+    { id: "disabled", name: "Disable autoscroll" },
     { id: "small", name: "Small" },
     { id: "medium", name: "Medium" },
     { id: "large", name: "Large" },
@@ -3271,7 +3272,9 @@
       state.settings.tableOfContentsBottomButtons === "enabled"
         ? "Additional table of contents buttons below tunes"
         : "No additional table of contents buttons below tunes",
-      escapeHtml(optionName(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS, state.settings.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand)) + " playback autoscroll view ahead",
+      state.settings.cursorAutoscrollGuardBand === "disabled"
+        ? "Playback autoscroll disabled"
+        : escapeHtml(optionName(CURSOR_AUTOSCROLL_GUARD_BAND_OPTIONS, state.settings.cursorAutoscrollGuardBand || DEFAULT_SETTINGS.cursorAutoscrollGuardBand)) + " playback autoscroll view ahead",
       state.settings.showTuneDividers === "hide"
         ? "Decorative tune ornaments hidden"
         : "Decorative tune ornaments shown",
@@ -5461,8 +5464,9 @@
             </li>
             <li id="instructions-setting-back-to-tune-top-bottom-button"><b>Add "Back to Top-of-Tune" buttons below each tune</b> adds an extra <b>Top of Tune</b> button below each tune. Clicking the button stops playback, hides all play cursors, and returns to the top of the tune. <b>Disabled</b> is the default.</li>
             <li id="instructions-setting-table-of-contents-bottom-buttons"><b>Add "Table of Contents" buttons below each tune</b> adds an extra <b>Table of Contents</b> button below each tune when a Table of Contents is included. This is useful for very long scores, such as classical music arrangements, where visitors may finish far below the top of the tune panel. If <b>Include table of contents</b> is set to <b>Disabled</b>, this setting is automatically forced to <b>Disabled</b>. <b>Disabled</b> is the default.</li>
-            <li id="instructions-setting-cursor-autoscroll-guard-band"><b>Playback autoscroll view ahead</b> controls how much upcoming music the generated website tries to keep visible below the playback cursor while the music autoscrolls.
+            <li id="instructions-setting-cursor-autoscroll-guard-band"><b>Playback autoscroll view ahead</b> controls whether the generated website autoscrolls during playback and how much upcoming music it tries to keep visible below the playback cursor.
               <ul>
+                <li><b>Disable autoscroll</b> keeps the playback cursor visible but prevents page and notation autoscrolling during playback.</li>
                 <li><b>Small</b> keeps the cursor visible with a compact view-ahead area.</li>
                 <li><b>Medium</b> keeps more upcoming music visible below the cursor.</li>
                 <li><b>Large</b> keeps still more upcoming music visible below the cursor. (Default)</li>
@@ -8974,6 +8978,7 @@ fiddle: {
     };
     const cursorColor = JSON.stringify(cursorColors[s.cursorColor] || cursorColors.green);
     const cursorAutoscrollGuardBands = {
+      disabled: { disabled: true, top: 72, bottom: 82 },
       small: { top: 72, bottom: 82 },
       medium: { top: 80, bottom: 180 },
       large: { top: 90, bottom: 280 },
@@ -10644,6 +10649,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     Playback autoscroll view ahead customization:
     top and bottom are viewport guard-band sizes in pixels. Increase bottom
     if you want more upcoming notation to remain visible below the playback cursor.
+    Set disabled to true to show the playback cursor without autoscrolling.
   */
   const cursorAutoscrollGuardBand = ${JSON.stringify(cursorAutoscrollGuardBand)};
   /*
@@ -11553,7 +11559,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     }
 
     function scheduleCursorAutoscroll() {
-      if (!paper || !cursor || autoscrollFrame) return;
+      if (cursorAutoscrollGuardBand.disabled || !paper || !cursor || autoscrollFrame) return;
 
       autoscrollFrame = requestAnimationFrame(() => {
         autoscrollFrame = 0;
