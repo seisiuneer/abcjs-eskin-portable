@@ -1139,7 +1139,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.32";
+  const WEBSITE_BUILDER_VERSION = "1.2.33";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2674,6 +2674,13 @@
       .join("\n");
   }
 
+  function trimAbcRecordAtFirstBlankLine(recordText) {
+    const lines = String(recordText || "").split("\n");
+    const blankLineIndex = lines.findIndex(line => line.trim() === "");
+    const keptLines = blankLineIndex >= 0 ? lines.slice(0, blankLineIndex) : lines;
+    return keptLines.join("\n").trim();
+  }
+
   function splitAbcRecords(text, filename) {
     const normalized = String(text || "").replace(/\r\n?/g, "\n");
     const starts = [];
@@ -2690,7 +2697,7 @@
     return starts.map((start, index) => {
       const end = index + 1 < starts.length ? starts[index + 1] : normalized.length;
       return {
-        abc: normalized.slice(start, end).trim(),
+        abc: trimAbcRecordAtFirstBlankLine(normalized.slice(start, end)),
         fileHeader
       };
     });
