@@ -1139,7 +1139,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.34";
+  const WEBSITE_BUILDER_VERSION = "1.2.36";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -1234,6 +1234,7 @@
     { id: "disabled", name: "Disabled" },
     { id: "groupsOf100", name: "Groups of 100 tunes" },
     { id: "alphabeticalTitle", name: "Alphabetical by title (groups of 100)" },
+    { id: "alphabeticalTitleTwoLetters", name: "Alphabetical by title Ha, He, etc (groups of 100)" },
     { id: "rhythmTag", name: "R: Rhythm tag (groups of 100)" },
     { id: "rhythmTagAlphabetical", name: "R: Rhythm tag + alphabetical subgroups (groups of 100)" },
     { id: "manualSectionHeaders", name: "Manual T: section headers (groups of 100)" }
@@ -2026,6 +2027,9 @@
     const alphabeticalLabel = label === "Unlimited"
       ? "Alphabetical by title (unlimited group size)"
       : `Alphabetical by title (groups of ${label})`;
+    const alphabeticalTwoLettersLabel = label === "Unlimited"
+      ? "Alphabetical by title Ha, He, etc (unlimited group size)"
+      : `Alphabetical by title Ha, He, etc (groups of ${label})`;
     const rhythmLabel = label === "Unlimited"
       ? "R: Rhythm tag (unlimited group size)"
       : `R: Rhythm tag (groups of ${label})`;
@@ -2039,6 +2043,7 @@
       { id: "disabled", name: "Disabled" },
       { id: "groupsOf100", name: `Groups of ${labelLower} tunes` },
       { id: "alphabeticalTitle", name: alphabeticalLabel },
+      { id: "alphabeticalTitleTwoLetters", name: alphabeticalTwoLettersLabel },
       { id: "rhythmTag", name: rhythmLabel },
       { id: "rhythmTagAlphabetical", name: rhythmAlphabeticalLabel },
       { id: "manualSectionHeaders", name: manualLabel }
@@ -2080,6 +2085,10 @@
 
     if (String(normalized.largeCollectionGrouping || "") === "rhythmTagHundred") {
       normalized.largeCollectionGrouping = "rhythmTag";
+    }
+
+    if (!optionIds(LARGE_COLLECTION_GROUPING_OPTIONS).has(String(normalized.largeCollectionGrouping || ""))) {
+      normalized.largeCollectionGrouping = DEFAULT_SETTINGS.largeCollectionGrouping;
     }
 
     if (!optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS).has(String(normalized.largeCollectionGroupingBatchSize || ""))) {
@@ -2128,7 +2137,7 @@
       normalized.includeTableOfContents = "showSearch";
     }
 
-    if (groupingMode === "alphabeticalTitle") {
+    if (groupingMode === "alphabeticalTitle" || groupingMode === "alphabeticalTitleTwoLetters") {
       normalized.tuneOrder = "sortTitle";
     } else if (groupingMode === "manualSectionHeaders") {
       normalized.tuneOrder = "preserve";
@@ -3500,7 +3509,7 @@
 
     const enforceLargeCollectionTuneOrder = () => {
       const groupingMode = String(groupingField.value || "");
-      if (groupingMode === "alphabeticalTitle") {
+      if (groupingMode === "alphabeticalTitle" || groupingMode === "alphabeticalTitleTwoLetters") {
         tuneOrderField.value = "sortTitle";
       } else if (groupingMode === "manualSectionHeaders") {
         tuneOrderField.value = "preserve";
@@ -5409,8 +5418,8 @@
             <li id="instructions-setting-tune-order"><b>Tune order</b> controls the order used inside generated website groups.
               <ul>
                 <li><b>Keep original order</b> is the default.</li>
-                <li><b>Sort by title, ignoring leading articles</b> sorts by title while ignoring the same known article set used by the title article reverser. This includes leading forms such as <code>The Kesh</code> and trailing forms such as <code>Kesh, The</code>, along with the other supported articles.</li>
-                <li>If <b>Large tune collection grouping</b> is set to <b>Alphabetical by title (groups of 100)</b>, or the equivalent label for another batch size, the builder forces <b>Tune order</b> to <b>Sort by title, ignoring leading articles</b>.</li>
+                <li><b>Sort by title, ignoring leading articles</b> sorts by title while ignoring the same known article set used by the title article reverser. This includes leading forms such as <code>The Kesh</code> and trailing forms such as <code>Kesh, The</code>, along with the other supported articles. When two titles begin with numbers, their leading numbers are compared by numeric value, so <code>13 This Tune</code> is placed before <code>120 This Other Tune</code>.</li>
+                <li>If <b>Large tune collection grouping</b> is set to either alphabetical title option, the builder forces <b>Tune order</b> to <b>Sort by title, ignoring leading articles</b>.</li>
                 <li>If <b>Large tune collection grouping</b> is set to <b>Manual T: section headers (groups of 100)</b>, or the equivalent label for another batch size, the builder forces <b>Tune order</b> to <b>Keep original order</b>.</li>
               </ul>
             </li>
@@ -5430,6 +5439,7 @@
                 <li><b>Disabled</b> is the default.</li>
                 <li><b>Groups of 100 tunes</b> breaks the ordinary tunes into simple sequential groups.</li>
                 <li><b>Alphabetical by title (groups of 100)</b> creates alphabetical title groups using the selected <b>Large tune collection grouping batch size</b> as a hard maximum for finite batch sizes. If one starting letter contains more tunes than the selected size, that single letter is split into explicit range subgroups such as <b>A · 1–50</b>, <b>A · 51–100</b>, and <b>A · 101–150</b>.</li>
+                <li><b>Alphabetical by title Ha, He, etc (groups of 100)</b> sorts the tunes alphabetically and creates a separate section from the first two letters of the same article-ignoring title used for alphabetical sorting, such as <b>Ha</b> and <b>He</b>. Titles whose sorted name does not begin with a letter are placed first using the normal alphabetical <b>#</b> grouping. If one section contains more tunes than the selected batch size, it is split into explicit range subgroups such as <b># · 1–50</b>, <b>Ha · 1–50</b>, and <b>Ha · 51–100</b>.</li>
                 <li><b>R: Rhythm tag (groups of 100)</b> creates rhythm groups and splits any rhythm group larger than the selected batch size into sequential subgroups without alphabetical sorting.</li>
                 <li><b>R: Rhythm tag + alphabetical subgroups (groups of 100)</b> creates rhythm groups and splits large rhythm groups into alphabetical subgroups. Automatic alphabetical splitting uses the selected batch size as a hard maximum for finite batch sizes; if one starting letter contains more tunes than the selected size inside a rhythm group, it is split into the same explicit range subgroups.</li>
                 <li><b>Manual T: section headers (groups of 100)</b> uses existing <code>T:*</code> section-header tunes as group boundaries, preserves the loaded tune order, and splits any manual section larger than the selected batch size into sequential subgroups.</li>
@@ -8133,10 +8143,44 @@ fiddle: {
     return /^[A-Z]$/.test(first) ? first : "#";
   }
 
+  function titleGroupingTwoLetterPrefix(title) {
+    const key = titleGroupingSortKey(title);
+    const match = key.match(/^[a-z]{1,2}/i);
+
+    if (!match) return "#";
+
+    const prefix = match[0];
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1).toLowerCase();
+  }
+
+  function compareLeadingTitleNumbers(aKey, bKey) {
+    const aMatch = String(aKey || "").match(/^(\d+)/);
+    const bMatch = String(bKey || "").match(/^(\d+)/);
+
+    if (!aMatch || !bMatch) return 0;
+
+    const aDigits = aMatch[1].replace(/^0+(?=\d)/, "");
+    const bDigits = bMatch[1].replace(/^0+(?=\d)/, "");
+
+    if (aDigits.length !== bDigits.length) {
+      return aDigits.length - bDigits.length;
+    }
+
+    if (aDigits !== bDigits) {
+      return aDigits < bDigits ? -1 : 1;
+    }
+
+    return 0;
+  }
+
   function compareTitleEntries(a, b) {
     const aKey = a.sortKey || titleGroupingSortKey(a.tune && a.tune.title);
     const bKey = b.sortKey || titleGroupingSortKey(b.tune && b.tune.title);
-    return aKey.localeCompare(bKey) || a.originalIndex - b.originalIndex;
+    const leadingNumberOrder = compareLeadingTitleNumbers(aKey, bKey);
+
+    return leadingNumberOrder
+      || aKey.localeCompare(bKey)
+      || a.originalIndex - b.originalIndex;
   }
 
   function orderedEntries(entries, orderMode) {
@@ -8212,6 +8256,64 @@ fiddle: {
     });
 
     flushCurrent();
+
+    return groups;
+  }
+
+  function splitEntriesIntoTwoLetterAlphabeticalGroups(entries, targetSize) {
+    const sorted = entries.slice().sort(compareTitleEntries);
+    const nonAlphabeticEntries = [];
+    const alphabeticEntries = [];
+    const prefixMap = new Map();
+    const prefixes = [];
+    const finiteTargetSize = Number.isFinite(targetSize) && targetSize > 0
+      ? Math.floor(targetSize)
+      : Number.POSITIVE_INFINITY;
+
+    sorted.forEach(entry => {
+      const title = entry.tune && entry.tune.title;
+      const key = titleGroupingSortKey(title);
+
+      if (!/^[a-z]/i.test(key)) {
+        nonAlphabeticEntries.push(entry);
+        return;
+      }
+
+      alphabeticEntries.push(entry);
+    });
+
+    alphabeticEntries.forEach(entry => {
+      const prefix = titleGroupingTwoLetterPrefix(entry.tune && entry.tune.title);
+      if (!prefixMap.has(prefix)) {
+        prefixMap.set(prefix, []);
+        prefixes.push(prefix);
+      }
+      prefixMap.get(prefix).push(entry);
+    });
+
+    const groups = splitEntriesIntoAlphabeticalGroups(nonAlphabeticEntries, targetSize, "");
+
+    prefixes.forEach(prefix => {
+      const prefixEntries = prefixMap.get(prefix) || [];
+
+      if (prefixEntries.length > finiteTargetSize) {
+        for (let index = 0; index < prefixEntries.length; index += finiteTargetSize) {
+          const chunk = prefixEntries.slice(index, index + finiteTargetSize);
+          const start = index + 1;
+          const end = index + chunk.length;
+          groups.push({
+            name: `${prefix} · ${start}–${end}`,
+            entries: chunk,
+            ...(start > 1 ? { numberStart: start } : {})
+          });
+        }
+      } else {
+        groups.push({
+          name: prefix,
+          entries: prefixEntries
+        });
+      }
+    });
 
     return groups;
   }
@@ -8362,6 +8464,13 @@ fiddle: {
 
     if (mode === "alphabeticalTitle") {
       return finalize(splitEntriesIntoAlphabeticalGroups(entries.filter(entry => !entry.tune.isSectionHeader), targetSize, ""));
+    }
+
+    if (mode === "alphabeticalTitleTwoLetters") {
+      return finalize(splitEntriesIntoTwoLetterAlphabeticalGroups(
+        entries.filter(entry => !entry.tune.isSectionHeader),
+        targetSize
+      ));
     }
 
     if (mode === "groupsOf100") {
