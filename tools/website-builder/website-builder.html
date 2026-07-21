@@ -1139,7 +1139,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.36";
+  const WEBSITE_BUILDER_VERSION = "1.2.37";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -2644,43 +2644,99 @@
     }
   }
 
-  const PDF_TUNEBOOK_FEATURES_START_MARKER = "% Start of PDF Tunebook Features";
-  const PDF_TUNEBOOK_FEATURES_END_MARKER = "% End of PDF Tunebook Features";
-  const PDF_TUNEBOOK_FEATURES_ALLOWED_HEADER_DIRECTIVE_REGEX = /^(?:%add_all_playback_links|%add_all_playback_volumes|%pageheader|%pagefooter|%urlpageheader|%urlpagefooter)(?:\s|$)/;
+  const ABC_FILE_HEADER_ALLOWED_PATTERNS = [
+    /^%%\S+font.*$/,
+    /^%%staffsep.*$/,
+    /^%%staffwidth.*$/,
+    /^%%stretchlast.*$/,
+    /^%%barnumbers.*$/,
+    /^%%barsperstaff.*$/,
+    /^%%\S+space.*$/,
+    /^%%\S+sep.*$/,
+    /^%%measure\S+.*$/,
+    /^%%printtempo.*$/,
+    /^%%titleleft.*$/,
+    /^%%keywarn.*$/,
+    /^%%titlecaps.*$/,
+    /^%%visualtranspose.*$/,
+    /^%%maxstaves.*$/,
+    /^%%partsbox.*$/,
+    /^%hide_first_title_on_play.*$/,
+    /^%hide_vskip_on_play.*$/,
+    /^%left_justify_titles.*$/,
+    /^%abcjs_render_params.*$/,
+    /^%hide_information_labels.*$/,
+    /^%hide_rhythm_tag.*$/,
+    /^%hide_composer_tag.*$/,
+    /^%hide_parts_tag.*$/,
+    /^%hide_part_tags.*$/,
+    /^%hide_player_part_tags.*$/,
+    /^%hide_dynamics.*$/,
+    /^%whistle_tab_key.*$/,
+    /^%whistle_tab_octave.*$/,
+    /^%recorder_tab_key.*$/,
+    /^%recorder_tab_octave.*$/,
+    /^%enable_hyperlinks.*$/,
+    /^%disable_hyperlinks.*$/,
+    /^%play_alternate_chords.*$/,
+    /^%hide_cautionary_ks.*$/,
+    /^%no_title_reverser.*$/,
+    /^%force_power_chords.*$/,
+    /^%custom_instrument_volume_scale.*$/,
+    /^%custom_instrument_1_volume_scale.*$/,
+    /^%custom_instrument_2_volume_scale.*$/,
+    /^%custom_instrument_3_volume_scale.*$/,
+    /^%custom_instrument_4_volume_scale.*$/,
+    /^%custom_instrument_5_volume_scale.*$/,
+    /^%custom_instrument_6_volume_scale.*$/,
+    /^%custom_instrument_7_volume_scale.*$/,
+    /^%custom_instrument_8_volume_scale.*$/,
+    /^%custom_instrument_fade.*$/,
+    /^%custom_instrument_1_fade.*$/,
+    /^%custom_instrument_2_fade.*$/,
+    /^%custom_instrument_3_fade.*$/,
+    /^%custom_instrument_4_fade.*$/,
+    /^%custom_instrument_5_fade.*$/,
+    /^%custom_instrument_6_fade.*$/,
+    /^%custom_instrument_7_fade.*$/,
+    /^%custom_instrument_8_fade.*$/,
+    /^%roll_2_params.*$/,
+    /^%roll_3_params.*$/,
+    /^%tablature_only.*$/,
+    /^%add_all_playback_links.*$/,
+    /^%add_all_playback_volumes.*$/,
+    /^%pageheader.*$/,
+    /^%pagefooter.*$/,
+    /^%urlpageheader.*$/,
+    /^%urlpagefooter.*$/,
+    /^[ABCDFGHILMmNORrSUZ]:/
+  ];
 
   function cleanFileHeaderForTuneInjection(headerText) {
     const cleanedLines = [];
-    let insidePdfTunebookFeatures = false;
+    let inCssBlock = false;
 
     String(headerText || "")
       .split("\n")
-      .map(line => line.replace(/\s+$/g, ""))
       .forEach(line => {
-        const leftTrimmedLine = line.trimStart();
-
-        if (leftTrimmedLine.startsWith(PDF_TUNEBOOK_FEATURES_START_MARKER)) {
-          insidePdfTunebookFeatures = true;
-          return;
+        if (line.trim() === "%%begincss") {
+          inCssBlock = true;
         }
 
-        if (leftTrimmedLine.startsWith(PDF_TUNEBOOK_FEATURES_END_MARKER)) {
-          insidePdfTunebookFeatures = false;
-          return;
-        }
-
-        if (insidePdfTunebookFeatures) {
-          if (PDF_TUNEBOOK_FEATURES_ALLOWED_HEADER_DIRECTIVE_REGEX.test(leftTrimmedLine)) {
-            cleanedLines.push(leftTrimmedLine);
+        if (inCssBlock) {
+          cleanedLines.push(line);
+          if (line.trim() === "%%endcss") {
+            inCssBlock = false;
           }
           return;
         }
 
-        cleanedLines.push(line);
+        if (ABC_FILE_HEADER_ALLOWED_PATTERNS.some(pattern => pattern.test(line))) {
+          cleanedLines.push(line);
+        }
       });
 
-    return cleanedLines
-      .filter(line => line.trim() !== "")
-      .join("\n");
+    return cleanedLines.join("\n").trim();
   }
 
   function trimAbcRecordAtFirstBlankLine(recordText) {
@@ -5304,8 +5360,9 @@
           <div class="instructions-note">
             Files can contain one tune or many tunes. Opening additional files adds their tunes
             to the current collection.
-            Any ABC file header before the first <code>X:</code> is applied to every tune from that
-            file. 
+            Supported ABC fields and directives in the file header before the first <code>X:</code>
+            are applied to every tune from that file. Unsupported header lines are ignored. Complete
+            <code>%%begincss</code>/<code>%%endcss</code> blocks are preserved. 
           </div>
 
           <h3 id="instructions-projects">2. Load and save projects</h3>
@@ -5694,33 +5751,6 @@
             Place this annotation inside a specific tune to suppress that tune's play controller in the generated website.
             The notation for that tune is still rendered, but clicking or pressing Enter/Space on the notation does not start or pause playback,
             and the <b>Click the notation to pause or resume playing</b> status text is not shown.
-          </p>
-          <p>
-            To apply the same behavior to every tune in an ABC file, place
-            <code>%website_builder_no_play_controller</code> in the ABC file header before the first <code>X:</code> tag.
-          </p>
-          <p>
-            If the ABC file header contains a <b>PDF Tunebook Features</b> block beginning with
-            <code>% Start of PDF Tunebook Features</code> and ending with
-            <code>% End of PDF Tunebook Features</code>, most of that block is intended only for PDF export
-            from <b>ABC Transcription Tools</b> and is not copied into each tune in the exported website.
-            The start and end marker lines are also removed.
-          </p>
-          <p>
-            Six compatible annotations from that block are kept because they can still be useful when a tune
-            is opened back in <b>ABC Transcription Tools</b> for PDF export from an optional per-tune button:
-          </p>
-          <ul>
-            <li><code>%pageheader</code> specifies plain page-header text for PDFs exported from <b>ABC Transcription Tools</b>.</li>
-            <li><code>%pagefooter</code> specifies plain page-footer text for PDFs exported from <b>ABC Transcription Tools</b>.</li>
-            <li><code>%urlpageheader</code> specifies a PDF page-header hyperlink and its displayed text.</li>
-            <li><code>%urlpagefooter</code> specifies a PDF page-footer hyperlink and its displayed text.</li>
-            <li><code>%add_all_playback_links</code> allows tune titles in PDFs exported from <b>ABC Transcription Tools</b> to be clickable playback links.</li>
-            <li><code>%add_all_playback_volumes</code> supplies the playback volume values used with those clickable PDF tune-title links.</li>
-          </ul>
-          <p>
-            Other PDF-only annotations in that block, such as Table of Contents, index, QR-code, PDF-quality,
-            and spacing directives, are excluded from the per-tune ABC header injection used by the generated website.
           </p>
           <h3 id="instructions-theme-builder">11. abcjs-eskin Website Theme Builder</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
