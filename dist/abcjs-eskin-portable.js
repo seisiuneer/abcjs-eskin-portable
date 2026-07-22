@@ -2677,9 +2677,27 @@ var renderAbc = function renderAbc(output, abc, parserParams, engraverParams, re
 
     if (!removeDiv && workingParams.wrap && workingParams.staffwidth) {
       tune = doLineWrapping(div, tune, tuneNumber, abcString, workingParams);
+
+      // MAE 22 Jul 2026 - Preserve the per-tune percussion release map even
+      // when line wrapping replaces the original tune object.
+      if (workingParams.percussionRelease &&
+          typeof workingParams.percussionRelease === "object" &&
+          !Array.isArray(workingParams.percussionRelease)) {
+        tune.percussionRelease = Object.assign({}, workingParams.percussionRelease);
+      }
+
       return tune;
     }
-    
+
+    // MAE 22 Jul 2026 - Preserve per-tune percussion release overrides from
+    // %abcjs_render_params so the synth controller can apply them later.
+    // This is intentionally kept separate from the normal visual parameters.
+    if (workingParams.percussionRelease &&
+        typeof workingParams.percussionRelease === "object" &&
+        !Array.isArray(workingParams.percussionRelease)) {
+      tune.percussionRelease = Object.assign({}, workingParams.percussionRelease);
+    }
+
     if (workingParams.afterParsing) workingParams.afterParsing(tune, tuneNumber, abcString);
     renderOne(div, tune, workingParams, tuneNumber, 0);
     
@@ -19587,6 +19605,29 @@ function CreateSynth(theABC) {
     var p = params.fadeLength !== undefined ? parseInt(params.fadeLength, 10) : NaN;
     self.fadeLength = isNaN(p) ? 200 : p;
 
+    // MAE 22 Jul 2026 - Optional per-percussion-note release decay times.
+    // Keys are General MIDI Level 2 percussion note numbers (27-87); values are milliseconds.
+    // Example: percussionRelease: { 42: 350, 46: 1800, 49: 3000, 51: 2600 }
+    // Notes not present in the map continue to use fadeLength.
+    self.percussionRelease = {};
+    if (params.percussionRelease &&
+        typeof params.percussionRelease === "object" &&
+        !Array.isArray(params.percussionRelease)) {
+      Object.keys(params.percussionRelease).forEach(function (pitch) {
+        var midiPitch = Number(pitch);
+        var releaseMs = Number(params.percussionRelease[pitch]);
+
+        // Restrict the map to General MIDI Level 2 percussion pitches and finite
+        // values. Three seconds is the maximum supported percussion release.
+        if (isFinite(midiPitch) && midiPitch % 1 === 0 &&
+            midiPitch >= 27 && midiPitch <= 87 &&
+            isFinite(releaseMs) &&
+            releaseMs >= 0) {
+          self.percussionRelease[midiPitch] = Math.min(releaseMs, 3000);
+        }
+      });
+    }
+
     p = params.noteEnd !== undefined ? parseInt(params.noteEnd, 10) : NaN;
     self.noteEnd = isNaN(p) ? 0 : p;
     self.pan = params.pan;
@@ -19912,6 +19953,17 @@ function CreateSynth(theABC) {
       }
       self.duration += fadeTimeSec;
 
+      // MAE 22 Jul 2026 - Leave enough room for the longest percussion release override.
+      // The normal fadeLength is already included above, so only add the excess.
+      var longestPercussionReleaseSec = fadeTimeSec;
+      Object.keys(self.percussionRelease).forEach(function (pitch) {
+        longestPercussionReleaseSec = Math.max(
+          longestPercussionReleaseSec,
+          self.percussionRelease[pitch] / 1000
+        );
+      });
+      self.duration += Math.max(0, longestPercussionReleaseSec - fadeTimeSec);
+
       // MAE 26 Nov 2024 - For long release on hammered dulcimer or custom fade
       //console.log("gExtendDuration = "+gExtendDuration);
       self.duration += gExtendDuration;
@@ -20152,6 +20204,12 @@ function CreateSynth(theABC) {
               theFade = thisCustomFade / 1000;
               // console.log("Got custom fade for "+thisInstrument+": "+theFade);
           }
+        }
+
+        // MAE 22 Jul 2026 - Instrument 128 percussion can override release per GM drum note.
+        if (thisInstrument === "percussion" &&
+            self.percussionRelease[parts.pitch] !== undefined) {
+          theFade = self.percussionRelease[parts.pitch] / 1000;
         }
 
         //console.log("Volume/fade for "+thisInstrument+": "+theVolumeMultiplier+" "+theFade);
@@ -22539,7 +22597,18 @@ function SynthController(theABC) {
   self.setTune = function (visualObj, userAction, audioParams) {
     self.visualObj = visualObj;
     self.disable(false);
+
+    // MAE 22 Jul 2026 - Carry a tune-specific percussion release map into the
+    // synth options without mutating the host application's shared audioParams.
     self.options = audioParams;
+    if (visualObj &&
+        visualObj.percussionRelease &&
+        typeof visualObj.percussionRelease === "object" &&
+        !Array.isArray(visualObj.percussionRelease)) {
+      self.options = audioParams ? Object.assign({}, audioParams) : {};
+      self.options.percussionRelease = Object.assign({}, visualObj.percussionRelease);
+    }
+
     if (self.control) {
       self.pause();
       self.setProgress(0, 1);
