@@ -1139,7 +1139,8 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.37";
+  const WEBSITE_BUILDER_VERSION = "1.2.38";
+  const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
     { id: "irish", name: "Traditional Irish Music" },
@@ -9738,6 +9739,7 @@ fiddle: {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title}</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="${DEFAULT_GENERATED_WEBSITE_FAVICON}">
 
   <link rel="stylesheet" href="https://michaeleskin.com/abcjs-eskin-portable/dist/abcjs-eskin-audio.css?cb=${externalLibraryCacheBuster}">
 
