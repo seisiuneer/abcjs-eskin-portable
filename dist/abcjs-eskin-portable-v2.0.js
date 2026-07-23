@@ -2750,6 +2750,12 @@ var renderAbc = function renderAbc(output, abc, parserParams, engraverParams, re
         tune.percussionRelease = Object.assign({}, workingParams.percussionRelease);
       }
 
+      // MAE 23 Jul 2026 - Preserve the optional percussion volume scale so it
+      // can be applied by the synth without affecting visual rendering.
+      if (workingParams.percussionVolumeScale !== undefined) {
+        tune.percussionVolumeScale = workingParams.percussionVolumeScale;
+      }
+
       return tune;
     }
 
@@ -2760,6 +2766,12 @@ var renderAbc = function renderAbc(output, abc, parserParams, engraverParams, re
         typeof workingParams.percussionRelease === "object" &&
         !Array.isArray(workingParams.percussionRelease)) {
       tune.percussionRelease = Object.assign({}, workingParams.percussionRelease);
+    }
+
+    // MAE 23 Jul 2026 - Preserve the optional percussion volume scale so it
+    // can be applied by the synth without affecting visual rendering.
+    if (workingParams.percussionVolumeScale !== undefined) {
+      tune.percussionVolumeScale = workingParams.percussionVolumeScale;
     }
 
     if (workingParams.afterParsing) workingParams.afterParsing(tune, tuneNumber, abcString);
@@ -19692,6 +19704,12 @@ function CreateSynth(theABC) {
       });
     }
 
+    // MAE 23 Jul 2026 - Optional gain scale for General MIDI Program 128.
+    // Preserve the historical percussion gain of 2.5 when the parameter is
+    // absent or invalid.
+    var percussionVolumeScale = params.percussionVolumeScale !== undefined ? Number(params.percussionVolumeScale) : NaN;
+    self.percussionVolumeScale = isFinite(percussionVolumeScale) && percussionVolumeScale >= 0 ? percussionVolumeScale : 2.5;
+
     p = params.noteEnd !== undefined ? parseInt(params.noteEnd, 10) : NaN;
     self.noteEnd = isNaN(p) ? 0 : p;
     self.pan = params.pan;
@@ -20288,6 +20306,7 @@ function CreateSynth(theABC) {
           theFade,
           self.noteEnd / 1000,
           self.debugCallback,
+          self.percussionVolumeScale,
           self.soundCache
         ));
       }
@@ -22318,7 +22337,7 @@ function extendAudioBufferIfRequired(audioContext, sound, response, duration){
 
 var pitchToNoteName = __webpack_require__(/*! ./pitch-to-note-name */ "./src/synth/pitch-to-note-name.js");
 var centsToFactor = __webpack_require__(/*! ./cents-to-factor */ "./src/synth/cents-to-factor.js");
-function placeNote(outputAudioBuffer, sampleRate, sound, startArray, volumeMultiplier, ofsMs, fadeTimeSec, noteEndSec, debugCallback, soundCache) {
+function placeNote(outputAudioBuffer, sampleRate, sound, startArray, volumeMultiplier, ofsMs, fadeTimeSec, noteEndSec, debugCallback, percussionVolumeScale, soundCache) {
   
   //console.log("placeNote sound.instrument: "+sound.instrument+" volumeMultiplier: "+volumeMultiplier);
   
@@ -22390,10 +22409,11 @@ function placeNote(outputAudioBuffer, sampleRate, sound, startArray, volumeMulti
     }
   }
 
-  // MAE 25 June 2025
-  // The percussion track always uses the same soundfont and instrument, so standardize the gain
+  // MAE 25 June 2025, updated 23 Jul 2026
+  // The percussion track always uses the same soundfont and instrument, so standardize the gain.
+  // percussionVolumeScale defaults to the historical value of 2.5 in CreateSynth.
   if (sound.instrument == "percussion"){
-    volumeMultiplier = 2.5;
+    volumeMultiplier = percussionVolumeScale;
   }
 
   // Use the decoded-note namespace selected by this CreateSynth instance.
@@ -22662,15 +22682,26 @@ function SynthController(theABC) {
     self.visualObj = visualObj;
     self.disable(false);
 
-    // MAE 22 Jul 2026 - Carry a tune-specific percussion release map into the
-    // synth options without mutating the host application's shared audioParams.
+    // MAE 22-23 Jul 2026 - Merge per-tune percussion release and volume
+    // settings supplied by %abcjs_render_params into the audio options.
+    // Explicit audioParams remain the fallback when the tune does not provide
+    // an ABC override. Preserve the original audioParams object identity when
+    // neither override is present.
     self.options = audioParams;
-    if (visualObj &&
+    var hasPercussionReleaseOverride = visualObj &&
         visualObj.percussionRelease &&
         typeof visualObj.percussionRelease === "object" &&
-        !Array.isArray(visualObj.percussionRelease)) {
+        !Array.isArray(visualObj.percussionRelease);
+    var hasPercussionVolumeScaleOverride = visualObj &&
+        visualObj.percussionVolumeScale !== undefined;
+    if (hasPercussionReleaseOverride || hasPercussionVolumeScaleOverride) {
       self.options = audioParams ? Object.assign({}, audioParams) : {};
-      self.options.percussionRelease = Object.assign({}, visualObj.percussionRelease);
+      if (hasPercussionReleaseOverride) {
+        self.options.percussionRelease = Object.assign({}, visualObj.percussionRelease);
+      }
+      if (hasPercussionVolumeScaleOverride) {
+        self.options.percussionVolumeScale = visualObj.percussionVolumeScale;
+      }
     }
 
     if (self.control) {
