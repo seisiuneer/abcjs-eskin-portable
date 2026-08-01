@@ -1249,7 +1249,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.50";
+  const WEBSITE_BUILDER_VERSION = "1.2.53";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -2125,10 +2125,11 @@
 
   const STARTING_TEMPLATE_OPTIONS = [
     { id: "current", name: "Current settings" },
-    { id: "standard", name: "Standard Tunebook" },
+    { id: "standardTileSingle", name: "Standard Tunebook (Tile-based Table-of-Contents, Single tune display)" },
+    { id: "standard", name: "Standard Tunebook (Tile-based Table-of-Contents, Multiple tune display)" },
+    { id: "standardDropdownSingle", name: "Standard Tunebook (Dropdown-based Table of Contents, Single tune display)" },
+    { id: "standardDropdownMultiple", name: "Standard Tunebook (Dropdown-based Table of Contents, Multiple tune display)" },
     { id: "compactMobile", name: "Compact Mobile Tunebook" },
-    { id: "session", name: "Session Tunebook" },
-    { id: "practice", name: "Practice Collection" },
     { id: "printFriendly", name: "Print-Friendly Tunebook" },
     { id: "largeCollection", name: "Large Tune Collection" },
     { id: "songbook", name: "Songbook or Chord-Chart Website" },
@@ -2144,10 +2145,52 @@
       ]
     },
     standard: {
-      summary: "A balanced general-purpose starting point for most tunebooks.",
+      summary: "A balanced general-purpose starting point with tile-based navigation and all tunes displayed on one page.",
       items: [
         "Multiple-tune display",
         "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector enabled",
+        "Tune numbers and decorative ornaments shown",
+        "Medium header padding and title size",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    standardTileSingle: {
+      summary: "The standard tile-based layout with one tune displayed at a time.",
+      items: [
+        "Single-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector enabled",
+        "Tune numbers and decorative ornaments shown",
+        "Medium header padding and title size",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    standardDropdownMultiple: {
+      summary: "The standard multiple-tune layout using a compact drop-down Table of Contents.",
+      items: [
+        "Multiple-tune display",
+        "Simple drop-down Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector enabled",
+        "Tune numbers and decorative ornaments shown",
+        "Medium header padding and title size",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    standardDropdownSingle: {
+      summary: "A compact standard layout with drop-down navigation and one tune displayed at a time.",
+      items: [
+        "Single-tune display",
+        "Simple drop-down Table of Contents",
         "1180-pixel body width",
         "Playback controls below each tune",
         "Instrument selector enabled",
@@ -2167,33 +2210,6 @@
         "Compact Table of Contents spacing",
         "Back to tune top and Table of Contents buttons below each tune",
         "Medium header padding",
-        "Playback autoscroll set to Large",
-        "Play in ABC Transcription Tools buttons"
-      ]
-    },
-    session: {
-      summary: "Designed for quickly finding, playing, and switching between tunes at a session.",
-      items: [
-        "Single-tune display",
-        "Searchable tile-based Table of Contents",
-        "1180-pixel body width",
-        "Playback controls below each tune",
-        "Instrument selector enabled",
-        "Tune numbers shown",
-        "Medium header padding",
-        "Playback autoscroll set to Large",
-        "Play in ABC Transcription Tools buttons"
-      ]
-    },
-    practice: {
-      summary: "A playback-focused layout with expanded instrument choices and uncluttered spacing.",
-      items: [
-        "Single-tune display",
-        "Searchable tile-based Table of Contents",
-        "1180-pixel body width",
-        "Playback controls below each tune",
-        "Instrument selector with Bass & Chords Only",
-        "Decorative ornaments hidden and compact Table of Contents spacing",
         "Playback autoscroll set to Large",
         "Play in ABC Transcription Tools buttons"
       ]
@@ -2287,6 +2303,19 @@
     standard: {
       ...STARTING_TEMPLATE_BASE_SETTINGS
     },
+    standardTileSingle: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single"
+    },
+    standardDropdownMultiple: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      includeTableOfContents: "simpleDropdown"
+    },
+    standardDropdownSingle: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "simpleDropdown"
+    },
     compactMobile: {
       ...STARTING_TEMPLATE_BASE_SETTINGS,
       tuneDisplay: "single",
@@ -2297,24 +2326,6 @@
       tableOfContentsBottomButtons: "enabled",
       backToTuneTopBottomButton: "enabled",
       headerVerticalPadding: "medium"
-    },
-    session: {
-      ...STARTING_TEMPLATE_BASE_SETTINGS,
-      tuneDisplay: "single",
-      includeTableOfContents: "showSearch",
-      instrumentSelector: "show",
-      tuneNumbers: "show",
-      bodyWidth: "1180",
-    },
-    practice: {
-      ...STARTING_TEMPLATE_BASE_SETTINGS,
-      tuneDisplay: "single",
-      includeTableOfContents: "showSearch",
-      instrumentSelector: "showBackupOnly",
-      cursorAutoscrollGuardBand: "large",
-      showTuneDividers: "hide",
-      tableOfContentsGapSize: "small",
-      bodyWidth: "1180"
     },
     printFriendly: {
       ...STARTING_TEMPLATE_BASE_SETTINGS,
@@ -5883,10 +5894,11 @@
             <p>Templates are a great way to get started setting up a website. Choose the template that best matches what you want to create, then customize any settings as needed.</p>
             <p>Open the <b>Templates</b> tab and select a template to see a detailed description of its settings. Click <b>Apply Template</b>, confirm with <b>Continue</b>, and then click the dialog's normal <b>Apply</b> button to save the template values. Templates do not change loaded tunes, website text, the selected visual theme, or playback sounds.</p>
             <ul style="margin-bottom:0;">
-              <li><b>Standard Tunebook</b> is a balanced general-purpose multiple-tune layout.</li>
+              <li><b>Standard Tunebook (Tile-based Table-of-Contents, Single tune display)</b> uses searchable tile navigation and displays one tune at a time.</li>
+              <li><b>Standard Tunebook (Tile-based Table-of-Contents, Multiple tune display)</b> uses searchable tile navigation and displays all tunes on one page.</li>
+              <li><b>Standard Tunebook (Dropdown-based Table of Contents, Single tune display)</b> uses compact drop-down navigation and displays one tune at a time.</li>
+              <li><b>Standard Tunebook (Dropdown-based Table of Contents, Multiple tune display)</b> uses compact drop-down navigation and displays all tunes on one page.</li>
               <li><b>Compact Mobile Tunebook</b> uses a single-tune display, simple drop-down navigation, a 750-pixel body width, and bottom navigation buttons.</li>
-              <li><b>Session Tunebook</b> emphasizes quick tune search, playback, instrument selection, and <b>Play in ABC Transcription Tools</b> buttons.</li>
-              <li><b>Practice Collection</b> enables playback-oriented instrument choices, Large playback autoscroll, Play in ABC Transcription Tools buttons, and compact spacing.</li>
               <li><b>Print-Friendly Tunebook</b> uses a clean multiple-tune layout with a printable title page. The generated site's print CSS already avoids splitting notation staves between pages when possible.</li>
               <li><b>Large Tune Collection</b> uses searchable alphabetical groups of 50 tunes.</li>
               <li><b>Songbook or Chord-Chart Website</b> enables tune headings, introductory text, and a printed title page containing the introductory text.</li>
