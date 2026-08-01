@@ -106,9 +106,105 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+    .website-settings-template-bar {
+      display:grid;
+      grid-template-columns:minmax(220px, 1fr) auto;
+      gap:10px 12px;
+      align-items:end;
+      width:min(960px, 100%);
+      max-width:100%;
+      margin:8px auto 0;
+      padding:20px;
+      background:#fff;
+      border:1px solid #d8e2da;
+      border-radius:10px;
+      box-shadow:0 4px 18px rgba(18,43,28,.08);
+    }
+
+    .website-settings-template-field { min-width:0; }
+
+    .website-settings-template-field label {
+      display:block;
+      margin:0 0 4px;
+      color:#294534;
+      font-weight:750;
+      line-height:1.2;
+    }
+
+    .website-settings-template-field select {
+      width:100%;
+      min-height:40px;
+      padding:7px 34px 7px 9px;
+      color:#17241c;
+      background:#fff;
+      border:1px solid #b6c5ba;
+      border-radius:5px;
+    }
+
+    .website-settings-template-apply {
+      min-width:150px;
+      min-height:40px;
+      padding:8px 16px;
+      color:#fff;
+      background:#174a8b;
+      border:1px solid #0f3566;
+      border-radius:6px;
+      font:inherit;
+      font-weight:750;
+      cursor:pointer;
+    }
+
+    .website-settings-template-apply:hover,
+    .website-settings-template-apply:focus-visible {
+      background:#0f3566;
+      outline:2px solid rgba(23,74,139,.28);
+      outline-offset:2px;
+    }
+
+    .website-settings-template-apply:disabled {
+      opacity:.48;
+      cursor:not-allowed;
+      outline:none;
+    }
+
+    .website-settings-template-description {
+      grid-column:1 / -1;
+      min-height:220px;
+      margin:8px 0 0;
+      padding:16px 18px;
+      color:#344b3d;
+      background:#f5f8f6;
+      border:1px solid #d8e2da;
+      border-radius:8px;
+      font-size:.94rem;
+      line-height:1.45;
+    }
+
+    .website-settings-template-description h3 {
+      margin:0 0 7px;
+      color:#0d4c2f;
+      font-size:1.16rem;
+    }
+
+    .website-settings-template-description p {
+      margin:0 0 10px;
+    }
+
+    .website-settings-template-description ul {
+      columns:2;
+      column-gap:36px;
+      margin:0;
+      padding-left:1.25rem;
+    }
+
+    .website-settings-template-description li {
+      break-inside:avoid;
+      margin:4px 0;
+    }
+
     .website-settings-tab-bar {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 6px;
       padding: 8px 8px 0;
       background: #eaf1ec;
@@ -439,6 +535,20 @@
     }
 
     @media (max-width: 760px) {
+      .website-settings-template-bar {
+        grid-template-columns:1fr;
+        width:100%;
+        padding:16px;
+      }
+
+      .website-settings-template-apply {
+        width:100%;
+      }
+
+      .website-settings-template-description ul {
+        columns:1;
+      }
+
       .website-settings-tab-bar {
         grid-template-columns: 1fr;
         padding-bottom: 8px;
@@ -1139,7 +1249,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.41";
+  const WEBSITE_BUILDER_VERSION = "1.2.50";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -2011,6 +2121,247 @@
     largeCollectionGroupingBatchSize: "100",
     printTitlePageAndTextBeforeTunes: "disabled",
     deploymentTarget: "standalone"
+  };
+
+  const STARTING_TEMPLATE_OPTIONS = [
+    { id: "current", name: "Current settings" },
+    { id: "standard", name: "Standard Tunebook" },
+    { id: "compactMobile", name: "Compact Mobile Tunebook" },
+    { id: "session", name: "Session Tunebook" },
+    { id: "practice", name: "Practice Collection" },
+    { id: "printFriendly", name: "Print-Friendly Tunebook" },
+    { id: "largeCollection", name: "Large Tune Collection" },
+    { id: "songbook", name: "Songbook or Chord-Chart Website" },
+    { id: "longWorks", name: "Long Works / Classical Music" }
+  ];
+
+  const STARTING_TEMPLATE_DETAILS = {
+    current: {
+      summary: "Keep the settings currently shown in this dialog.",
+      items: [
+        "No template values will be applied.",
+        "Choose another template to see its recommended settings."
+      ]
+    },
+    standard: {
+      summary: "A balanced general-purpose starting point for most tunebooks.",
+      items: [
+        "Multiple-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector enabled",
+        "Tune numbers and decorative ornaments shown",
+        "Medium header padding and title size",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    compactMobile: {
+      summary: "A compact single-tune layout designed for phones and tablets.",
+      items: [
+        "Single-tune display",
+        "Simple drop-down Table of Contents",
+        "750-pixel body width with 100% notation width",
+        "Playback controls below each tune",
+        "Compact Table of Contents spacing",
+        "Back to tune top and Table of Contents buttons below each tune",
+        "Medium header padding",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    session: {
+      summary: "Designed for quickly finding, playing, and switching between tunes at a session.",
+      items: [
+        "Single-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector enabled",
+        "Tune numbers shown",
+        "Medium header padding",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    practice: {
+      summary: "A playback-focused layout with expanded instrument choices and uncluttered spacing.",
+      items: [
+        "Single-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector with Bass & Chords Only",
+        "Decorative ornaments hidden and compact Table of Contents spacing",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    printFriendly: {
+      summary: "A clean multiple-tune layout intended for browser printing or saving as PDF.",
+      items: [
+        "Multiple-tune display",
+        "Tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Instrument selector hidden",
+        "Decorative ornaments hidden",
+        "Printable title page enabled",
+        "Print CSS avoids splitting notation staves when possible",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    largeCollection: {
+      summary: "For searchable websites containing hundreds of tunes.",
+      items: [
+        "Single-tune display",
+        "Searchable Table of Contents with Search All",
+        "1180-pixel body width",
+        "Playback controls below each tune",
+        "Alphabetical title grouping in batches of 50",
+        "Tunes sorted by title",
+        "Tune-section selector enabled",
+        "Table of Contents button below each tune",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    songbook: {
+      summary: "For songs, lyrics, text-based material, and chord-chart ABC.",
+      items: [
+        "Single-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width",
+        "Playback controls above each tune",
+        "Instrument selector hidden",
+        "Decorative ornaments shown",
+        "Tune headings and introductory text enabled",
+        "Print title page including introductory text",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    longWorks: {
+      summary: "For long classical works, suites, scores, movements, and other lengthy tunes.",
+      items: [
+        "Single-tune display",
+        "Searchable tile-based Table of Contents",
+        "1180-pixel body width with 100% notation width",
+        "Playback controls above each tune",
+        "Tune numbers and decorative ornaments hidden",
+        "Instrument selector hidden",
+        "Back to tune top and Table of Contents buttons below each tune",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools buttons"
+      ]
+    }
+  };
+
+  const STARTING_TEMPLATE_BASE_SETTINGS = {
+    tuneDisplay: "multiple",
+    includeTableOfContents: "showSearch",
+    headerVerticalPadding: "medium",
+    titleAndTableOfContentsLabelFontSize: "medium",
+    notationWidth: "100",
+    bodyWidth: "1180",
+    playerPosition: "below",
+    instrumentSelector: "show",
+    tuneNumbers: "show",
+    showTuneDividers: "show",
+    tableOfContentsGapSize: "medium",
+    tableOfContentsBottomButtons: "disabled",
+    backToTuneTopBottomButton: "disabled",
+    cursorAutoscrollGuardBand: "large",
+    abcToolsLinks: "player",
+    largeCollectionGrouping: "disabled",
+    largeCollectionGroupingBatchSize: "100",
+    tuneOrder: "preserve",
+    printTitlePageAndTextBeforeTunes: "disabled",
+    includeCollectionIntro: false,
+    includeTuneHeading: false
+  };
+
+  const STARTING_TEMPLATE_SETTINGS = {
+    standard: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS
+    },
+    compactMobile: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "simpleDropdown",
+      bodyWidth: "750",
+      notationWidth: "100",
+      tableOfContentsGapSize: "small",
+      tableOfContentsBottomButtons: "enabled",
+      backToTuneTopBottomButton: "enabled",
+      headerVerticalPadding: "medium"
+    },
+    session: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "showSearch",
+      instrumentSelector: "show",
+      tuneNumbers: "show",
+      bodyWidth: "1180",
+    },
+    practice: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "showSearch",
+      instrumentSelector: "showBackupOnly",
+      cursorAutoscrollGuardBand: "large",
+      showTuneDividers: "hide",
+      tableOfContentsGapSize: "small",
+      bodyWidth: "1180"
+    },
+    printFriendly: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "multiple",
+      includeTableOfContents: "show",
+      instrumentSelector: "hide",
+      playerPosition: "below",
+      bodyWidth: "1180",
+      showTuneDividers: "hide",
+      printTitlePageAndTextBeforeTunes: "titleOnly"
+    },
+    largeCollection: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "showSearchAll",
+      playerPosition: "below",
+      largeCollectionGrouping: "alphabeticalTitle",
+      largeCollectionGroupingBatchSize: "50",
+      tuneOrder: "sortTitle",
+      tableOfContentsBottomButtons: "enabled",
+      bodyWidth: "1180"
+    },
+    songbook: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "showSearch",
+      bodyWidth: "1180",
+      instrumentSelector: "hide",
+      playerPosition: "above",
+      showTuneDividers: "show",
+      includeTuneHeading: true,
+      includeCollectionIntro: true,
+      printTitlePageAndTextBeforeTunes: "titleWithText"
+    },
+    longWorks: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "single",
+      includeTableOfContents: "showSearch",
+      playerPosition: "above",
+      backToTuneTopBottomButton: "enabled",
+      tableOfContentsBottomButtons: "enabled",
+      notationWidth: "100",
+      bodyWidth: "1180",
+      tuneNumbers: "hide",
+      showTuneDividers: "hide",
+      instrumentSelector: "hide"
+    }
   };
 
   function largeCollectionBatchSizeLabel(batchSize) {
@@ -3709,6 +4060,115 @@
     themeField.dataset.customThemeGuard = "true";
   }
 
+  let applyingStartingTemplateToDialog = false;
+
+  function startingTemplateOptionName(templateId) {
+    const option = STARTING_TEMPLATE_OPTIONS.find(item => item.id === templateId);
+    return option ? option.name.replace(/ \(default\)$/, "") : "starting template";
+  }
+
+  function updateStartingTemplateDescription() {
+    const select = document.getElementById("website-settings-template-select");
+    const button = document.getElementById("website-settings-template-apply");
+    const description = document.getElementById("website-settings-template-description");
+    if (!select || !button || !description) return;
+
+    const templateId = String(select.value || "current");
+    const details =
+      STARTING_TEMPLATE_DETAILS[templateId] ||
+      STARTING_TEMPLATE_DETAILS.current;
+    description.innerHTML =
+      '<h3>' + escapeHtml(startingTemplateOptionName(templateId)) + '</h3>' +
+      '<p>' + escapeHtml(details.summary) + '</p>' +
+      '<ul>' +
+        details.items.map(item => '<li>' + escapeHtml(item) + '</li>').join("") +
+      '</ul>';
+    button.disabled = templateId === "current";
+  }
+
+  function markStartingTemplateAsCurrentSettings() {
+    if (applyingStartingTemplateToDialog) return;
+    const select = document.getElementById("website-settings-template-select");
+    if (!select || select.value === "current") return;
+    select.value = "current";
+    updateStartingTemplateDescription();
+  }
+
+  async function applySelectedStartingTemplate() {
+    const select = document.getElementById("website-settings-template-select");
+    if (!select) return;
+
+    const templateId = String(select.value || "current");
+    const templateSettings = STARTING_TEMPLATE_SETTINGS[templateId];
+    if (!templateSettings) return;
+
+    const templateName = startingTemplateOptionName(templateId);
+    const confirmation = await DayPilot.Modal.confirm(
+      '<div style="text-align:center;line-height:1.45;max-width:700px;margin:0 auto;">' +
+        'Use the <b>' + escapeHtml(templateName) + '</b> starting template?<br><br>' +
+        'This updates the settings controlled by the template. Loaded tunes, website text, the selected visual theme, and playback sounds are not changed.<br><br>' +
+        'The new values are not saved until you click <b>Apply</b> in the Website Settings dialog.' +
+      '</div>',
+      {
+        title: "Use Starting Template",
+        width: 840,
+        okText: "Continue",
+        cancelText: "Cancel",
+        top: 150
+      }
+    );
+
+    if (confirmation.canceled) return;
+
+    const currentSettings = getCurrentSettingsFromOpenSettingsDialog();
+    const nextSettings = {
+      ...currentSettings,
+      ...templateSettings
+    };
+
+    applyingStartingTemplateToDialog = true;
+    try {
+      applySettingsValuesInOpenSettingsDialog(nextSettings, "website_settings_display");
+      select.value = templateId;
+      updateStartingTemplateDescription();
+    } finally {
+      applyingStartingTemplateToDialog = false;
+    }
+  }
+
+  function initializeStartingTemplateControls(modalRoot) {
+    const select = document.getElementById("website-settings-template-select");
+    const button = document.getElementById("website-settings-template-apply");
+    if (!select || !button || select.dataset.initialized === "true") return;
+
+    select.innerHTML = STARTING_TEMPLATE_OPTIONS.map(option =>
+      '<option value="' + escapeHtml(option.id) + '">' + escapeHtml(option.name) + '</option>'
+    ).join("");
+    select.value = "current";
+    select.addEventListener("change", updateStartingTemplateDescription);
+    button.addEventListener("click", applySelectedStartingTemplate);
+
+    if (modalRoot) {
+      const markCurrent = event => {
+        const target = event.target;
+        if (!target || !target.closest) return;
+        if (target.closest(".website-settings-template-bar")) return;
+        if (
+          target.matches("input, select, textarea") &&
+          target.name &&
+          Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, target.name)
+        ) {
+          markStartingTemplateAsCurrentSettings();
+        }
+      };
+      modalRoot.addEventListener("input", markCurrent);
+      modalRoot.addEventListener("change", markCurrent);
+    }
+
+    select.dataset.initialized = "true";
+    updateStartingTemplateDescription();
+  }
+
   function buildWebsiteSettingsTabs() {
     const tabsRoot = document.getElementById("website-settings-tabs-root");
     if (!tabsRoot || tabsRoot.dataset.built === "true") return !!tabsRoot;
@@ -3774,6 +4234,7 @@
 
     tabsRoot.dataset.built = "true";
     initializeWebsiteSettingsTabs();
+    initializeStartingTemplateControls(modalRoot);
     initializeWebsiteSettingsMultilineTextareas();
     initializeWebsiteSettingsManageActions();
     initializeLargeCollectionGroupingDialogControls();
@@ -5009,13 +5470,24 @@
         html:
           '<div id="website-settings-tabs-root" class="website-settings-tabs" style="--website-settings-tab-panels-height:' + settingsTabPanelsHeight + 'px;">' +
             '<div class="website-settings-tab-bar" role="tablist" aria-label="Website settings sections">' +
-              '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_text" role="tab" aria-selected="true">Text &amp; Content</button>' +
+              '<button type="button" class="website-settings-tab-button active" data-tab="website_settings_templates" role="tab" aria-selected="true">Templates</button>' +
+              '<button type="button" class="website-settings-tab-button" data-tab="website_settings_text" role="tab" aria-selected="false">Text &amp; Content</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_display" role="tab" aria-selected="false">Style &amp; Options</button>' +
               '<button type="button" class="website-settings-tab-button" data-tab="website_settings_playback" role="tab" aria-selected="false">Playback &amp; Sounds</button>' +
               '<button type="button" class="website-settings-tab-button manage-tab" data-tab="website_settings_manage" role="tab" aria-selected="false">Manage Settings</button>' +
             '</div>' +
             '<div class="website-settings-tab-panels">' +
-              '<section id="website_settings_text" class="website-settings-tab-panel active" role="tabpanel">' +
+              '<section id="website_settings_templates" class="website-settings-tab-panel active" role="tabpanel">' +
+                '<div class="website-settings-template-bar">' +
+                  '<div class="website-settings-template-field">' +
+                    '<label for="website-settings-template-select">Starting template</label>' +
+                    '<select id="website-settings-template-select" aria-describedby="website-settings-template-description"></select>' +
+                  '</div>' +
+                  '<button id="website-settings-template-apply" class="website-settings-template-apply" type="button">Apply Template</button>' +
+                  '<div id="website-settings-template-description" class="website-settings-template-description"></div>' +
+                '</div>' +
+              '</section>' +
+              '<section id="website_settings_text" class="website-settings-tab-panel" role="tabpanel">' +
                 '<div id="website_settings_text_fields"></div>' +
               '</section>' +
               '<section id="website_settings_display" class="website-settings-tab-panel" role="tabpanel">' +
@@ -5405,7 +5877,22 @@
 
           <h3 id="instructions-configure">3. Configure the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <p>Click <b>Settings</b> to configure the site before building. The settings are divided into four tabs. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
+          <p>Click <b>Settings</b> to configure the site before building. The first tab is <b>Templates</b>, followed by the four tabs containing the individual settings. Each setting label also has a small <b>?</b> help button that opens this guide directly to the description for that control.</p>
+          <div class="instructions-note">
+            <b>Templates tab</b>
+            <p>Templates are a great way to get started setting up a website. Choose the template that best matches what you want to create, then customize any settings as needed.</p>
+            <p>Open the <b>Templates</b> tab and select a template to see a detailed description of its settings. Click <b>Apply Template</b>, confirm with <b>Continue</b>, and then click the dialog's normal <b>Apply</b> button to save the template values. Templates do not change loaded tunes, website text, the selected visual theme, or playback sounds.</p>
+            <ul style="margin-bottom:0;">
+              <li><b>Standard Tunebook</b> is a balanced general-purpose multiple-tune layout.</li>
+              <li><b>Compact Mobile Tunebook</b> uses a single-tune display, simple drop-down navigation, a 750-pixel body width, and bottom navigation buttons.</li>
+              <li><b>Session Tunebook</b> emphasizes quick tune search, playback, instrument selection, and <b>Play in ABC Transcription Tools</b> buttons.</li>
+              <li><b>Practice Collection</b> enables playback-oriented instrument choices, Large playback autoscroll, Play in ABC Transcription Tools buttons, and compact spacing.</li>
+              <li><b>Print-Friendly Tunebook</b> uses a clean multiple-tune layout with a printable title page. The generated site's print CSS already avoids splitting notation staves between pages when possible.</li>
+              <li><b>Large Tune Collection</b> uses searchable alphabetical groups of 50 tunes.</li>
+              <li><b>Songbook or Chord-Chart Website</b> enables tune headings, introductory text, and a printed title page containing the introductory text.</li>
+              <li><b>Long Works / Classical Music</b> uses searchable tile navigation, player controls above the notation, a wide body, and both navigation buttons below each tune.</li>
+            </ul>
+          </div>
           <div class="instructions-note">
             <b>Configure website topics</b>
             <ol style="margin-bottom:0;">
