@@ -1249,7 +1249,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.53";
+  const WEBSITE_BUILDER_VERSION = "1.2.55";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -2133,7 +2133,8 @@
     { id: "printFriendly", name: "Print-Friendly Tunebook" },
     { id: "largeCollection", name: "Large Tune Collection" },
     { id: "songbook", name: "Songbook or Chord-Chart Website" },
-    { id: "longWorks", name: "Long Works / Classical Music" }
+    { id: "longWorks", name: "Long Works / Classical Music" },
+    { id: "singleTuneWebsite", name: "Single Tune Website" }
   ];
 
   const STARTING_TEMPLATE_DETAILS = {
@@ -2268,9 +2269,26 @@
         "Playback controls above each tune",
         "Tune numbers and decorative ornaments hidden",
         "Instrument selector hidden",
+        "Soundfont and MIDI instrument injection disabled",
         "Back to tune top and Table of Contents buttons below each tune",
         "Playback autoscroll set to Large",
         "Play in ABC Transcription Tools buttons"
+      ]
+    },
+    singleTuneWebsite: {
+      summary: "For a website containing one tune with no Table of Contents.",
+      items: [
+        "Multiple-tune display mode",
+        "Table of Contents disabled",
+        "1180-pixel body width with 100% notation width",
+        "Playback controls above the tune",
+        "Tune numbers and decorative ornaments hidden",
+        "Instrument selector hidden",
+        "Soundfont and MIDI instrument injection disabled",
+        "Back to tune top button below the tune",
+        "No Table of Contents button below the tune",
+        "Playback autoscroll set to Large",
+        "Play in ABC Transcription Tools button"
       ]
     }
   };
@@ -2371,7 +2389,22 @@
       bodyWidth: "1180",
       tuneNumbers: "hide",
       showTuneDividers: "hide",
-      instrumentSelector: "hide"
+      instrumentSelector: "hide",
+      injectSoundSettings: false
+    },
+    singleTuneWebsite: {
+      ...STARTING_TEMPLATE_BASE_SETTINGS,
+      tuneDisplay: "multiple",
+      includeTableOfContents: "hide",
+      playerPosition: "above",
+      backToTuneTopBottomButton: "enabled",
+      tableOfContentsBottomButtons: "disabled",
+      notationWidth: "100",
+      bodyWidth: "1180",
+      tuneNumbers: "hide",
+      showTuneDividers: "hide",
+      instrumentSelector: "hide",
+      injectSoundSettings: false
     }
   };
 
@@ -5902,7 +5935,8 @@
               <li><b>Print-Friendly Tunebook</b> uses a clean multiple-tune layout with a printable title page. The generated site's print CSS already avoids splitting notation staves between pages when possible.</li>
               <li><b>Large Tune Collection</b> uses searchable alphabetical groups of 50 tunes.</li>
               <li><b>Songbook or Chord-Chart Website</b> enables tune headings, introductory text, and a printed title page containing the introductory text.</li>
-              <li><b>Long Works / Classical Music</b> uses searchable tile navigation, player controls above the notation, a wide body, and both navigation buttons below each tune.</li>
+              <li><b>Long Works / Classical Music</b> uses searchable tile navigation, player controls above the notation, a wide body, adds both top of tune and table of contents navigation buttons below each tune, and disables soundfont and MIDI instrument injection.</li>
+              <li><b>Single Tune Website</b> uses multiple-tune display mode for a one-tune website, disables the Table of Contents and soundfont and MIDI instrument injection, places the player controls above the tune, and adds a top of tune button below the tune.</li>
             </ul>
           </div>
           <div class="instructions-note">
