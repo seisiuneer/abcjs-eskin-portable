@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>abcjs-eskin Website Builder</title>
-
   <meta property="og:type" content="website" />
   <meta property="og:title" content="abcjs-eskin Website Builder" />
   <meta property="og:description" content="Build standalone multi-tune ABC music websites with notation, tablature, playback, soundfonts, custom styling, and table-of-contents navigation." />
@@ -13,7 +12,6 @@
   <meta property="og:image" content="https://michaeleskin.com/abcjs-eskin-portable/website-builder/img/website-builder-og-2.jpg" />
   <link rel="apple-touch-icon" sizes="180x180" href="https://michaeleskin.com/abctools/img/abc-apple-icon-180x180.png">
   <link rel="icon" type="image/png" sizes="32x32" href="https://michaeleskin.com/abctools/img/abc-favicon-32x32.png"> 
-
   <script src="daypilot-modal.min-3.10.1.js"></script>
   <script src="pako.min.js"></script>
 
@@ -1249,7 +1247,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.56";
+  const WEBSITE_BUILDER_VERSION = "1.2.59";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -2279,7 +2277,7 @@
     singleTuneWebsite: {
       summary: "For a website containing one tune with no Table of Contents.",
       items: [
-        "Multiple-tune display mode",
+        "Single-tune display",
         "Table of Contents disabled",
         "1180-pixel body width with 100% notation width",
         "Playback controls above the tune",
@@ -2395,7 +2393,7 @@
     },
     singleTuneWebsite: {
       ...STARTING_TEMPLATE_BASE_SETTINGS,
-      tuneDisplay: "multiple",
+      tuneDisplay: "single",
       includeTableOfContents: "hide",
       playerPosition: "above",
       backToTuneTopBottomButton: "enabled",
@@ -2466,11 +2464,6 @@
 
   function sanitizeTableOfContentsForTuneDisplay(settings) {
     if (!settings || typeof settings !== "object") return settings;
-
-    if (String(settings.tuneDisplay || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
-        String(settings.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
-      settings.includeTableOfContents = "show";
-    }
 
     if (String(settings.includeTableOfContents || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
       settings.tableOfContentsBottomButtons = "disabled";
@@ -4011,11 +4004,6 @@
 
   function updateTableOfContentsOptionsForTuneDisplay(tuneDisplayField, tableOfContentsField, tableOfContentsBottomButtonsField = null) {
     if (!tuneDisplayField || !tableOfContentsField) return;
-
-    if (String(tuneDisplayField.value || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
-        String(tableOfContentsField.value || DEFAULT_SETTINGS.includeTableOfContents) === "hide") {
-      tableOfContentsField.value = "show";
-    }
 
     if (String(tableOfContentsField.value || DEFAULT_SETTINGS.includeTableOfContents) === "hide" && tableOfContentsBottomButtonsField) {
       tableOfContentsBottomButtonsField.value = "disabled";
@@ -5937,7 +5925,7 @@
               <li><b>Large Tune Collection</b> uses searchable alphabetical groups of 50 tunes.</li>
               <li><b>Songbook or Chord-Chart Website</b> enables tune headings, introductory text, and a printed title page containing the introductory text.</li>
               <li><b>Long Works / Classical Music</b> uses searchable numbered tile navigation, shows tune numbers on the tiles and tunes, places player controls above the notation, uses a wide body, adds both top of tune and Table of Contents navigation buttons below each tune, and disables soundfont and MIDI instrument injection.</li>
-              <li><b>Single Tune Website</b> uses multiple-tune display mode for a one-tune website, disables the Table of Contents and soundfont and MIDI instrument injection, places the player controls above the tune, and adds a top of tune button below the tune.</li>
+              <li><b>Single Tune Website</b> uses single-tune display for a website containing one tune, disables the Table of Contents and soundfont and MIDI instrument injection, places the player controls above the tune, and adds a top of tune button below the tune.</li>
             </ul>
           </div>
           <div class="instructions-note">
@@ -5999,7 +5987,7 @@
             <li id="instructions-setting-body-width"><b>Maximum website body width</b> controls the overall maximum width of the exported site.
               <p class="instructions-note"><b>Digital music stand use-case tip:</b> For vertically short/square tunes that already render in a fixed number of notation lines, such as a six-line tune, try <b>700 px or lower</b> when building a website for tablet landscape viewing. The <b>700 px</b>, <b>650 px</b>, <b>600 px</b>, <b>550 px</b>, and <b>500 px</b> choices can make the rendered notation more compact vertically, which may help the complete tune fit on one screen without scrolling.<br/><br/>Use the widest of these values that still lets the full tune fit comfortably, because lower values also make the notation smaller. Always preview representative tunes on the target tablet, since title length, metadata, lyrics, chords, annotations, and notation spacing can affect the final height.</p>
             </li>
-            <li id="instructions-setting-include-table-of-contents"><b>Include table of contents</b> controls whether the exported site includes the tune-navigation Table of Contents.
+            <li id="instructions-setting-include-table-of-contents"><b>Include table of contents</b> controls whether the exported site includes the tune-navigation Table of Contents. The Table of Contents setting can be disabled with either Single or Multiple tune display. When Single tune display is combined with a disabled Table of Contents, Preview and Build and Save Website proceed normally for a website containing one tune, but display a warning and stop when multiple playable tunes are loaded.
               <ul>
                 <li><b>Disabled</b> omits the Table of Contents and the <b>Table of Contents</b> buttons in tune and section-header panels.</li>
                 <li><b>Enabled</b> displays the Table of Contents.</li>
@@ -6008,7 +5996,7 @@
                 <li><b>Simple drop-down menu</b> replaces the normal Table of Contents tune tiles and search controls with a tune dropdown below the <b>Table of Contents</b> heading. Selecting a tune behaves the same as selecting that tune's normal Table of Contents tile. In <b>Single</b> tune display mode, the selected tune remains shown in the dropdown until another tune is selected or the menu is rebuilt by changing <b>Tune Section</b>. In <b>Multiple</b> tune display mode, the dropdown resets after each selection. Tune-number prefixes are included when tune numbers are shown. When a generated website also has a <b>Tune Section</b> selector, the dropdown is rebuilt to contain the tunes in the newly selected tune section.</li>
                 <li>When a generated website also has a <b>Tune Section</b> selector, the Table of Contents title reflects the currently selected tune section name for all Table of Contents styles. With <b>Simple drop-down menu</b>, the tune dropdown is also rebuilt for the selected section.</li>
               </ul>
-              <p>When <b>Tune Display</b> is set to <b>Single</b>, the Table of Contents is always available so visitors can choose which tune to display. The <b>Disabled</b> option remains visible in the selector, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the Table of Contents setting back to <b>Enabled</b>. If older saved settings or a project use <b>Single</b> tune display with the Table of Contents hidden, the builder automatically changes the Table of Contents setting to <b>Enabled</b>.</p>
+              <p>When <b>Tune Display</b> is set to <b>Single</b>, a disabled Table of Contents is valid for a website containing one playable tune. If multiple playable tunes are loaded, Preview and Build and Save Website display a warning and stop because visitors would have no way to select the other tunes.</p>
             </li>
             <li id="instructions-setting-table-of-contents-max-columns"><b>Maximum table of contents columns</b> controls the maximum number of tune columns used by the generated website Table of Contents (if enabled).
               <ul>
@@ -6038,16 +6026,15 @@
                 <li>If <b>Large tune collection grouping</b> is set to <b>Manual T: section headers (groups of 100)</b>, or the equivalent label for another batch size, the builder forces <b>Tune order</b> to <b>Keep original order</b>.</li>
               </ul>
             </li>
-            <li id="instructions-setting-tune-display"><b>Tune Display</b> controls whether generated websites render only one selected tune at a time or multiple visible tunes at once.
+            <li id="instructions-setting-tune-display"><b>Tune Display</b> controls whether generated websites render only one selected tune at a time or multiple visible tunes at once. Single tune display can be selected whether the Table of Contents is enabled or disabled. With one playable tune, Single display works normally without a Table of Contents. With multiple playable tunes, Preview and Build and Save Website require a Table of Contents so visitors can select the other tunes.
               <ul>
                 <li><b>Single</b> creates a single-tune website mode. On launch, only the first tune is rendered. When a visitor chooses another tune from the Table of Contents or a Search all sections result, playback stops, the current tune is cleared, and the selected tune is rendered and made ready to play.</li>
                 <li><b>Multiple</b> is the default. All visible tunes in the selected tune section are rendered and ready to play.</li>
-                <li>If <b>Single</b> is selected, the exported website includes a Table of Contents because it is needed to choose which tune is displayed.</li>
+                <li>If <b>Single</b> is selected with the Table of Contents disabled, the first tune is displayed directly. This combination is valid when the website contains one playable tune.</li>
                 <li>In <b>Single</b> mode, T:* style section-header panels are not displayed with the selected tune. Their links in the Table of Contents and Search all sections results are no-ops and do not stop playback, change the displayed tune, or scroll the page.</li>
                 <li><b>Single</b> mode is useful for very long tunes, such as classical arrangements, where it makes sense to show and prepare only one tune at a time.</li>
               </ul>
-              <p>In <b>Single</b> mode, the Table of Contents cannot be disabled because it is needed to choose the tune to display. If <b>Include table of contents</b> is set to <b>Disabled</b> and you change <b>Tune Display</b> to <b>Single</b>, the builder changes the Table of Contents setting to <b>Enabled</b>. The <b>Disabled</b> choice remains visible, but if it is selected while <b>Tune Display</b> is <b>Single</b>, the builder immediately changes the setting back to <b>Enabled</b>.</p>
-              <p>To create a website with one tune and no Table of Contents, load only that tune, set <b>Tune Display</b> to <b>Multiple</b>, and set <b>Include table of contents</b> to <b>Disabled</b>. Multiple mode does not require a Table of Contents, so the one tune is displayed directly.</p>
+              <p><b>Single</b> mode and a disabled Table of Contents can be selected together. With one playable tune, the generated website displays that tune directly. With multiple playable tunes, Preview and Build and Save Website display a warning and stop until a Table of Contents is enabled or Tune Display is changed to <b>Multiple</b>.</p>
             </li>
             <li id="instructions-setting-large-collection-grouping"><b>Large tune collection grouping</b> adds a <b>Tune Section</b> selector to the generated website for very large collections. 
               <ul>
@@ -6228,13 +6215,13 @@
 
           <h3 id="instructions-preview">5. Preview the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
-          <p>After loading at least one tune and applying all the settings for the website, click <b>Preview</b> to generate the website with the currently loaded ABC and applied settings and open it in a new browser tab. Click <b>Close Preview</b> at the top right of the previewed website to close the tab and return to the Website Builder.</p>
+          <p>After loading at least one tune and applying all the settings for the website, click <b>Preview</b> to generate the website with the currently loaded ABC and applied settings and open it in a new browser tab. Single tune display and a disabled Table of Contents may be selected together. Preview proceeds when there is one playable tune, but displays a warning and stops when multiple playable tunes would be inaccessible. Click <b>Close Preview</b> at the top right of the previewed website to close the tab and return to the Website Builder.</p>
 
           <h3 id="instructions-build-save">6. Build and save the website</h3>
           <p class="instructions-back-to-toc-row"><a class="instructions-back-to-toc" href="#instructions-toc-top">Back to table of contents</a></p>
           <ol>
             <li>Optionally use <b>Preview</b> before saving to check the generated website in a new browser tab.</li>
-            <li>After loading at least one tune, click <b>Build and Save Website</b>.</li>
+            <li>After loading at least one tune, click <b>Build and Save Website</b>. Single tune display and a disabled Table of Contents may be selected together; building proceeds with one playable tune, but the tool warns and stops if multiple playable tunes would be inaccessible.</li>
             <li>Enter the desired website HTML filename in the dialog. If you enter a filename, that filename is reused for later website saves during the same browser session only. Loading and applying a saved settings file resets this default filename from the loaded website title.</li>
             <li>The tool creates a complete HTML file and either downloads it or, on iPhone and iPad, opens the iOS share sheet.</li>
           </ol>
@@ -13091,9 +13078,48 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     }
   }
 
+  function hasInvalidSingleDisplayWithoutTableOfContents(settings = state.settings) {
+    const playableTuneCount = state.tunes.filter(tune => !tune.isSectionHeader).length;
+    return playableTuneCount > 1 &&
+      String((settings && settings.tuneDisplay) || DEFAULT_SETTINGS.tuneDisplay) === "single" &&
+      String((settings && settings.includeTableOfContents) || DEFAULT_SETTINGS.includeTableOfContents) === "hide";
+  }
+
+  async function validateSingleDisplayWithoutTableOfContents(actionLabel) {
+    if (!hasInvalidSingleDisplayWithoutTableOfContents()) return true;
+
+    const actionText = actionLabel === "preview"
+      ? "previewing"
+      : "building and saving";
+
+    await DayPilot.Modal.alert(
+      '<div style="text-align:center;line-height:1.45;max-width:680px;margin:0 auto;">' +
+        '<b>Single tune display without a Table of Contents can only be used when the website contains one tune.</b><br><br>' +
+        'This website contains multiple tunes. Without a Table of Contents, visitors would have no way to select the other tunes.<br><br>' +
+        'Enable a Table of Contents or change Tune Display to <b>Multiple</b> before ' + actionText + ' the website.' +
+      '</div>',
+      {
+        title: "Table of Contents Required",
+        okText: "OK",
+        top: 150
+      }
+    );
+
+    setStatus(
+      "Enable a Table of Contents or use Multiple tune display when the website contains more than one tune.",
+      true
+    );
+    return false;
+  }
+
   async function previewSite() {
     if (!state.tunes.length) {
       setStatus("Load at least one ABC tune before previewing.", true);
+      return null;
+    }
+
+    if (hasInvalidSingleDisplayWithoutTableOfContents()) {
+      await validateSingleDisplayWithoutTableOfContents("preview");
       return null;
     }
 
@@ -13144,6 +13170,10 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
   async function saveSite() {
     if (!state.tunes.length) return;
+
+    if (!await validateSingleDisplayWithoutTableOfContents("build")) {
+      return;
+    }
 
     if (state.settings.theme === "custom" && !state.customTheme) {
       await showCustomThemeRequiredDialog();
