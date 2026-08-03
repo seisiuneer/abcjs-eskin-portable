@@ -1247,7 +1247,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.59";
+  const WEBSITE_BUILDER_VERSION = "1.2.60";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -2130,7 +2130,6 @@
     { id: "compactMobile", name: "Compact Mobile Tunebook" },
     { id: "printFriendly", name: "Print-Friendly Tunebook" },
     { id: "largeCollection", name: "Large Tune Collection" },
-    { id: "songbook", name: "Songbook or Chord-Chart Website" },
     { id: "longWorks", name: "Long Works / Classical Music" },
     { id: "singleTuneWebsite", name: "Single Tune Website" }
   ];
@@ -2243,21 +2242,6 @@
         "Play in ABC Transcription Tools buttons"
       ]
     },
-    songbook: {
-      summary: "For songs, lyrics, text-based material, and chord-chart ABC.",
-      items: [
-        "Single-tune display",
-        "Searchable tile-based Table of Contents",
-        "1180-pixel body width",
-        "Playback controls above each tune",
-        "Instrument selector hidden",
-        "Decorative ornaments shown",
-        "Tune headings and introductory text enabled",
-        "Print title page including introductory text",
-        "Playback autoscroll set to Large",
-        "Play in ABC Transcription Tools buttons"
-      ]
-    },
     longWorks: {
       summary: "For long classical works, suites, scores, movements, and other lengthy tunes.",
       items: [
@@ -2364,18 +2348,6 @@
       tuneOrder: "sortTitle",
       tableOfContentsBottomButtons: "enabled",
       bodyWidth: "1180"
-    },
-    songbook: {
-      ...STARTING_TEMPLATE_BASE_SETTINGS,
-      tuneDisplay: "single",
-      includeTableOfContents: "showSearch",
-      bodyWidth: "1180",
-      instrumentSelector: "hide",
-      playerPosition: "above",
-      showTuneDividers: "show",
-      includeTuneHeading: true,
-      includeCollectionIntro: true,
-      printTitlePageAndTextBeforeTunes: "titleWithText"
     },
     longWorks: {
       ...STARTING_TEMPLATE_BASE_SETTINGS,
@@ -5923,7 +5895,6 @@
               <li><b>Compact Mobile Tunebook</b> uses a single-tune display, simple drop-down navigation, a 750-pixel body width, and bottom navigation buttons.</li>
               <li><b>Print-Friendly Tunebook</b> uses a clean multiple-tune layout with a printable title page. The generated site's print CSS already avoids splitting notation staves between pages when possible.</li>
               <li><b>Large Tune Collection</b> uses searchable alphabetical groups of 50 tunes.</li>
-              <li><b>Songbook or Chord-Chart Website</b> enables tune headings, introductory text, and a printed title page containing the introductory text.</li>
               <li><b>Long Works / Classical Music</b> uses searchable numbered tile navigation, shows tune numbers on the tiles and tunes, places player controls above the notation, uses a wide body, adds both top of tune and Table of Contents navigation buttons below each tune, and disables soundfont and MIDI instrument injection.</li>
               <li><b>Single Tune Website</b> uses single-tune display for a website containing one tune, disables the Table of Contents and soundfont and MIDI instrument injection, places the player controls above the tune, and adds a top of tune button below the tune.</li>
             </ul>
@@ -6112,7 +6083,7 @@
               <ul>
                 <li><b>Small</b> uses a compact website title and Table of Contents heading. This can be useful when conserving vertical space on tablets or when the website title is long.</li>
                 <li><b>Medium</b> is the default and provides a balanced size between the compact and original presentation.</li>
-                <li><b>Large</b> is a larger size than Medium and matches older version of the tool's default website title and Table of Contents font sizes.</li>
+                <li><b>Large</b> is a larger size than Medium.</li>
                 <li>This setting does not change tune titles or <code>T:*</code> style section-header titles.</li>
               </ul>
             </li>
@@ -6140,7 +6111,7 @@
             </li>
             <li id="instructions-setting-deployment-target"><b>Deployment target</b> controls whether the exported HTML is optimized as a complete standalone page or as HTML that may be pasted directly into another website builder or content-management page.
               <ul>
-                <li><b>Standalone website</b> is the default and produces the same standalone export style used by previous versions. Use this when the exported HTML file will be opened directly, uploaded as its own page, or embedded with an iframe.</li>
+                <li><b>Standalone website</b> is the default. Use this when the exported HTML file will be opened directly, uploaded as its own page, or embedded with an iframe.</li>
                 <li><b>Embedded website (experimental)</b> adds a defensive CSS compatibility layer and an outer wrapper around the visible site content to reduce interference from host-page styles when the exported HTML is directly pasted and embedded into another page, for example on Squarespace, WordPress, or other hosted CMS services.</li>
                 <li>Embedded website mode is experimental. It can help protect fonts, form fields, search bar sizing, buttons, and tune panel layout from host-page CSS, but it cannot guarantee perfect isolation from every website platform or theme. Iframe embedding remains the safest option when complete style isolation is required.</li>
               </ul>
