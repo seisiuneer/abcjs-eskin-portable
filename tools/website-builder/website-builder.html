@@ -3034,6 +3034,7 @@
     /^%%visualtranspose.*$/,
     /^%%maxstaves.*$/,
     /^%%partsbox.*$/,
+    /^%%show_chord_grids(?:\s+(?:guitar|mandolin))?\s*$/i,
     /^%hide_first_title_on_play.*$/,
     /^%hide_vskip_on_play.*$/,
     /^%left_justify_titles.*$/,
@@ -3088,17 +3089,32 @@
   function cleanFileHeaderForTuneInjection(headerText) {
     const cleanedLines = [];
     let inCssBlock = false;
+    let inChordGridDefinitionBlock = false;
 
     String(headerText || "")
       .split("\n")
       .forEach(line => {
-        if (line.trim() === "%%begincss") {
+        const trimmedLine = line.trim();
+
+        if (/^%%begin_chord_grid_definitions$/i.test(trimmedLine)) {
+          inChordGridDefinitionBlock = true;
+        }
+
+        if (inChordGridDefinitionBlock) {
+          cleanedLines.push(line);
+          if (/^%%end_chord_grid_definitions?$/i.test(trimmedLine)) {
+            inChordGridDefinitionBlock = false;
+          }
+          return;
+        }
+
+        if (trimmedLine === "%%begincss") {
           inCssBlock = true;
         }
 
         if (inCssBlock) {
           cleanedLines.push(line);
-          if (line.trim() === "%%endcss") {
+          if (trimmedLine === "%%endcss") {
             inCssBlock = false;
           }
           return;
@@ -3114,8 +3130,30 @@
 
   function trimAbcRecordAtFirstBlankLine(recordText) {
     const lines = String(recordText || "").split("\n");
-    const blankLineIndex = lines.findIndex(line => line.trim() === "");
-    const keptLines = blankLineIndex >= 0 ? lines.slice(0, blankLineIndex) : lines;
+    const keptLines = [];
+    let inChordGridDefinitionBlock = false;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      if (/^%%begin_chord_grid_definitions$/i.test(trimmedLine)) {
+        inChordGridDefinitionBlock = true;
+        keptLines.push(line);
+        continue;
+      }
+
+      if (inChordGridDefinitionBlock) {
+        keptLines.push(line);
+        if (/^%%end_chord_grid_definitions?$/i.test(trimmedLine)) {
+          inChordGridDefinitionBlock = false;
+        }
+        continue;
+      }
+
+      if (trimmedLine === "") break;
+      keptLines.push(line);
+    }
+
     return keptLines.join("\n").trim();
   }
 

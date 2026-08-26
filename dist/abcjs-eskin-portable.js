@@ -1345,6 +1345,577 @@ function ScanTuneForCustomFade(theTune,index){
 }
 
 
+
+//
+// MAE 25 Aug 2026 - Optional portable chord-grid support.
+// Dormant unless %%show_chord_grids occurs in the ABC. Built-in chord data is
+// embedded here so updating the portable library never requires an additional
+// script include in previously generated websites.
+//
+var gEskinPortableGuitarChords = {"C":{"strings":6,"baseFret":1,"frets":["x",3,2,0,1,0],"fingers":null,"barre":null},"Cm":{"strings":6,"baseFret":3,"frets":["x",3,5,5,4,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":5,"finger":1}},"C7":{"strings":6,"baseFret":1,"frets":["x",3,2,3,1,0],"fingers":null,"barre":null},"Cm7":{"strings":6,"baseFret":3,"frets":["x",3,5,3,4,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":5,"finger":1}},"Cmaj7":{"strings":6,"baseFret":1,"frets":["x",3,2,0,0,0],"fingers":null,"barre":null},"Csus4":{"strings":6,"baseFret":3,"frets":["x",3,3,5,6,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":5,"finger":1}},"C#":{"strings":6,"baseFret":4,"frets":[4,4,6,6,6,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"C#m":{"strings":6,"baseFret":4,"frets":[4,4,6,6,5,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"C#7":{"strings":6,"baseFret":4,"frets":[0,4,5,4,5,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":5,"finger":1}},"C#m7":{"strings":6,"baseFret":4,"frets":[0,4,4,4,5,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":5,"finger":1}},"C#maj7":{"strings":6,"baseFret":1,"frets":["x",4,3,1,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":3,"finger":1}},"C#sus4":{"strings":6,"baseFret":4,"frets":[0,4,4,6,7,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":5,"finger":1}},"D":{"strings":6,"baseFret":1,"frets":["x",0,0,2,3,2],"fingers":null,"barre":null},"Dm":{"strings":6,"baseFret":1,"frets":["x",0,0,2,3,1],"fingers":null,"barre":null},"D7":{"strings":6,"baseFret":1,"frets":["x",0,0,2,1,2],"fingers":null,"barre":null},"Dm7":{"strings":6,"baseFret":1,"frets":["x","x",0,2,0,0],"fingers":null,"barre":null},"Dmaj7":{"strings":6,"baseFret":1,"frets":["x","x",0,2,2,2],"fingers":null,"barre":null},"Dsus4":{"strings":6,"baseFret":1,"frets":["x","x",0,2,3,3],"fingers":null,"barre":null},"D#":{"strings":6,"baseFret":3,"frets":["x",6,5,3,4,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":3,"finger":1}},"D#m":{"strings":6,"baseFret":6,"frets":["x",6,8,8,7,6],"fingers":null,"barre":{"fret":6,"fromString":1,"toString":5,"finger":1}},"D#7":{"strings":6,"baseFret":1,"frets":["x","x",1,3,2,4],"fingers":null,"barre":null},"D#m7":{"strings":6,"baseFret":6,"frets":["x",6,8,6,7,6],"fingers":null,"barre":{"fret":6,"fromString":1,"toString":5,"finger":1}},"D#maj7":{"strings":6,"baseFret":3,"frets":["x",6,5,3,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":3,"finger":1}},"D#sus4":{"strings":6,"baseFret":6,"frets":["x",6,6,8,9,6],"fingers":null,"barre":{"fret":6,"fromString":1,"toString":5,"finger":1}},"E":{"strings":6,"baseFret":1,"frets":[0,2,2,1,0,0],"fingers":null,"barre":null},"Em":{"strings":6,"baseFret":1,"frets":[0,2,2,0,0,0],"fingers":null,"barre":null},"E7":{"strings":6,"baseFret":1,"frets":[0,2,0,1,0,0],"fingers":null,"barre":null},"E7_alt":{"strings":6,"baseFret":1,"frets":[0,2,2,1,3,0],"fingers":null,"barre":null},"Em7":{"strings":6,"baseFret":1,"frets":[0,2,0,0,0,0],"fingers":null,"barre":null},"Em7_alt":{"strings":6,"baseFret":1,"frets":[0,2,2,0,3,0],"fingers":null,"barre":null},"Emaj7":{"strings":6,"baseFret":1,"frets":[0,2,1,1,0,0],"fingers":null,"barre":null},"Esus4":{"strings":6,"baseFret":1,"frets":[0,0,2,2,0,0],"fingers":null,"barre":null},"F":{"strings":6,"baseFret":1,"frets":[1,3,3,2,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"Fm":{"strings":6,"baseFret":1,"frets":[1,3,3,1,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"F7":{"strings":6,"baseFret":1,"frets":[1,3,1,2,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"Fm7":{"strings":6,"baseFret":1,"frets":[1,3,1,1,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"Fmaj7":{"strings":6,"baseFret":1,"frets":[1,3,2,2,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"Fsus4":{"strings":6,"baseFret":1,"frets":[1,1,3,3,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"F#":{"strings":6,"baseFret":2,"frets":[2,4,4,3,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"F#m":{"strings":6,"baseFret":2,"frets":[2,4,4,2,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"F#7":{"strings":6,"baseFret":2,"frets":[2,4,2,3,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"F#m7":{"strings":6,"baseFret":2,"frets":[2,4,2,2,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"F#maj7":{"strings":6,"baseFret":2,"frets":[2,4,3,3,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"F#sus4":{"strings":6,"baseFret":2,"frets":[2,2,4,4,2,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"G":{"strings":6,"baseFret":1,"frets":[3,2,0,0,0,3],"fingers":null,"barre":null},"G_alt":{"strings":6,"baseFret":3,"frets":[3,5,5,4,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":6,"finger":1}},"Gm":{"strings":6,"baseFret":3,"frets":[3,5,5,3,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":6,"finger":1}},"G7":{"strings":6,"baseFret":1,"frets":[3,2,0,0,0,1],"fingers":null,"barre":null},"Gm7":{"strings":6,"baseFret":3,"frets":[3,5,3,3,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":6,"finger":1}},"Gmaj7":{"strings":6,"baseFret":1,"frets":[3,2,0,0,0,2],"fingers":null,"barre":null},"Gmaj7_alt":{"strings":6,"baseFret":3,"frets":[3,5,4,4,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":6,"finger":1}},"Gsus4":{"strings":6,"baseFret":3,"frets":[3,3,5,5,3,3],"fingers":null,"barre":{"fret":3,"fromString":1,"toString":6,"finger":1}},"G#":{"strings":6,"baseFret":4,"frets":[4,6,6,5,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"G#m":{"strings":6,"baseFret":4,"frets":[4,6,6,4,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"G#7":{"strings":6,"baseFret":4,"frets":[4,6,4,5,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"G#m7":{"strings":6,"baseFret":4,"frets":[4,6,4,4,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"G#maj7":{"strings":6,"baseFret":4,"frets":[4,6,5,5,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"G#sus4":{"strings":6,"baseFret":4,"frets":[4,4,6,6,4,4],"fingers":null,"barre":{"fret":4,"fromString":1,"toString":6,"finger":1}},"A":{"strings":6,"baseFret":1,"frets":[0,0,2,2,2,0],"fingers":null,"barre":null},"Am":{"strings":6,"baseFret":1,"frets":[0,0,2,2,1,0],"fingers":null,"barre":null},"A7":{"strings":6,"baseFret":1,"frets":[0,0,2,0,2,0],"fingers":null,"barre":null},"Am7":{"strings":6,"baseFret":1,"frets":[0,0,2,0,1,0],"fingers":null,"barre":null},"Amaj7":{"strings":6,"baseFret":1,"frets":["x",0,2,1,2,0],"fingers":null,"barre":null},"Asus4":{"strings":6,"baseFret":1,"frets":["x",0,0,2,3,0],"fingers":null,"barre":null},"A#":{"strings":6,"baseFret":1,"frets":[1,1,2,2,2,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"A#m":{"strings":6,"baseFret":1,"frets":[1,1,2,2,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"A#7":{"strings":6,"baseFret":1,"frets":[1,1,2,1,2,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"A#m7":{"strings":6,"baseFret":1,"frets":[1,1,2,1,1,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"A#maj7":{"strings":6,"baseFret":1,"frets":["x",1,2,1,2,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"A#sus4":{"strings":6,"baseFret":1,"frets":["x",1,1,2,3,1],"fingers":null,"barre":{"fret":1,"fromString":1,"toString":6,"finger":1}},"B":{"strings":6,"baseFret":2,"frets":[2,2,4,4,4,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"Bm":{"strings":6,"baseFret":2,"frets":[2,2,4,4,3,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"B7":{"strings":6,"baseFret":1,"frets":["x",2,1,2,0,2],"fingers":null,"barre":null},"Bm7":{"strings":6,"baseFret":2,"frets":["x",2,4,2,3,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":5,"finger":1}},"Bmaj7":{"strings":6,"baseFret":2,"frets":["x",2,4,3,4,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}},"Bsus4":{"strings":6,"baseFret":2,"frets":["x",2,2,3,4,2],"fingers":null,"barre":{"fret":2,"fromString":1,"toString":6,"finger":1}}};
+var gEskinPortableGuitarAliases = {"Db":"C#","Dbm":"C#m","Db7":"C#7","Dbm7":"C#m7","Dbmaj7":"C#maj7","Dbsus4":"C#sus4","Eb":"D#","Ebm":"D#m","Eb7":"D#7","Ebm7":"D#m7","Ebmaj7":"D#maj7","Ebsus4":"D#sus4","Gb":"F#","Gbm":"F#m","Gb7":"F#7","Gbm7":"F#m7","Gbmaj7":"F#maj7","Gbsus4":"F#sus4","Ab":"G#","Abm":"G#m","Ab7":"G#7","Abm7":"G#m7","Abmaj7":"G#maj7","Absus4":"G#sus4","Bb":"A#","Bbm":"A#m","Bb7":"A#7","Bbm7":"A#m7","Bbmaj7":"A#maj7","Bbsus4":"A#sus4"};
+var gEskinPortableMandolinChords = {"C":{"strings":4,"baseFret":1,"frets":[0,2,3,0],"barre":null,"fingers":null},"Cm":{"strings":4,"baseFret":1,"frets":[0,1,3,3],"barre":null,"fingers":null},"C7":{"strings":4,"baseFret":1,"frets":[3,2,3,3],"barre":null,"fingers":null},"Cm7":{"strings":4,"baseFret":1,"frets":[3,1,3,3],"barre":null,"fingers":null},"Cmaj7":{"strings":4,"baseFret":1,"frets":[4,2,3,3],"barre":null,"fingers":null},"Csus4":{"strings":4,"baseFret":1,"frets":[0,3,3,3],"barre":null,"fingers":null},"C#":{"strings":4,"baseFret":1,"frets":[1,3,4,1],"barre":null,"fingers":null},"C#m":{"strings":4,"baseFret":1,"frets":[1,2,4,0],"barre":null,"fingers":null},"C#7":{"strings":4,"baseFret":1,"frets":[4,3,4,4],"barre":null,"fingers":null},"C#m7":{"strings":4,"baseFret":1,"frets":[4,2,4,4],"barre":null,"fingers":null},"C#maj7":{"strings":4,"baseFret":1,"frets":[5,3,4,4],"barre":null,"fingers":null},"C#sus4":{"strings":4,"baseFret":1,"frets":[1,4,4,2],"barre":null,"fingers":null},"D":{"strings":4,"baseFret":1,"frets":[2,0,0,2],"barre":null,"fingers":null},"Dm":{"strings":4,"baseFret":1,"frets":[2,0,0,1],"barre":null,"fingers":null},"D7":{"strings":4,"baseFret":1,"frets":[2,0,3,2],"barre":null,"fingers":null},"Dm7":{"strings":4,"baseFret":1,"frets":[2,0,3,1],"barre":null,"fingers":null},"Dmaj7":{"strings":4,"baseFret":1,"frets":[2,0,4,2],"barre":null,"fingers":null},"Dsus4":{"strings":4,"baseFret":1,"frets":[0,0,0,3],"barre":null,"fingers":null},"D#":{"strings":4,"baseFret":1,"frets":[0,1,1,3],"barre":null,"fingers":null},"D#m":{"strings":4,"baseFret":1,"frets":[3,1,1,2],"barre":null,"fingers":null},"D#7":{"strings":4,"baseFret":1,"frets":[3,1,4,3],"barre":null,"fingers":null},"D#m7":{"strings":4,"baseFret":1,"frets":[3,1,4,2],"barre":null,"fingers":null},"D#maj7":{"strings":4,"baseFret":1,"frets":[3,1,5,3],"barre":null,"fingers":null},"D#sus4":{"strings":4,"baseFret":1,"frets":[1,1,1,4],"barre":null,"fingers":null},"E":{"strings":4,"baseFret":1,"frets":[1,2,2,0],"barre":null,"fingers":null},"Em":{"strings":4,"baseFret":1,"frets":[0,2,2,0],"barre":null,"fingers":null},"E7":{"strings":4,"baseFret":1,"frets":[1,0,2,0],"barre":null,"fingers":null},"E7_alt":{"strings":4,"baseFret":1,"frets":[4,2,5,4],"barre":null,"fingers":null},"Em7":{"strings":4,"baseFret":1,"frets":[0,0,2,0],"barre":null,"fingers":null},"Em7_alt":{"strings":4,"baseFret":1,"frets":[4,5,5,0],"barre":null,"fingers":null},"Emaj7":{"strings":4,"baseFret":1,"frets":[1,1,2,0],"barre":null,"fingers":null},"Esus4":{"strings":4,"baseFret":1,"frets":[2,2,2,0],"barre":null,"fingers":null},"F":{"strings":4,"baseFret":1,"frets":[2,3,3,1],"barre":null,"fingers":null},"Fm":{"strings":4,"baseFret":1,"frets":[1,3,3,1],"barre":null,"fingers":null},"F7":{"strings":4,"baseFret":1,"frets":[2,1,3,1],"barre":null,"fingers":null},"Fm7":{"strings":4,"baseFret":1,"frets":[1,1,3,1],"barre":null,"fingers":null},"Fmaj7":{"strings":4,"baseFret":1,"frets":[2,3,3,0],"barre":null,"fingers":null},"Fsus4":{"strings":4,"baseFret":1,"frets":[3,3,3,1],"barre":null,"fingers":null},"F#":{"strings":4,"baseFret":1,"frets":[3,4,4,2],"barre":null,"fingers":null},"F#m":{"strings":4,"baseFret":1,"frets":[2,4,4,2],"barre":null,"fingers":null},"F#7":{"strings":4,"baseFret":1,"frets":[3,4,4,0],"barre":null,"fingers":null},"F#m7":{"strings":4,"baseFret":1,"frets":[2,4,4,0],"barre":null,"fingers":null},"F#maj7":{"strings":4,"baseFret":1,"frets":[3,3,4,2],"barre":null,"fingers":null},"F#sus4":{"strings":4,"baseFret":1,"frets":[4,4,4,2],"barre":null,"fingers":null},"G":{"strings":4,"baseFret":1,"frets":[0,0,2,3],"barre":null,"fingers":null},"G_alt":{"strings":4,"baseFret":1,"frets":[4,0,2,3],"barre":null,"fingers":null},"Gm":{"strings":4,"baseFret":1,"frets":[0,0,1,3],"barre":null,"fingers":null},"G7":{"strings":4,"baseFret":1,"frets":[0,0,2,1],"barre":null,"fingers":null},"Gm7":{"strings":4,"baseFret":1,"frets":[0,0,1,1],"barre":null,"fingers":null},"Gmaj7":{"strings":4,"baseFret":1,"frets":[0,0,2,2],"barre":null,"fingers":null},"Gmaj7_alt":{"strings":4,"baseFret":1,"frets":[4,4,5,3],"barre":null,"fingers":null},"Gsus4":{"strings":4,"baseFret":1,"frets":[0,0,3,3],"barre":null,"fingers":null},"G#":{"strings":4,"baseFret":1,"frets":[1,1,3,4],"barre":null,"fingers":null},"G#m":{"strings":4,"baseFret":1,"frets":[1,1,2,4],"barre":null,"fingers":null},"G#7":{"strings":4,"baseFret":1,"frets":[1,1,3,2],"barre":null,"fingers":null},"G#m7":{"strings":4,"baseFret":1,"frets":[1,1,2,2],"barre":null,"fingers":null},"G#maj7":{"strings":4,"baseFret":1,"frets":[1,1,3,3],"barre":null,"fingers":null},"G#sus4":{"strings":4,"baseFret":1,"frets":[1,1,4,4],"barre":null,"fingers":null},"A":{"strings":4,"baseFret":1,"frets":[2,2,4,0],"barre":null,"fingers":null},"Am":{"strings":4,"baseFret":1,"frets":[2,2,3,0],"barre":null,"fingers":null},"A7":{"strings":4,"baseFret":1,"frets":[2,2,4,3],"barre":null,"fingers":null},"Am7":{"strings":4,"baseFret":1,"frets":[2,2,3,3],"barre":null,"fingers":null},"Amaj7":{"strings":4,"baseFret":1,"frets":[2,2,4,4],"barre":null,"fingers":null},"Asus4":{"strings":4,"baseFret":1,"frets":[2,0,0,0],"barre":null,"fingers":null},"A#":{"strings":4,"baseFret":1,"frets":[3,0,1,1],"barre":null,"fingers":null},"A#m":{"strings":4,"baseFret":1,"frets":[3,3,4,1],"barre":null,"fingers":null},"A#7":{"strings":4,"baseFret":1,"frets":[1,0,1,1],"barre":null,"fingers":null},"A#m7":{"strings":4,"baseFret":1,"frets":[3,3,4,4],"barre":null,"fingers":null},"A#maj7":{"strings":4,"baseFret":1,"frets":[2,0,1,1],"barre":null,"fingers":null},"A#sus4":{"strings":4,"baseFret":1,"frets":[3,1,1,1],"barre":null,"fingers":null},"B":{"strings":4,"baseFret":1,"frets":[4,1,2,2],"barre":null,"fingers":null},"Bm":{"strings":4,"baseFret":1,"frets":[4,0,2,2],"barre":null,"fingers":null},"B7":{"strings":4,"baseFret":1,"frets":[2,1,2,2],"barre":null,"fingers":null},"Bm7":{"strings":4,"baseFret":1,"frets":[2,0,2,2],"barre":null,"fingers":null},"Bmaj7":{"strings":4,"baseFret":1,"frets":[3,1,2,2],"barre":null,"fingers":null},"Bsus4":{"strings":4,"baseFret":1,"frets":[4,4,2,0],"barre":null,"fingers":null}};
+var gEskinPortableMandolinAliases = {"Db":"C#","Dbm":"C#m","Db7":"C#7","Dbm7":"C#m7","Dbmaj7":"C#maj7","Dbsus4":"C#sus4","Eb":"D#","Ebm":"D#m","Eb7":"D#7","Ebm7":"D#m7","Ebmaj7":"D#maj7","Ebsus4":"D#sus4","Gb":"F#","Gbm":"F#m","Gb7":"F#7","Gbm7":"F#m7","Gbmaj7":"F#maj7","Gbsus4":"F#sus4","Ab":"G#","Abm":"G#m","Ab7":"G#7","Abm7":"G#m7","Abmaj7":"G#maj7","Absus4":"G#sus4","Bb":"A#","Bbm":"A#m","Bb7":"A#7","Bbm7":"A#m7","Bbmaj7":"A#maj7","Bbsus4":"A#sus4"};
+
+function EskinPortableStripChordGridDefinitions(source) {
+  return String(source || "").replace(
+    /^[ \t]*%%begin_chord_grid_definitions[ \t]*\r?\n[\s\S]*?^[ \t]*%%end_chord_grid_definitions?[ \t]*(?:\r?\n|$)/gmi,
+    ""
+  );
+}
+
+function EskinPortableValidateChordGridDefinition(definition) {
+  if (!definition || typeof definition !== "object") return null;
+
+  var strings = Number(definition.strings);
+  if (!Number.isInteger(strings) || strings < 3 || strings > 6) return null;
+  if (!Array.isArray(definition.frets) || definition.frets.length !== strings) return null;
+
+  var baseFret = Number(definition.baseFret);
+  if (!Number.isInteger(baseFret) || baseFret < 1) return null;
+
+  var frets = definition.frets.map(function(value) {
+    if (value === "x" || value === "X") return "x";
+    var numeric = Number(value);
+    return Number.isInteger(numeric) && numeric >= 0 ? numeric : null;
+  });
+  if (frets.some(function(value) { return value === null; })) return null;
+
+  var fingers = null;
+
+  if (definition.fingers !== null && definition.fingers !== undefined) {
+    if (!Array.isArray(definition.fingers) ||
+        definition.fingers.length !== strings) {
+      return null;
+    }
+
+    fingers = definition.fingers.map(function(value) {
+      if (value === null || value === undefined || value === "") return null;
+      var numeric = Number(value);
+      return Number.isInteger(numeric) && numeric >= 1 && numeric <= 4
+        ? numeric
+        : null;
+    });
+
+    for (var fi = 0; fi < definition.fingers.length; ++fi) {
+      if (definition.fingers[fi] !== null &&
+          definition.fingers[fi] !== undefined &&
+          definition.fingers[fi] !== "" &&
+          fingers[fi] === null) {
+        return null;
+      }
+    }
+  }
+
+  var barre = null;
+
+  if (definition.barre !== null && definition.barre !== undefined) {
+    if (typeof definition.barre !== "object") return null;
+
+    var fret = Number(definition.barre.fret);
+    var fromString = Number(definition.barre.fromString);
+    var toString = Number(definition.barre.toString);
+
+    if (!Number.isInteger(fret) || fret < 1 ||
+        !Number.isInteger(fromString) || fromString < 1 || fromString > strings ||
+        !Number.isInteger(toString) || toString < 1 || toString > strings) {
+      return null;
+    }
+
+    var barreFinger = null;
+
+    if (fingers !== null) {
+      barreFinger = definition.barre.finger == null
+        ? 1
+        : Number(definition.barre.finger);
+
+      if (!Number.isInteger(barreFinger) ||
+          barreFinger < 1 ||
+          barreFinger > 4) {
+        return null;
+      }
+    }
+
+    barre = {
+      fret: fret,
+      fromString: fromString,
+      toString: toString,
+      finger: barreFinger
+    };
+  }
+
+  return {
+    strings: strings,
+    baseFret: baseFret,
+    frets: frets,
+    fingers: fingers,
+    barre: barre
+  };
+}
+
+function EskinPortableParseChordGridDefinitions(source) {
+  var definitions = Object.create(null);
+  var re =
+    /^[ \t]*%%begin_chord_grid_definitions[ \t]*\r?\n([\s\S]*?)^[ \t]*%%end_chord_grid_definitions?[ \t]*(?:\r?\n|$)/gmi;
+  var match;
+
+  while ((match = re.exec(String(source || ""))) !== null) {
+    var body = match[1].trim().replace(/,\s*$/, "");
+    if (!body) continue;
+
+    try {
+      var parsed = JSON.parse("{" + body + "}");
+      Object.keys(parsed).forEach(function(name) {
+        var validated = EskinPortableValidateChordGridDefinition(parsed[name]);
+        if (validated) definitions[name] = validated;
+      });
+    } catch (error) {
+      if (typeof console !== "undefined" && console.warn) {
+        console.warn("Invalid chord-grid definition block:", error);
+      }
+    }
+  }
+
+  return definitions;
+}
+
+function EskinPortableGetChordGridSettings(source) {
+  var result = null;
+
+  String(source || "").split(/\r?\n/).forEach(function(line) {
+    var match = line.match(
+      /^[ \t]*%%show_chord_grids(?:[ \t]+(guitar|mandolin))?[ \t]*$/i
+    );
+
+    if (match) {
+      result = {
+        instrument: match[1] ? match[1].toLowerCase() : "guitar"
+      };
+    }
+  });
+
+  return result;
+}
+
+function EskinPortableNormalizeChordName(value) {
+  var name = String(value || "").trim();
+  while (name.length >= 2 && name[0] === "(" && name[name.length - 1] === ")") {
+    name = name.substring(1, name.length - 1).trim();
+  }
+
+  return name
+    .replace(/♭/g, "b")
+    .replace(/♯/g, "#");
+}
+
+function EskinPortableIsChordName(value) {
+  var name = EskinPortableNormalizeChordName(value);
+  if (!name || /^[\^_<>@]/.test(name)) return false;
+  return /^[A-G](?:#|b)?(?:maj|min|dim|aug|sus|add|m|no|M|°|ø|o|\+|-|[0-9]|[#b]|\(|\))*?(?:\/[A-G](?:#|b)?)?$/.test(name);
+}
+
+function EskinPortableGetChordGridNames(source) {
+  var abc = EskinPortableStripChordGridDefinitions(source);
+  var found = [];
+  var seen = Object.create(null);
+  var re = /"((?:\\.|[^"\\])*)"/g;
+  var match;
+
+  while ((match = re.exec(abc)) !== null) {
+    var name = EskinPortableNormalizeChordName(match[1]);
+    if (!EskinPortableIsChordName(name)) continue;
+    var key = name.toLowerCase();
+    if (!seen[key]) {
+      seen[key] = true;
+      found.push(name);
+    }
+  }
+
+  found.sort(function(a, b) {
+    return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
+  });
+  return found;
+}
+
+function EskinPortableBuiltInChord(name, instrument) {
+  var isMandolin = String(instrument || "guitar").toLowerCase() === "mandolin";
+  var chords = isMandolin ? gEskinPortableMandolinChords : gEskinPortableGuitarChords;
+  var aliases = isMandolin ? gEskinPortableMandolinAliases : gEskinPortableGuitarAliases;
+
+  if (Object.prototype.hasOwnProperty.call(chords, name)) return chords[name];
+  var alias = aliases[name];
+  return alias && Object.prototype.hasOwnProperty.call(chords, alias) ? chords[alias] : null;
+}
+
+function EskinPortableSvg(tag, attrs) {
+  var elem = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  if (attrs) Object.keys(attrs).forEach(function(key) { elem.setAttribute(key, attrs[key]); });
+  return elem;
+}
+
+function EskinPortableSvgText(parent, text, x, y, size, options) {
+  options = options || {};
+  var elem = EskinPortableSvg("text", {
+    x: x,
+    y: y,
+    "font-family": options.fontFamily || "Arial, Helvetica, sans-serif",
+    "font-size": size,
+    "text-anchor": options.anchor || "middle",
+    fill: options.fill || "currentColor"
+  });
+  if (options.weight) elem.setAttribute("font-weight", options.weight);
+  if (options.letterSpacing != null) elem.setAttribute("letter-spacing", options.letterSpacing);
+  elem.textContent = text;
+  parent.appendChild(elem);
+}
+
+function EskinPortableDrawChordGrid(parent, chordName, diagram, originX, cellWidth) {
+  var strings = diagram && Number.isInteger(Number(diagram.strings)) ? Number(diagram.strings) : 6;
+  strings = Math.max(3, Math.min(6, strings));
+
+  var gridWidth = Math.min(56, 10 * (strings - 1));
+  var stringGap = strings > 1 ? gridWidth / (strings - 1) : gridWidth;
+  var gridLeft = originX + (cellWidth - gridWidth) / 2;
+  var gridTop = 31;
+  var fretGap = 10.5;
+  var gridHeight = fretGap * 5;
+
+  EskinPortableSvgText(parent, chordName, originX + cellWidth / 2, 12, 11, {
+    weight: "300",
+    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    letterSpacing: "0.35px"
+  });
+
+  if (!diagram) {
+    parent.appendChild(EskinPortableSvg("rect", {
+      x: gridLeft, y: gridTop, width: gridWidth, height: gridHeight, rx: 3,
+      fill: "none", stroke: "currentColor", "stroke-width": 0.8,
+      "stroke-dasharray": "3 3", opacity: 0.55
+    }));
+    EskinPortableSvgText(parent, "No grid", originX + cellWidth / 2, gridTop + gridHeight / 2 + 4, 9);
+    return;
+  }
+
+  var baseFret = typeof diagram.baseFret === "number" && isFinite(diagram.baseFret)
+    ? diagram.baseFret : 1;
+
+  var showFingerNumbers = Array.isArray(diagram.fingers);
+
+  for (var stringIndex = 0; stringIndex < strings; ++stringIndex) {
+    var x = gridLeft + stringIndex * stringGap;
+    var fretValue = diagram.frets[stringIndex];
+    if (fretValue === "x") {
+      EskinPortableSvgText(parent, "×", x, gridTop - 7, 11);
+    } else if (fretValue === 0) {
+      parent.appendChild(EskinPortableSvg("circle", {
+        cx: x, cy: gridTop - 10, r: 2.5, fill: "none",
+        stroke: "currentColor", "stroke-width": 0.9
+      }));
+    }
+  }
+
+  for (var s = 0; s < strings; ++s) {
+    var sx = gridLeft + s * stringGap;
+    parent.appendChild(EskinPortableSvg("line", {
+      x1: sx, y1: gridTop, x2: sx, y2: gridTop + gridHeight,
+      stroke: "currentColor", "stroke-width": 0.8
+    }));
+  }
+
+  for (var f = 0; f <= 5; ++f) {
+    var fy = gridTop + f * fretGap;
+    parent.appendChild(EskinPortableSvg("line", {
+      x1: gridLeft, y1: fy, x2: gridLeft + gridWidth, y2: fy,
+      stroke: "currentColor", "stroke-width": (f === 0 && baseFret === 1) ? 2 : 0.8
+    }));
+  }
+
+  if (baseFret > 1) {
+    EskinPortableSvgText(parent, String(baseFret), gridLeft - 6, gridTop + fretGap * 0.72, 8, { anchor: "end" });
+  }
+
+  var barre = diagram.barre || null;
+  if (barre &&
+      typeof barre.fret === "number" &&
+      typeof barre.fromString === "number" &&
+      typeof barre.toString === "number") {
+    var relBarre = barre.fret - baseFret;
+    if (relBarre >= 0 && relBarre < 5) {
+      var sourceMin = Math.min(barre.fromString, barre.toString);
+      var sourceMax = Math.max(barre.fromString, barre.toString);
+      var x1 = gridLeft + (strings - sourceMax) * stringGap;
+      var x2 = gridLeft + (strings - sourceMin) * stringGap;
+      var y = gridTop + (relBarre + 0.5) * fretGap;
+      parent.appendChild(EskinPortableSvg("line", {
+        x1: x1, y1: y, x2: x2, y2: y,
+        stroke: "currentColor", "stroke-width": 6, "stroke-linecap": "round"
+      }));
+
+    }
+  }
+
+  for (var i = 0; i < strings; ++i) {
+    var fret = diagram.frets[i];
+    if (typeof fret !== "number" || fret <= 0) continue;
+    var relFret = fret - baseFret;
+    if (relFret < 0 || relFret >= 5) continue;
+
+    var sourceString = strings - i;
+    var covered = barre &&
+      fret === barre.fret &&
+      sourceString >= Math.min(barre.fromString, barre.toString) &&
+      sourceString <= Math.max(barre.fromString, barre.toString);
+    if (covered) continue;
+
+    var dotX = gridLeft + i * stringGap;
+    var dotY = gridTop + (relFret + 0.5) * fretGap;
+
+    parent.appendChild(EskinPortableSvg("circle", {
+      cx: dotX,
+      cy: dotY,
+      r: 3.4,
+      fill: "currentColor"
+    }));
+
+  }
+
+  if (showFingerNumbers) {
+    var fingerLabelY = gridTop + gridHeight + 10;
+
+    for (var fingerIndex = 0; fingerIndex < strings; ++fingerIndex) {
+      var fingerNumber =
+        diagram.fingers.length > fingerIndex
+          ? diagram.fingers[fingerIndex]
+          : null;
+
+      if (!fingerNumber) continue;
+
+      EskinPortableSvgText(
+        parent,
+        String(fingerNumber),
+        gridLeft + fingerIndex * stringGap,
+        fingerLabelY,
+        7,
+        {
+          fill: "currentColor",
+          weight: "300"
+        }
+      );
+    }
+  }
+}
+
+function EskinPortableBuildChordGridSVG(
+  chordNames,
+  customDefinitions,
+  instrument,
+  availableWidth,
+  forcedColumns
+) {
+  var cellWidth = 76;
+  var horizontalPadding = 8;
+  var chordGridScale = 0.96;
+
+  var showAnyFingerNumbers = chordNames.some(function(chordName) {
+    var diagram = Object.prototype.hasOwnProperty.call(customDefinitions, chordName)
+      ? customDefinitions[chordName]
+      : EskinPortableBuiltInChord(chordName, instrument);
+
+    return diagram && Array.isArray(diagram.fingers);
+  });
+
+  var rowHeight = showAnyFingerNumbers ? 100 : 86;
+
+  var usableUnscaledWidth =
+    typeof availableWidth === "number" &&
+    isFinite(availableWidth) &&
+    availableWidth > 0
+      ? availableWidth / chordGridScale
+      : horizontalPadding * 2 + chordNames.length * cellWidth;
+
+  var columns =
+    Number.isInteger(Number(forcedColumns)) && Number(forcedColumns) > 0
+      ? Number(forcedColumns)
+      : Math.floor(
+          (
+            usableUnscaledWidth -
+            horizontalPadding * 2 +
+            0.001
+          ) /
+          cellWidth
+        );
+
+  columns = Math.max(1, Math.min(chordNames.length, columns));
+
+  var rows = Math.max(1, Math.ceil(chordNames.length / columns));
+  var contentWidth = horizontalPadding * 2 + columns * cellWidth;
+  var contentHeight = rows * rowHeight;
+
+  var svg = EskinPortableSvg("svg", {
+    viewBox: "0 0 " + contentWidth + " " + contentHeight,
+    width: contentWidth,
+    height: contentHeight,
+    preserveAspectRatio: "xMinYMin meet",
+    role: "img",
+    "aria-label": "Chord diagrams: " + chordNames.join(", ")
+  });
+
+  chordNames.forEach(function(chordName, index) {
+    var row = Math.floor(index / columns);
+    var column = index % columns;
+
+    var rowGroup = EskinPortableSvg("g", {
+      transform: "translate(0 " + (row * rowHeight) + ")"
+    });
+
+    var diagram = Object.prototype.hasOwnProperty.call(customDefinitions, chordName)
+      ? customDefinitions[chordName]
+      : EskinPortableBuiltInChord(chordName, instrument);
+
+    EskinPortableDrawChordGrid(
+      rowGroup,
+      chordName,
+      diagram,
+      horizontalPadding + column * cellWidth,
+      cellWidth
+    );
+
+    svg.appendChild(rowGroup);
+  });
+
+  return {
+    svg: svg,
+    width: contentWidth,
+    height: contentHeight,
+    columns: columns,
+    rows: rows,
+    rowHeight: rowHeight,
+    scale: chordGridScale
+  };
+}
+
+function EskinPortableFillChordGrids(renderDiv, abcSource) {
+  if (!renderDiv || !abcSource) return;
+
+  var settings = EskinPortableGetChordGridSettings(abcSource);
+  if (!settings) return;
+
+  var chordNames = EskinPortableGetChordGridNames(abcSource);
+  var placeholder =
+    renderDiv.querySelector(".abcjs-chord-grid-placeholder-above");
+
+  if (!chordNames.length) {
+    if (placeholder) placeholder.remove();
+    return;
+  }
+
+  if (!placeholder) return;
+
+  var custom = EskinPortableParseChordGridDefinitions(abcSource);
+
+  var placeholderBox = null;
+  try {
+    placeholderBox = placeholder.getBBox();
+  }
+  catch (error) {
+    placeholderBox = null;
+  }
+
+  var leftX =
+    placeholderBox && isFinite(placeholderBox.x)
+      ? placeholderBox.x
+      : 0;
+
+  var topY =
+    placeholderBox && isFinite(placeholderBox.y)
+      ? placeholderBox.y
+      : 0;
+
+  var rootSVG = renderDiv.querySelector("svg");
+  var rootViewBoxWidth = 0;
+
+  if (rootSVG && rootSVG.viewBox && rootSVG.viewBox.baseVal) {
+    rootViewBoxWidth = Number(rootSVG.viewBox.baseVal.width) || 0;
+  }
+
+  if (!rootViewBoxWidth && rootSVG) {
+    rootViewBoxWidth = Number(rootSVG.getAttribute("width")) || 0;
+  }
+
+  var availableWidth =
+    rootViewBoxWidth > leftX
+      ? Math.max(76, rootViewBoxWidth - leftX - 8)
+      : null;
+
+  var placeholderGeometry =
+    placeholder.querySelector('[data-name="chord-grid-placeholder-box"]');
+
+  var forcedColumns = Number(
+    placeholder.getAttribute("data-chord-grid-columns") ||
+    (placeholderGeometry &&
+      placeholderGeometry.getAttribute("data-chord-grid-columns"))
+  );
+
+  if (!Number.isInteger(forcedColumns) || forcedColumns < 1) {
+    forcedColumns = null;
+  }
+
+  var reservedRows = Number(
+    placeholder.getAttribute("data-chord-grid-rows") ||
+    (placeholderGeometry &&
+      placeholderGeometry.getAttribute("data-chord-grid-rows"))
+  );
+
+  if (!Number.isInteger(reservedRows) || reservedRows < 1) {
+    reservedRows = null;
+  }
+
+  var built = EskinPortableBuildChordGridSVG(
+    chordNames,
+    custom,
+    settings.instrument,
+    availableWidth,
+    forcedColumns
+  );
+
+  if (reservedRows &&
+      built.rows !== reservedRows &&
+      typeof console !== "undefined" &&
+      console.warn) {
+    console.warn(
+      "Chord-grid row-count mismatch:",
+      "reserved=" + reservedRows,
+      "rendered=" + built.rows
+    );
+  }
+
+  while (placeholder.firstChild) {
+    placeholder.removeChild(placeholder.firstChild);
+  }
+
+  placeholder.setAttribute(
+    "class",
+    "abcjs-chord-grid-placeholder " +
+    "abcjs-chord-grid-placeholder-above " +
+    "abc-chord-grid-strip"
+  );
+
+  var chordGridScale = built.scale || 0.96;
+
+  var content = EskinPortableSvg("g", {
+    transform:
+      "translate(" + leftX + " " + topY + ") " +
+      "scale(" + chordGridScale + ")"
+  });
+
+  while (built.svg.firstChild) {
+    content.appendChild(built.svg.firstChild);
+  }
+
+  placeholder.appendChild(content);
+}
+
+
 (function webpackUniversalModuleDefinition(root, factory) {
   if(typeof exports === 'object' && typeof module === 'object')
     module.exports = factory();
@@ -2180,6 +2751,70 @@ var tunebook = {};
           if (lowercaseChordsRequested) {
             gAllowLowercaseChords = true;
           }
+
+          // Allow per-tune ornament timing control. Default these globals for
+          // each tune so settings do not leak from a previous tune.
+          gOrnamentDivider = 32;
+
+          searchRegExp = /^%ornament_divider.*$/gm;
+
+          var doOrnamentDivider = theCurrentTuneABC.match(searchRegExp);
+
+          if ((doOrnamentDivider) && (doOrnamentDivider.length > 0)) {
+
+            var theOrnamentDividerParamString = doOrnamentDivider[0].replace("%ornament_divider", "");
+
+            theOrnamentDividerParamString = theOrnamentDividerParamString.trim();
+
+            var theOrnamentDividerParams = theOrnamentDividerParamString.split(" " );
+
+            if (theOrnamentDividerParams.length >= 1) {
+
+              var theOrnamentDividerFound = theOrnamentDividerParams[0];
+
+              var ornamentDivider = parseFloat(theOrnamentDividerFound);
+
+              if (!isNaN(ornamentDivider)) {
+
+                if ((ornamentDivider >= 2) && (ornamentDivider <= 256)) {
+
+                  gOrnamentDivider = ornamentDivider;
+
+                }
+              }
+            }
+          }
+
+          gOrnamentOffset = 2;
+
+          searchRegExp = /^%ornament_offset.*$/gm;
+
+          var doOrnamentOffset = theCurrentTuneABC.match(searchRegExp);
+
+          if ((doOrnamentOffset) && (doOrnamentOffset.length > 0)) {
+
+            var theOrnamentOffsetParamString = doOrnamentOffset[0].replace("%ornament_offset", "");
+
+            theOrnamentOffsetParamString = theOrnamentOffsetParamString.trim();
+
+            var theOrnamentOffsetParams = theOrnamentOffsetParamString.split(" " );
+
+            if (theOrnamentOffsetParams.length >= 1) {
+
+              var theOrnamentOffsetFound = theOrnamentOffsetParams[0];
+
+              var ornamentOffset = parseInt(theOrnamentOffsetFound);
+
+              if (!isNaN(ornamentOffset)) {
+
+                if (ornamentOffset >= 0) {
+
+                  gOrnamentOffset = ornamentOffset;
+
+                }
+              }
+            }
+          }
           
           // If showing whistle tab, allow checking for transpose params
           if (gAllowWhistleTabTranspose){
@@ -2709,10 +3344,19 @@ var renderAbc = function renderAbc(output, abc, parserParams, engraverParams, re
     if (workingParams.percussionVolumeScale !== undefined) {
       tune.percussionVolumeScale = workingParams.percussionVolumeScale;
     }
+    if (tune.formatting &&
+        tune.formatting.showChordGrids &&
+        EskinPortableGetChordGridNames(abcString).length === 0) {
+      tune.formatting.showChordGrids = null;
+    }
+
 
     if (workingParams.afterParsing) workingParams.afterParsing(tune, tuneNumber, abcString);
     renderOne(div, tune, workingParams, tuneNumber, 0);
-    
+
+    if (!removeDiv && tune.formatting && tune.formatting.showChordGrids) {
+      EskinPortableFillChordGrids(div, abcString);
+    }
     // MAE 5 Mar 2025 - Add any SVG hyperlinks found unless disabled for this tune
     if (gAddSVGHyperLinks && (!gDisableSVGHyperLinks)){
       replaceTextLinksWithSvgLinks(div);
@@ -2736,8 +3380,20 @@ function doLineWrapping(div, tune, tuneNumber, abcString, params) {
     var warnings = abcParser.getWarnings();
     if (warnings) tune.warnings = warnings;
   }
+  if (tune.formatting &&
+      tune.formatting.showChordGrids &&
+      EskinPortableGetChordGridNames(abcString).length === 0) {
+    tune.formatting.showChordGrids = null;
+  }
+
+
   if (params.afterParsing) params.afterParsing(tune, tuneNumber, abcString);  
   renderOne(div, tune, ret.revisedParams, tuneNumber, 0);
+
+  if (tune.formatting && tune.formatting.showChordGrids) {
+    EskinPortableFillChordGrids(div, abcString);
+  }
+
   tune.explanation = ret.explanation;
   return tune;
 }
@@ -4955,7 +5611,194 @@ var Parse = function Parse() {
       }
     });
   };
+  // MAE: Tool-specific chord-grid definition blocks are JSON-like data for
+  // ABC Transcription Tools, not ABC music. Skip the complete block here.
+  var inChordGridDefinitions = false;
+  var chordGridDefinitionLines = [];
+
+
+  // Return true/false for a valid custom definition depending on whether it
+  // contains finger-number data. Return null for an invalid definition.
+  //
+  // Keep these rules synchronized with app.js ValidateChordGridDefinition().
+  // An invalid tune-level definition is ignored by app.js, so it must also be
+  // ignored here rather than overriding a valid file-header definition's
+  // fingering status.
+  function chordGridDefinitionHasValidFingers(definition) {
+    if (!definition || typeof definition !== "object") {
+      return null;
+    }
+
+    var strings = Number(definition.strings);
+
+    if (!Number.isInteger(strings) || strings < 3 || strings > 6) {
+      return null;
+    }
+
+    if (!Array.isArray(definition.frets) ||
+        definition.frets.length !== strings) {
+      return null;
+    }
+
+    var baseFret = Number(definition.baseFret);
+
+    if (!Number.isInteger(baseFret) || baseFret < 1) {
+      return null;
+    }
+
+    for (var fretIndex = 0; fretIndex < definition.frets.length; ++fretIndex) {
+      var fretValue = definition.frets[fretIndex];
+
+      if (fretValue === "x" || fretValue === "X") {
+        continue;
+      }
+
+      var numericFret = Number(fretValue);
+
+      if (!Number.isInteger(numericFret) || numericFret < 0) {
+        return null;
+      }
+    }
+
+    var hasFingers = false;
+
+    if (definition.fingers !== null &&
+        definition.fingers !== undefined) {
+
+      if (!Array.isArray(definition.fingers) ||
+          definition.fingers.length !== strings) {
+        return null;
+      }
+
+      for (var fingerIndex = 0;
+           fingerIndex < definition.fingers.length;
+           ++fingerIndex) {
+
+        var fingerValue = definition.fingers[fingerIndex];
+
+        if (fingerValue === null ||
+            fingerValue === undefined ||
+            fingerValue === "") {
+          continue;
+        }
+
+        var numericFinger = Number(fingerValue);
+
+        if (!Number.isInteger(numericFinger) ||
+            numericFinger < 1 ||
+            numericFinger > 4) {
+          return null;
+        }
+      }
+
+      hasFingers = true;
+    }
+
+    if (definition.barre !== null && definition.barre !== undefined) {
+      if (typeof definition.barre !== "object") {
+        return null;
+      }
+
+      var barreFret = Number(definition.barre.fret);
+      var fromString = Number(definition.barre.fromString);
+      var toString = Number(definition.barre.toString);
+
+      if (!Number.isInteger(barreFret) || barreFret < 1 ||
+          !Number.isInteger(fromString) ||
+          fromString < 1 ||
+          fromString > strings ||
+          !Number.isInteger(toString) ||
+          toString < 1 ||
+          toString > strings) {
+        return null;
+      }
+
+      // app.js only validates barre.finger when the definition contains a
+      // fingers array. Omitted barre.finger defaults to finger 1 there.
+      if (hasFingers && definition.barre.finger != null) {
+        var barreFinger = Number(definition.barre.finger);
+
+        if (!Number.isInteger(barreFinger) ||
+            barreFinger < 1 ||
+            barreFinger > 4) {
+          return null;
+        }
+      }
+    }
+
+    return hasFingers;
+  }
+
+  function rememberChordGridDefinitionFingerFlags() {
+    if (!chordGridDefinitionLines.length) return;
+
+    var body = chordGridDefinitionLines.join("\n").trim();
+    if (!body) return;
+
+    // Match app.js: definition blocks contain object members without the
+    // outermost braces, and a trailing comma before the end marker is allowed.
+    body = body.replace(/,\s*$/, "");
+
+    var parsed;
+    try {
+      parsed = JSON.parse("{" + body + "}");
+    } catch (err) {
+      // app.js ignores an invalid block, so do the same here. In particular,
+      // don't let malformed or unused finger data change engraving height.
+      return;
+    }
+
+    if (!tune.formatting.chordGridDefinitionFingerFlags) {
+      tune.formatting.chordGridDefinitionFingerFlags = Object.create(null);
+    }
+
+    Object.keys(parsed).forEach(function(chordName) {
+      var definition = parsed[chordName];
+      var normalizedName = String(chordName || "")
+        .trim()
+        .replace(/♭/g, "b")
+        .replace(/♯/g, "#")
+        .toLowerCase();
+
+      if (!normalizedName || !definition || typeof definition !== "object") {
+        return;
+      }
+
+      var hasValidFingers =
+        chordGridDefinitionHasValidFingers(definition);
+
+      // Invalid definitions are ignored by app.js. Do not let one override a
+      // valid earlier definition's fingering status here either.
+      if (hasValidFingers === null) {
+        return;
+      }
+
+      // Later VALID definitions replace earlier valid definitions for the same
+      // chord, matching tune-level-over-file-header override precedence.
+      tune.formatting.chordGridDefinitionFingerFlags[normalizedName] =
+        hasValidFingers;
+    });
+  }
+
   var parseLine = function parseLine(line) {
+    var chordGridTrimmedLine = line.trim();
+
+    if (inChordGridDefinitions) {
+      if (/^%%end_chord_grid_definitions?\s*$/i.test(chordGridTrimmedLine)) {
+        rememberChordGridDefinitionFingerFlags();
+        chordGridDefinitionLines = [];
+        inChordGridDefinitions = false;
+      } else {
+        chordGridDefinitionLines.push(line);
+      }
+      return;
+    }
+
+    if (/^%%begin_chord_grid_definitions\s*$/i.test(chordGridTrimmedLine)) {
+      chordGridDefinitionLines = [];
+      inChordGridDefinitions = true;
+      return;
+    }
     if (parseCommon.startsWith(line, '%%')) {
       var err = parseDirective.addDirective(line.substring(2));
       if (err) warn(err, line, 2);
@@ -5077,6 +5920,12 @@ var Parse = function Parse() {
     if (!startPos) startPos = 0;
     tune.reset();
 
+    // Chord-grid definition block state is parser-local but the Parse instance
+    // can be reused. Always reset it so a malformed/unterminated block from one
+    // parse cannot suppress lines in a later parse.
+    inChordGridDefinitions = false;
+    chordGridDefinitionLines = [];
+
     // Take care of whatever line endings come our way
     // Tack on newline temporarily to make the last line continuation work
     strTune = strTune.replace(/\r\n?/g, '\n') + '\n';
@@ -5130,7 +5979,12 @@ var Parse = function Parse() {
         parseDirective.globalFormatting(switches.format);
       }
       var line = tokenizer.nextLine();
-      while (line) {
+      while (line !== null) {
+        // abcjs historically stops parsing a tune at an empty line. Preserve
+        // that behavior exactly except while reading a chord-grid definition
+        // block, where blank lines are formatting inside the JSON-like data.
+        if (line === "" && !inChordGridDefinitions) break;
+
         if (switches.header_only && multilineVars.is_in_header === false) throw "normal_abort";
         if (switches.stop_on_warning && multilineVars.warnings) throw "normal_abort";
         var wasInHeader = multilineVars.is_in_header;
@@ -5247,7 +6101,8 @@ var bookParser = function bookParser(book) {
       /^%%titlecaps.*$/,      
       /^%%visualtranspose.*$/,      
       /^%%maxstaves.*$/, 
-      /^%%partsbox.*$/, 
+      /^%%partsbox.*$/,
+      /^%%show_chord_grids(?:\s+(?:guitar|mandolin))?\s*$/i,
       /^%hide_first_title_on_play.*$/,  
       /^%hide_vskip_on_play.*$/,  
       /^%left_justify_titles.*$/,
@@ -5294,8 +6149,23 @@ var bookParser = function bookParser(book) {
     ];
 
     let inCSSBlock = false;
+    let inChordGridDefinitionBlock = false;
 
     arrDir.forEach(function (line) {
+
+        var trimmedHeaderLine = line.trim();
+
+        if (/^%%begin_chord_grid_definitions$/i.test(trimmedHeaderLine)) {
+            inChordGridDefinitionBlock = true;
+        }
+
+        if (inChordGridDefinitionBlock) {
+            directives += line + '\n';
+            if (/^%%end_chord_grid_definitions?$/i.test(trimmedHeaderLine)) {
+                inChordGridDefinitionBlock = false;
+            }
+            return;
+        }
 
         if (line.trim() === "%%begincss") {
             inCSSBlock = true;
@@ -5322,10 +6192,38 @@ var bookParser = function bookParser(book) {
   
   var header = directives;
 
-  // Now, the tune ends at a blank line, so truncate it if needed. There may be "intertune" stuff.
+  // Preserve blank lines inside chord-grid definition blocks.
   tunes.forEach(function (tune) {
-    var end = tune.abc.indexOf('\n\n');
-    if (end > 0) tune.abc = tune.abc.substring(0, end);
+    var linesForTruncation = tune.abc.split('\n');
+    var keptLines = [];
+    var inChordGridDefinitionBlock = false;
+
+    for (var lineIndex = 0; lineIndex < linesForTruncation.length; ++lineIndex) {
+      var currentLine = linesForTruncation[lineIndex];
+      var trimmedLine = currentLine.trim();
+
+      if (/^%%begin_chord_grid_definitions$/i.test(trimmedLine)) {
+        inChordGridDefinitionBlock = true;
+        keptLines.push(currentLine);
+        continue;
+      }
+
+      if (inChordGridDefinitionBlock) {
+        keptLines.push(currentLine);
+        if (/^%%end_chord_grid_definitions?$/i.test(trimmedLine)) {
+          inChordGridDefinitionBlock = false;
+        }
+        continue;
+      }
+
+      // Match the legacy "\n\n" behavior exactly outside definition blocks:
+      // only a genuinely empty line terminates the tune. A whitespace-only
+      // line is left alone just as it was before chord-grid support.
+      if (currentLine === "" && keptLines.length) break;
+      keptLines.push(currentLine);
+    }
+
+    tune.abc = keptLines.join('\n');
     tune.pure = tune.abc;
     tune.abc = directives + tune.abc;
 
@@ -6519,6 +7417,23 @@ var parseDirective = {};
   };
   var positionChoices = ['auto', 'above', 'below', 'hidden'];
   parseDirective.addDirective = function (str) {
+    var chordGridDirective = str.match(
+      /^\s*show_chord_grids(?:\s+(guitar|mandolin))?\s*$/i
+    );
+
+    if (chordGridDirective) {
+      tune.formatting.showChordGrids = "above";
+      tune.formatting.showChordGridInstrument =
+        chordGridDirective[1]
+          ? chordGridDirective[1].toLowerCase()
+          : "guitar";
+      return null;
+    }
+
+    if (/^\s*(?:begin|end)_chord_grid_definitions?\s*$/i.test(str)) {
+      return null;
+    }
+
     var tokens = tokenizer.tokenize(str, 0, str.length); // 3 or more % in a row, or just spaces after %% is just a comment
     if (tokens.length === 0 || tokens[0].type !== 'alpha') return null;
     var restOfString = str.substring(str.indexOf(tokens[0].token) + tokens[0].token.length);
@@ -31564,6 +32479,57 @@ function drawStaffGroup(renderer, params, selectables, lineNumber) {
       }
     }
   }
+  // Tool-specific chord-grid placeholder inside the first staff SVG. Because
+  // this lane is part of the staff group's calculated height, it sits after
+  // tempo/header material and directly above the notation, and it is included
+  // automatically in PDF rasterization of the abcjs-rendered staff div.
+  if (params.staffs && params.staffs.length) {
+    var chordGridPlaceholderStaff = params.staffs[0];
+
+    if (chordGridPlaceholderStaff &&
+        typeof chordGridPlaceholderStaff.chordGridTopPitch === "number" &&
+        typeof chordGridPlaceholderStaff.chordGridBottomPitch === "number") {
+
+      var chordGridTopY =
+        chordGridPlaceholderStaff.absoluteY -
+        chordGridPlaceholderStaff.chordGridTopPitch * spacing.STEP;
+
+      var chordGridBottomY =
+        chordGridPlaceholderStaff.absoluteY -
+        chordGridPlaceholderStaff.chordGridBottomPitch * spacing.STEP;
+
+      var chordGridPlaceholderHeight =
+        Math.max(1, chordGridBottomY - chordGridTopY);
+
+      renderer.paper.openGroup({
+        klass:
+          "abcjs-chord-grid-placeholder " +
+          "abcjs-chord-grid-placeholder-above",
+        "data-name": "chord-grid-placeholder",
+        "data-chord-grid-columns":
+          chordGridPlaceholderStaff.chordGridColumns || 1,
+        "data-chord-grid-rows":
+          chordGridPlaceholderStaff.chordGridRows || 1
+      });
+
+      renderer.paper.rect({
+        x: renderer.padding.left,
+        y: chordGridTopY,
+        width: 1,
+        height: chordGridPlaceholderHeight,
+        fill: "none",
+        stroke: "none",
+        "data-name": "chord-grid-placeholder-box",
+        "data-chord-grid-columns":
+          chordGridPlaceholderStaff.chordGridColumns || 1,
+        "data-chord-grid-rows":
+          chordGridPlaceholderStaff.chordGridRows || 1
+      });
+
+      renderer.paper.closeGroup();
+    }
+  }
+
   var topLine; // these are to connect multiple staves. We need to remember where they are.
   var bottomLine;
   var linePitch = 2;
@@ -32479,11 +33445,111 @@ EngraverController.prototype.constructTuneElements = function (abcTune) {
   var abcLine;
   var hasPrintedTempo = false;
   var hasSeenNonSubtitle = false;
+
+  // Tool-specific chord-grid state. Do not reserve any grid space until all
+  // staff lines have been created and we know the tune actually contains
+  // chord elements.
+  var firstChordGridStaff = null;
+  var hasChordGridChordElements = false;
+
+  // Count unique printable chord symbols so the reserved chord-grid lane can
+  // grow to multiple rows when the diagrams would exceed the notation width.
+  // Keep this dormant unless %%show_chord_grids is active.
+  var chordGridUniqueNames = Object.create(null);
+  var chordGridUniqueCount = 0;
+
+  function chordGridRememberName(name, position) {
+    if (!abcTune.formatting.showChordGrids || position !== "default") return;
+
+    var normalized = String(name || "").trim();
+    while (normalized.length >= 2 &&
+           normalized[0] === "(" &&
+           normalized[normalized.length - 1] === ")") {
+      normalized = normalized.substring(1, normalized.length - 1).trim();
+    }
+
+    // abcjs normalizes accidentals in parsed chord names to Unicode glyphs
+    // (for example Ebmaj7 becomes E♭maj7). Convert those back to the ASCII
+    // spelling used by the source-level chord-grid scanner before validating
+    // and counting unique names, otherwise flat/sharp chords are omitted from
+    // the row count and multi-row grids can overlap the first stave.
+    normalized = normalized
+      .replace(/♭/g, "b")
+      .replace(/♯/g, "#");
+
+    if (!normalized || /^[\^_<>@]/.test(normalized)) return;
+    if (!/^[A-G](?:#|b)?(?:maj|min|dim|aug|sus|add|m|no|M|°|ø|o|\+|-|[0-9]|[#b]|\(|\))*?(?:\/[A-G](?:#|b)?)?$/.test(normalized)) return;
+
+    var key = normalized.toLowerCase();
+    if (!chordGridUniqueNames[key]) {
+      chordGridUniqueNames[key] = true;
+      chordGridUniqueCount += 1;
+    }
+  }
+
+  if (abcTune.formatting.showChordGrids) {
+    for (var chordGridLineIndex = 0;
+         chordGridLineIndex < abcTune.lines.length;
+         ++chordGridLineIndex) {
+      var chordGridRawLine = abcTune.lines[chordGridLineIndex];
+      if (!chordGridRawLine || !chordGridRawLine.staff) continue;
+
+      for (var chordGridRawStaffIndex = 0;
+           chordGridRawStaffIndex < chordGridRawLine.staff.length;
+           ++chordGridRawStaffIndex) {
+        var chordGridRawStaff = chordGridRawLine.staff[chordGridRawStaffIndex];
+        if (!chordGridRawStaff || !chordGridRawStaff.voices) continue;
+
+        for (var chordGridVoiceIndex = 0;
+             chordGridVoiceIndex < chordGridRawStaff.voices.length;
+             ++chordGridVoiceIndex) {
+          var chordGridVoice = chordGridRawStaff.voices[chordGridVoiceIndex] || [];
+
+          for (var chordGridElementIndex = 0;
+               chordGridElementIndex < chordGridVoice.length;
+               ++chordGridElementIndex) {
+            var chordGridElement = chordGridVoice[chordGridElementIndex];
+            if (!chordGridElement || !chordGridElement.chord) continue;
+
+            for (var chordGridChordIndex = 0;
+                 chordGridChordIndex < chordGridElement.chord.length;
+                 ++chordGridChordIndex) {
+              var chordGridChord = chordGridElement.chord[chordGridChordIndex];
+              if (chordGridChord) {
+                chordGridRememberName(chordGridChord.name, chordGridChord.position);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   for (i = 0; i < abcTune.lines.length; i++) {
     abcLine = abcTune.lines[i];
     if (abcLine.staff) {
       hasSeenNonSubtitle = true;
-      abcLine.staffGroup = this.engraver.createABCLine(abcLine.staff, !hasPrintedTempo ? abcTune.metaText.tempo : null, i);
+      var isFirstRenderedStaff = !hasPrintedTempo;
+      abcLine.staffGroup = this.engraver.createABCLine(
+        abcLine.staff,
+        isFirstRenderedStaff ? abcTune.metaText.tempo : null,
+        i
+      );
+
+      // Remember the first staff for a possible "above" chord-grid lane.
+      // Do NOT infer chord-grid presence from chordHeightAbove/chordHeightBelow:
+      // abcjs uses those same lanes for quoted text annotations such as
+      // "^Slovenly!" and "_A". The validated default-position chord scan above
+      // is the authoritative source for whether actual chord grids exist.
+      if (abcLine.staffGroup &&
+          abcLine.staffGroup.staffs &&
+          abcLine.staffGroup.staffs.length) {
+
+        if (!firstChordGridStaff) {
+          firstChordGridStaff = abcLine.staffGroup.staffs[0];
+        }
+      }
+
       hasPrintedTempo = true;
     } else if (abcLine.subtitle) {
       // If the subtitle is at the top, then it was already accounted for. So skip all subtitles until the first non-subtitle line.
@@ -32499,6 +33565,84 @@ EngraverController.prototype.constructTuneElements = function (abcTune) {
       abcLine.nonMusic = new Separator(abcLine.separator.spaceAbove, abcLine.separator.lineLength, abcLine.separator.spaceBelow);
     }
   }
+
+  // The validated unique default-position chord scan is authoritative.
+  // Text annotations occupy abcjs chord lanes too, but must not create a
+  // chord-grid row or any chord-grid spacing.
+  hasChordGridChordElements = chordGridUniqueCount > 0;
+
+  // Save the completed tune-wide chord-presence decision for the renderer.
+  abcTune.hasChordGridChordElements = hasChordGridChordElements;
+
+  // Only reserve the first-staff "above" lane when there are actual chord
+  // elements somewhere in the tune. A chordless tune therefore has exactly
+  // the same vertical spacing as it would without %%show_chord_grids.
+  if (hasChordGridChordElements &&
+      abcTune.formatting.showChordGrids &&
+      firstChordGridStaff &&
+      firstChordGridStaff.specialY) {
+    var chordGridCellWidth = 76;
+    var chordGridHorizontalPadding = 8;
+    var chordGridScale = 0.96;
+
+    // Reserve the taller row only if a chord that is actually displayed uses
+    // a resolved custom definition containing a fingers array. Unused custom
+    // fingerings must not add vertical whitespace.
+    var chordGridShowAnyFingerNumbers = false;
+    var chordGridFingerFlags =
+      abcTune.formatting.chordGridDefinitionFingerFlags || null;
+
+    if (chordGridFingerFlags) {
+      Object.keys(chordGridUniqueNames).some(function(chordKey) {
+        if (chordGridFingerFlags[chordKey] === true) {
+          chordGridShowAnyFingerNumbers = true;
+          return true;
+        }
+        return false;
+      });
+    }
+
+    var chordGridRowHeight =
+      chordGridShowAnyFingerNumbers ? 100 : 86;
+
+    // Match app.js's effective horizontal space: the notation/staff width plus
+    // the available right margin, less the same 8px safety inset. Using only
+    // this.width here made abcjs wrap one row earlier at exact-fit boundaries.
+    var chordGridAvailableWidth =
+      this.width + this.renderer.padding.right - 8;
+
+    var chordGridUsableUnscaledWidth =
+      chordGridAvailableWidth / chordGridScale;
+
+    // Tiny tolerance avoids a floating-point value such as 10.999999999
+    // turning an exact fit into an unnecessary extra row.
+    var chordGridColumns = Math.floor(
+      (
+        chordGridUsableUnscaledWidth -
+        chordGridHorizontalPadding * 2 +
+        0.001
+      ) /
+      chordGridCellWidth
+    );
+
+    chordGridColumns = Math.max(1, chordGridColumns);
+
+    var chordGridRows = Math.max(
+      1,
+      Math.ceil(Math.max(1, chordGridUniqueCount) / chordGridColumns)
+    );
+
+    firstChordGridStaff.chordGridColumns = chordGridColumns;
+    firstChordGridStaff.chordGridRows = chordGridRows;
+    firstChordGridStaff.chordGridRowHeight = chordGridRowHeight;
+
+    // app.js draws the chord-grid block at chordGridScale. Reserve the actual
+    // scaled height here so unused per-row slack doesn't accumulate above or
+    // below multi-row grids.
+    firstChordGridStaff.specialY.chordGridHeightAbove =
+      (chordGridRows * chordGridRowHeight * chordGridScale) / spacing.STEP;
+  }
+
   abcTune.bottomText = new BottomText(abcTune.metaText, this.width, this.renderer.isPrint, this.renderer.padding.left, this.renderer.spacing, this.getTextSize);
 };
 EngraverController.prototype.engraveTune = function (abcTune, tuneNumber, lineOffset) {
@@ -34233,6 +35377,7 @@ var setUpperAndLowerElements = function setUpperAndLowerElements(renderer, staff
     // the vertical order of elements that are above is: tempo, part, volume/dynamic, ending/chord, lyric
     // the vertical order of elements that are below is: lyric, chord, volume/dynamic
     var positionY = {
+      chordGridHeightAbove: 0,
       tempoHeightAbove: 0,
       partHeightAbove: 0,
       volumeHeightAbove: 0,
@@ -34251,11 +35396,38 @@ var setUpperAndLowerElements = function setUpperAndLowerElements(renderer, staff
     }
 
     incTop(staff, positionY, 'lyricHeightAbove');
+
+    // Normal ABC chord symbols sit closest to the notation.
     incTop(staff, positionY, 'chordHeightAbove', staff.specialY.chordLines.above);
+
+    // First/second endings sit above ordinary ABC chord symbols but below the
+    // generated chord-grid row.
     if (staff.specialY.endingHeightAbove) {
       if (staff.specialY.chordHeightAbove) staff.top += 2;else staff.top += staff.specialY.endingHeightAbove + margin;
       positionY.endingHeightAbove = staff.top;
     }
+
+    // When chord grids are present, put the tempo immediately below them.
+    // The bottom-up order is therefore:
+    // notation -> chord symbols -> endings -> tempo -> chord grids.
+    //
+    // Without chord grids, preserve the original abcjs ordering so ordinary
+    // tunes are unaffected.
+    if (staff.specialY.chordGridHeightAbove) {
+      incTop(staff, positionY, 'tempoHeightAbove');
+
+      // Keep a small, intentional visual gap between the bottom chord-grid row
+      // and the tempo. This gap is outside the chord-grid placeholder itself,
+      // so it doesn't create extra whitespace above multi-row grid blocks.
+      if (staff.specialY.tempoHeightAbove) {
+        staff.top += 6 / spacing.STEP;
+      }
+
+      staff.chordGridBottomPitch = staff.top;
+      incTop(staff, positionY, 'chordGridHeightAbove');
+      staff.chordGridTopPitch = staff.top;
+    }
+
     if (staff.specialY.dynamicHeightAbove && staff.specialY.volumeHeightAbove) {
       staff.top += Math.max(staff.specialY.dynamicHeightAbove, staff.specialY.volumeHeightAbove) + margin;
       positionY.dynamicHeightAbove = staff.top;
@@ -34264,8 +35436,12 @@ var setUpperAndLowerElements = function setUpperAndLowerElements(renderer, staff
       incTop(staff, positionY, 'dynamicHeightAbove');
       incTop(staff, positionY, 'volumeHeightAbove');
     }
+
     incTop(staff, positionY, 'partHeightAbove');
-    incTop(staff, positionY, 'tempoHeightAbove');
+
+    if (!staff.specialY.chordGridHeightAbove) {
+      incTop(staff, positionY, 'tempoHeightAbove');
+    }
     if (staff.specialY.lyricHeightBelow) {
       staff.specialY.lyricHeightBelow += renderer.spacing.vocal / spacing.STEP;
       positionY.lyricHeightBelow = staff.bottom;
@@ -35404,6 +36580,24 @@ Svg.prototype.openGroup = function (options) {
   if (options.fill) el.setAttribute("fill", options.fill);
   if (options.stroke) el.setAttribute("stroke", options.stroke);
   if (options['data-name']) el.setAttribute("data-name", options['data-name']);
+
+  // Preserve the tool-specific chord-grid layout metadata. app.js uses the
+  // authoritative abcjs column count so the post-render SVG cannot disagree
+  // with the vertical space reserved during engraving at exact-fit widths.
+  if (options['data-chord-grid-columns'] !== undefined) {
+    el.setAttribute(
+      "data-chord-grid-columns",
+      options['data-chord-grid-columns']
+    );
+  }
+
+  if (options['data-chord-grid-rows'] !== undefined) {
+    el.setAttribute(
+      "data-chord-grid-rows",
+      options['data-chord-grid-rows']
+    );
+  }
+
   if (options.prepend) this.prepend(el);else this.append(el);
   this.currentGroup.unshift(el);
   return el;
