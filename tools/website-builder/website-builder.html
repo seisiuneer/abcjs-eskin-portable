@@ -1247,7 +1247,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.60";
+  const WEBSITE_BUILDER_VERSION = "1.2.61";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -9460,6 +9460,17 @@ fiddle: {
       ? tunes.filter(tune => !tune.isSectionHeader)
       : tunes;
 
+    /*
+      ABC Two-Column Lyrics Formatter website compatibility:
+      Only generated websites containing the formatter's exact marker receive
+      the compatibility helper/call below. Websites without this exact marker
+      retain the original generated rendering code unchanged.
+    */
+    const includeTwoColumnLyricsWebsiteFix = tunes.some(tune =>
+      !tune.isSectionHeader &&
+      String(tune.exportedAbc || "").includes("ABC Two-Column Lyrics Formatter generated CSS")
+    );
+
     const toc = displayedTunes.map(tune => {
       const hiddenAttr = largeCollectionGroupingEnabled && tune.groupId !== firstTuneGroupId ? " hidden" : "";
       return `<a href="#tune-${tune.key}" data-toc-entry="true" data-group="${escapeHtml(tune.groupId)}" data-toc-title="${escapeHtml(tune.displayTitle)}" data-section-header="${tune.isSectionHeader ? "true" : "false"}"${hiddenAttr}${tune.isSectionHeader ? ` class="section-header-toc-link"` : ""}>${shouldShowNumber(tune) ? `<span>${tune.number}</span>` : ""}${escapeHtml(tune.displayTitle)}</a>`;
@@ -10303,6 +10314,13 @@ fiddle: {
     const previewCloseButtonMarkup = previewMode
       ? '<button class="website-preview-close-button" type="button" onclick="window.close();" title="Close this preview and return to the Website Builder">Close Preview</button>'
       : "";
+
+    /*
+      ABC Two-Column Lyrics Formatter website compatibility:
+      The generated helper code and modified render block below are inserted
+      only when an exported tune contains the exact formatter marker.
+      Websites without that marker retain the original generated render block.
+    */
 
     return `<!doctype html>
 <html lang="en">
@@ -12473,6 +12491,153 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     );
   }
 
+  ${includeTwoColumnLyricsWebsiteFix ? String.raw`
+  function hasTwoColumnLyricsFormatterCSS(abc) {
+    return String(abc || "").includes("ABC Two-Column Lyrics Formatter generated CSS");
+  }
+
+  function firstAbcTitleForTwoColumnFix(abc) {
+    const m = String(abc || "").match(/^T:\s*(.+)$/m);
+    return m ? m[1].trim() : "";
+  }
+
+  function reversedArticleTitleForTwoColumnFix(title) {
+    const m = String(title || "").trim().match(/^(.*),\s*(The|A|An)$/i);
+    return m ? (m[2] + " " + m[1]).trim() : "";
+  }
+
+  function rightColumnInfoFromFormatterCSS(abc) {
+    const source = String(abc || "");
+    if (!hasTwoColumnLyricsFormatterCSS(source)) return null;
+
+    const title = firstAbcTitleForTwoColumnFix(source);
+    const titleVariants = [title, reversedArticleTitleForTwoColumnFix(title)]
+      .filter(Boolean);
+
+    const cssMatch = source.match(
+      /%%begincss\s*\n([\s\S]*?ABC Two-Column Lyrics Formatter generated CSS[\s\S]*?)\n%%endcss/i
+    );
+    if (!cssMatch || !titleVariants.length) return null;
+
+    const css = cssMatch[1];
+    const ruleRe = /([^{}]+)\{([^{}]*)\}/g;
+    const ranges = [];
+    let rule;
+
+    while ((rule = ruleRe.exec(css))) {
+      const selectors = rule[1];
+      const body = rule[2];
+
+      if (!/transform\s*:\s*translate\(\s*max\(/i.test(body)) continue;
+
+      const matchesCurrentTune = titleVariants.some(titleVariant => {
+        const escaped = String(titleVariant)
+          .replace(/\\/g, "\\\\")
+          .replace(/"/g, '\\"');
+        return selectors.includes('aria-label*="' + escaped + '"');
+      });
+      if (!matchesCurrentTune) continue;
+
+      const dyMatch = body.match(
+        /transform\s*:\s*translate\(\s*max\([\s\S]*?\)\s*,\s*(-?\d+(?:\.\d+)?)px\s*\)/i
+      );
+      if (!dyMatch) continue;
+
+      const dy = parseFloat(dyMatch[1]);
+      if (!Number.isFinite(dy)) continue;
+
+      const rangeRe = /nth-of-type\(n\+(\d+)\):nth-of-type\(-n\+(\d+)\)|nth-of-type\((\d+)\)/g;
+      let rm;
+
+      while ((rm = rangeRe.exec(selectors))) {
+        let start, end;
+        if (rm[1] && rm[2]) {
+          start = parseInt(rm[1], 10);
+          end = parseInt(rm[2], 10);
+        } else if (rm[3]) {
+          start = end = parseInt(rm[3], 10);
+        } else {
+          continue;
+        }
+
+        if (Number.isFinite(start) && Number.isFinite(end) && end >= start) {
+          ranges.push({ start, end, dy });
+        }
+      }
+    }
+
+    if (!ranges.length) return null;
+
+    const unique = [];
+    const seen = new Set();
+    for (const range of ranges) {
+      const key = range.start + ":" + range.end + ":" + range.dy;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(range);
+    }
+    unique.sort((a, b) => a.start - b.start);
+
+    return {
+      ranges: unique,
+      firstRightIndex: unique[0].start,
+      firstRightDy: unique[0].dy
+    };
+  }
+
+  function alignTwoColumnLyricsForWebsite(paper, abc) {
+    if (
+      !paper ||
+      !String(abc || "").includes("ABC Two-Column Lyrics Formatter generated CSS")
+    ) {
+      return;
+    }
+
+    const lyricTexts = Array.from(
+      paper.querySelectorAll(".abcjs-unaligned-words > text")
+    );
+    if (lyricTexts.length < 2) return;
+
+    const info = rightColumnInfoFromFormatterCSS(abc);
+    if (!info) return;
+
+    const leftFirst = lyricTexts[0];
+    const rightFirst = lyricTexts[info.firstRightIndex - 1];
+    if (!leftFirst || !rightFirst) return;
+
+    const leftY = parseFloat(leftFirst.getAttribute("y"));
+    const rightY = parseFloat(rightFirst.getAttribute("y"));
+    if (!Number.isFinite(leftY) || !Number.isFinite(rightY)) return;
+
+    const correction = leftY - (rightY + info.firstRightDy);
+    if (!Number.isFinite(correction) || Math.abs(correction) < 0.01) return;
+
+    const rightIndices = new Set();
+    for (const range of info.ranges) {
+      for (let index = range.start; index <= range.end; index++) {
+        rightIndices.add(index);
+      }
+    }
+
+    for (const index of rightIndices) {
+      const element = lyricTexts[index - 1];
+      if (!element) continue;
+
+      const y = parseFloat(element.getAttribute("y"));
+      if (!Number.isFinite(y)) continue;
+
+      element.setAttribute(
+        "y",
+        String(Math.round((y + correction) * 1000) / 1000)
+      );
+    }
+
+    paper.dataset.twoColumnLyricsCorrection =
+      String(Math.round(correction * 1000) / 1000);
+  }
+
+` : ""}  
+
   async function prepareWork(work, choiceId) {
     const paperId = work.key + "-paper";
     const audioId = work.key + "-audio";
@@ -12502,12 +12667,21 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
         status.textContent = "Rendering notation and preparing audio…";
       }
 
+      ${includeTwoColumnLyricsWebsiteFix ? String.raw`      const renderAbcSource = abcForInstrumentChoice(work, choice);
       const rendered = ABCJS.renderAbc(
+        paperId,
+        renderAbcSource,
+        getRenderParams(activeDisplayMode)
+      );
+      if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
+
+      alignTwoColumnLyricsForWebsite(paper, renderAbcSource);`
+      : String.raw`      const rendered = ABCJS.renderAbc(
         paperId,
         abcForInstrumentChoice(work, choice),
         getRenderParams(activeDisplayMode)
       );
-      if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");
+      if (!rendered || rendered.length !== 1) throw new Error("Expected one rendered tune.");`}
 
       if (activeDisplayMode === "whistleNotation") {
         postProcessWhistleTab(rendered, paperId);
