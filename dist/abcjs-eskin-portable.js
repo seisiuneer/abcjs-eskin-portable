@@ -33600,9 +33600,30 @@ var tablatures = __webpack_require__(/*! ../api/abc_tablatures */ "./src/api/abc
  * in the renderer for highlighting purposes
  *
  */
+// MAE 10 Sep 2026 - Backward compatibility for older Website Builder
+// Tin Whistle / Irish Flute pages. Those pages request oneSvgPerLine but their
+// whistle post-processing code expects the rendered <svg> to remain a direct
+// child of the paper div. Keep the legacy single-SVG DOM only for the exact
+// one-string hidden-symbol tablature configuration used by those exports.
+// All other oneSvgPerLine callers retain the normal split-SVG behavior.
+function isLegacyWebsiteWhistleTablature(params) {
+  if (!params || params.oneSvgPerLine !== true || params.disallowTablatureOnly !== true) return false;
+  if (!Array.isArray(params.tablature) || params.tablature.length !== 1) return false;
+
+  var tab = params.tablature[0] || {};
+  return tab.instrument === "violin" &&
+    tab.hideTabSymbol === true &&
+    tab.highestNote === "^a'" &&
+    typeof tab.label === "string" &&
+    tab.label.trim() === "" &&
+    Array.isArray(tab.tuning) &&
+    tab.tuning.length === 1 &&
+    tab.tuning[0] === "G,";
+}
+
 var EngraverController = function EngraverController(paper, params) {
   params = params || {};
-  this.oneSvgPerLine = params.oneSvgPerLine;
+  this.oneSvgPerLine = params.oneSvgPerLine && !isLegacyWebsiteWhistleTablature(params);
   this.selectionColor = params.selectionColor;
   this.dragColor = params.dragColor ? params.dragColor : params.selectionColor;
   this.dragging = !!params.dragging;
