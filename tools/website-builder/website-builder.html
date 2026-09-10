@@ -11439,16 +11439,10 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     const activeDisplayMode = mode || defaultDisplayMode;
     const params = {
       responsive: "resize",
+      oneSvgPerLine: true,
       expandToWidest: true,
       selectTypes: false
     };
-
-    // Whistle/flute fingering glyphs depend on the legacy single-SVG rendering
-    // structure. Keep oneSvgPerLine for the other display modes, but omit it
-    // for whistleNotation so the TinWhistleFingering font renders correctly.
-    if (activeDisplayMode !== "whistleNotation") {
-      params.oneSvgPerLine = true;
-    }
 
     if (activeDisplayMode === "whistleNotation") {
       params.paddingbottom = 16;
@@ -12358,7 +12352,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     if (!visualObj || !visualObj.length) return;
 
     const allTopLines = document.querySelectorAll(
-      'div[id="' + renderDivID + '"] > svg > g > g > [class="abcjs-top-line"]'
+      'div[id="' + renderDivID + '"] svg > g > g > [class="abcjs-top-line"]'
     );
 
     const visual = visualObj[0];
@@ -12393,7 +12387,7 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
       "G", "M", "A"
     ];
 
-    const selector = 'div[id="' + renderDivID + '"] > svg > g > g[data-name="tabNumber"] > text > tspan';
+    const selector = 'div[id="' + renderDivID + '"] svg > g > g[data-name="tabNumber"] > text > tspan';
     document.querySelectorAll(selector).forEach(tspan => {
       tspan.setAttribute("class", "whistle");
       tspan.setAttribute("dy", "-7");
