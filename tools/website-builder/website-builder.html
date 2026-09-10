@@ -3368,6 +3368,23 @@
     }
   }
 
+  function applyTransferredWebsiteTitleAndSubtitle(abcText) {
+    const text = String(abcText || "");
+    const titleMatch = text.match(/^\s*%addtitle(?:\s+(.*))?\s*$/im);
+
+    // Only change the website title/subtitle when the transferred ABC
+    // explicitly contains an addtitle command. This preserves the restored
+    // Website Builder values when neither command is present.
+    if (!titleMatch) return;
+
+    state.settings.title = String(titleMatch[1] || "").trim();
+
+    const subtitleMatch = text.match(/^\s*%addsubtitle(?:\s+(.*))?\s*$/im);
+    state.settings.subtitle = subtitleMatch
+      ? String(subtitleMatch[1] || "").trim()
+      : "";
+  }
+
   function loadABCFromABCTranscriptionTools(data, event) {
     const abcText = typeof data.abc === "string" ? data.abc : "";
     const sourceName = String(data.sourceName || "external ABC source").trim() ||
@@ -3386,6 +3403,7 @@
       }
 
       const tuneCount = appendAbcTextSource(abcText, sourceName, abcText.length);
+      applyTransferredWebsiteTitleAndSubtitle(abcText);
 
       renderState();
       setStatus(
