@@ -11439,10 +11439,16 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     const activeDisplayMode = mode || defaultDisplayMode;
     const params = {
       responsive: "resize",
-      oneSvgPerLine: true,
       expandToWidest: true,
       selectTypes: false
     };
+
+    // Whistle/flute fingering glyphs depend on the legacy single-SVG rendering
+    // structure. Keep oneSvgPerLine for the other display modes, but omit it
+    // for whistleNotation so the TinWhistleFingering font renders correctly.
+    if (activeDisplayMode !== "whistleNotation") {
+      params.oneSvgPerLine = true;
+    }
 
     if (activeDisplayMode === "whistleNotation") {
       params.paddingbottom = 16;
