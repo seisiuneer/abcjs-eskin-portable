@@ -1370,6 +1370,11 @@
     { id: "show", name: "Show" }
   ];
 
+  const ENABLED_DISABLED_OPTIONS = [
+    { id: "enabled", name: "Enabled" },
+    { id: "disabled", name: "Disabled" }
+  ];
+
   const INSTRUMENT_SELECTOR_OPTIONS = [
     { id: "hide", name: "Hide" },
     { id: "show", name: "Show" },
@@ -2082,6 +2087,7 @@
     title: "This is the Title",
     subtitle: "This is the Subtitle",
     footer: "This is the Footer",
+    autoTransferPdfFeatureAnnotations: "enabled",
     includeTuneHeading: false,
     includeCollectionIntro: false,
     collectionIntro: "This is text before all the tunes.",
@@ -2502,6 +2508,10 @@
 
     if (!optionIds(PRINT_TITLE_PAGE_AND_TEXT_OPTIONS).has(String(normalized.printTitlePageAndTextBeforeTunes || ""))) {
       normalized.printTitlePageAndTextBeforeTunes = DEFAULT_SETTINGS.printTitlePageAndTextBeforeTunes;
+    }
+
+    if (!optionIds(ENABLED_DISABLED_OPTIONS).has(String(normalized.autoTransferPdfFeatureAnnotations || ""))) {
+      normalized.autoTransferPdfFeatureAnnotations = DEFAULT_SETTINGS.autoTransferPdfFeatureAnnotations;
     }
 
     const groupingMode = String(normalized.largeCollectionGrouping || "");
@@ -3368,13 +3378,13 @@
     }
   }
 
-  function applyTransferredWebsiteTitleAndSubtitle(abcText) {
+  function applyTransferredWebsiteTitleSubtitleAndFooter(abcText) {
     const text = String(abcText || "");
     const titleMatch = text.match(/^\s*%addtitle(?:\s+(.*))?\s*$/im);
 
-    // Only change the website title/subtitle when the transferred ABC
-    // explicitly contains an addtitle command. This preserves the restored
-    // Website Builder values when neither command is present.
+    // Only import PDF collection metadata when the transferred ABC
+    // explicitly contains a single-percent %addtitle command. This preserves
+    // the restored Website Builder values when %addtitle is not present.
     if (!titleMatch) return;
 
     state.settings.title = String(titleMatch[1] || "").trim();
@@ -3383,6 +3393,14 @@
     state.settings.subtitle = subtitleMatch
       ? String(subtitleMatch[1] || "").trim()
       : "";
+
+    const footerMatch = text.match(/^\s*%pagefooter(?:\s+(.*))?\s*$/im);
+    const headerMatch = text.match(/^\s*%pageheader(?:\s+(.*))?\s*$/im);
+    state.settings.footer = footerMatch
+      ? String(footerMatch[1] || "").trim()
+      : headerMatch
+        ? String(headerMatch[1] || "").trim()
+        : "";
   }
 
   function loadABCFromABCTranscriptionTools(data, event) {
@@ -3403,7 +3421,9 @@
       }
 
       const tuneCount = appendAbcTextSource(abcText, sourceName, abcText.length);
-      applyTransferredWebsiteTitleAndSubtitle(abcText);
+      if (state.settings.autoTransferPdfFeatureAnnotations === "enabled") {
+        applyTransferredWebsiteTitleSubtitleAndFooter(abcText);
+      }
 
       renderState();
       setStatus(
@@ -4246,7 +4266,8 @@
         "title", "subtitle", "footer",
         "includeTuneHeading",
         "includeCollectionIntro", "collectionIntro",
-        "printTitlePageAndTextBeforeTunes"
+        "printTitlePageAndTextBeforeTunes",
+        "autoTransferPdfFeatureAnnotations"
       ],
       website_settings_display_fields: [
         "theme", "displayMode", "cursorColor",
@@ -4339,6 +4360,7 @@
     includeTuneHeading: "instructions-setting-include-tune-heading",
     includeCollectionIntro: "instructions-setting-include-collection-intro",
     collectionIntro: "instructions-setting-collection-intro",
+    autoTransferPdfFeatureAnnotations: "instructions-setting-auto-transfer-pdf-feature-annotations",
 
     theme: "instructions-setting-theme",
     displayMode: "instructions-setting-display-mode",
@@ -4581,6 +4603,7 @@
       tuneOrder: optionIds(TUNE_ORDER_OPTIONS),
       largeCollectionGroupingBatchSize: optionIds(LARGE_COLLECTION_BATCH_SIZE_OPTIONS),
       printTitlePageAndTextBeforeTunes: optionIds(PRINT_TITLE_PAGE_AND_TEXT_OPTIONS),
+      autoTransferPdfFeatureAnnotations: optionIds(ENABLED_DISABLED_OPTIONS),
       deploymentTarget: optionIds(DEPLOYMENT_TARGET_OPTIONS)
     };
 
@@ -5780,6 +5803,12 @@
         options: PRINT_TITLE_PAGE_AND_TEXT_OPTIONS
       },
       {
+        name: "Automatically transfer title, subtitle, and footer from PDF feature annotations",
+        id: "autoTransferPdfFeatureAnnotations",
+        type: "select",
+        options: ENABLED_DISABLED_OPTIONS
+      },
+      {
         name: "Deployment target",
         id: "deploymentTarget",
         type: "select",
@@ -5987,6 +6016,14 @@
                 <li><b>Title page, text before tunes on own pages</b> prints the title and subtitle (if either are not blank) on one page, then text from <b>Text before all the tunes</b> (if enabled and not blank) on a separate page, followed by the tune(s).</li>
                 <li>In <b>Multiple</b> tune display mode, if the generated website has <b>Tune Sections</b>, title-page options append the currently displayed Tune Section name to the printed website title.</li>
                 <li>This setting applies only to <b>Standalone website</b> exports. Embedded website exports intentionally do not include Website Builder print CSS because the host page's layout and print styles can affect pagination and visibility.</li>
+              </ul>
+            </li>
+            <li id="instructions-setting-auto-transfer-pdf-feature-annotations"><b>Automatically transfer title, subtitle, and footer from PDF feature annotations</b> controls whether PDF feature annotations are used to update the Website Builder text settings when the complete ABC is transferred directly from <b>ABC Transcription Tools</b>.
+              <ul>
+                <li><b>Enabled</b> is the default. If the transferred full ABC contains <code>%addtitle</code>, it is used as the website title. <code>%addsubtitle</code> is used as the website subtitle when present; otherwise the subtitle is cleared. <code>%pagefooter</code> is used as the website footer when present; if it is absent, <code>%pageheader</code> is used as the footer fallback. If neither footer annotation is present, the website footer is cleared.</li>
+                <li><b>Disabled</b> leaves the current Website Builder title, subtitle, and footer unchanged, including values restored from local storage when the Website Builder starts.</li>
+                <li>This setting applies only to the complete ABC transferred directly from <b>ABC Transcription Tools</b>. It does not apply when ABC files are opened with <b>Load ABC Files</b> or added by drag and drop.</li>
+                <li>The automatic transfer only occurs when the incoming ABC contains the single-percent <code>%addtitle</code> annotation. If <code>%addtitle</code> is absent, the existing title, subtitle, and footer remain unchanged.</li>
               </ul>
             </li>
           </ul>
@@ -6356,6 +6393,7 @@
           </p>
           <ul>
             <li>When the transfer succeeds, the status line and Loaded Tunes panel will show the source reported by the sending tool, such as <b>ABC Transcription Tools</b> or <b>thesession.org Power Tools</b>.</li>
+            <li>When <b>Automatically transfer title, subtitle, and footer from PDF feature annotations</b> is <b>Enabled</b> (the default), complete ABC sent from <b>ABC Transcription Tools</b> can automatically supply the Website Builder title, subtitle, and footer from the single-percent PDF annotations <code>%addtitle</code>, <code>%addsubtitle</code>, <code>%pagefooter</code>, and <code>%pageheader</code>. This processing only occurs when <code>%addtitle</code> is present. Set the option to <b>Disabled</b> on the <b>Text &amp; Content</b> settings tab to keep the existing title, subtitle, and footer values instead.</li>
             <li>If your browser blocks the new tab or window, allow popups for the sending tool and try again.</li>
             <li>If the direct transfer does not complete, save the ABC from the sending tool as a file and use <b>Load ABC Files</b> here instead.</li>
           </ul>
