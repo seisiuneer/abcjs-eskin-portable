@@ -1247,7 +1247,7 @@
 (() => {
   "use strict";
 
-  const WEBSITE_BUILDER_VERSION = "1.2.63";
+  const WEBSITE_BUILDER_VERSION = "1.2.64";
   const DEFAULT_GENERATED_WEBSITE_FAVICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAAAAABWESUoAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnAg4QOgRjaBzZAAABZElEQVQ4y2P4TwAwjCrApuDHq1e/sCu4cQdEnvHX0ojd9xeidt+0yVM/wxTctsgFUdM5QtP0JNaAmC8L+HhYxa5AFfzIZHD7BqSniF//f8fJ7uP//x9TBcpP1spcgipYLaiodA+kQPru//+T5B/8/9/L3fX3/9uDPyAKHpq7TOXdBmRMVnv+/1Ok1Yf/5+WivyE5slFkx1XRBiCjW2bBsniBKf//N0mdRvLFSWmDnniOZCCrjoGDhUFjz/8vduF/EAqe2jOwCJtp2X/+/z/XcNmcQn25TU8V8pHC4QCP08ILXyaKX/n/P9n/9///t7Tjn6tlAOX+nTwOVlAjfBTI28gx7f//xIDfv241CDT+S1Pe8+NJn2QmSMET9Uigtv9PtaP+/k9WzvKS4c15/f+8obCDGoffRZCCF+UHwZYt6f3zf76xdUjBth9A3tXS2LRFn1Ai6x8wCn5/+PIHzh+0KWpwKgAADxKItxjnvbQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjMtMDItMTRUMTY6NTg6MDErMDA6MDDr2pMuAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIzLTAyLTE0VDE2OjU4OjAxKzAwOjAwmocrkgAAACB0RVh0c29mdHdhcmUAaHR0cHM6Ly9pbWFnZW1hZ2ljay5vcme8zx2dAAAAGHRFWHRUaHVtYjo6RG9jdW1lbnQ6OlBhZ2VzADGn/7svAAAAGHRFWHRUaHVtYjo6SW1hZ2U6OkhlaWdodAAxOTJAXXFVAAAAF3RFWHRUaHVtYjo6SW1hZ2U6OldpZHRoADE5MtOsIQgAAAAZdEVYdFRodW1iOjpNaW1ldHlwZQBpbWFnZS9wbmc/slZOAAAAF3RFWHRUaHVtYjo6TVRpbWUAMTY3NjM5Mzg4MUPmF1cAAAAPdEVYdFRodW1iOjpTaXplADBCQpSiPuwAAABWdEVYdFRodW1iOjpVUkkAZmlsZTovLy9tbnRsb2cvZmF2aWNvbnMvMjAyMy0wMi0xNC84ZGI5NGYwYTdkNzZhOTAyOTY2ODQzNTk2M2JkNTk3ZC5pY28ucG5nRSckHgAAAABJRU5ErkJggg==";
 
   const THEME_OPTIONS = [
@@ -6129,8 +6129,8 @@
                 <li><b>Show (add Bass & Chords Only)</b> behaves like <b>Show</b> and also adds a final <b>Bass & Chords Only</b> selector choice.</li>
                 <li>When shown, it also enables <b>Inject soundfont and MIDI settings</b> for the exported website so every tune receives the selected soundfont plus the selected melody, bass, and chord MIDI programs and volume values.</li>
                 <li>The first selector choice is the selected <b>Melody instrument</b> from the <b>Playback &amp; Sounds</b> tab, with its label shortened to a generic instrument family name, and it uses the current <b>Notation / tablature display</b> setting for notation or tablature rendering.</li>
-                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, or Hammered Dulcimer for all tunes.</li>
-                <li>With <b>Show (add Bass & Chords Only)</b>, the user can also choose <b>Bass & Chords Only</b> from the bottom of the instrument selector.</li>
+                <li>The user can also choose Mandolin, Tenor Banjo, GDAD Bouzouki, Standard Guitar, DADGAD Guitar, Tin Whistle, Irish Flute, Uilleann Pipes, Accordion, Concertina, Fiddle, Harp, Hammered Dulcimer, or Note Names for all tunes. <b>Note Names</b> shows note-name tablature below the notation and uses Piano for melody playback.</li>
+                <li>With <b>Show (add Bass & Chords Only)</b>, <b>Bass & Chords Only</b> is added after <b>Note Names</b> at the bottom of the instrument selector.</li>
                 <li><b>Bass & Chords Only</b> mutes the melody and only plays the bass and chords. If this instrument is selected and there are no chords in a tune, that tune will play only silence.</li>
                 <li>Choices that need tablature re-render all tunes with the matching tablature style, and every selector choice updates the melody MIDI program used for playback.</li>
                 <li>The generated website stores the visitor's most recent selector choice in a website-specific localStorage key and restores it the next time that generated website is opened.</li>
@@ -6561,7 +6561,7 @@ fiddle: {
   program: &quot;110&quot;,
   format: &quot;noten&quot;
 }</code></pre>
-          <p>The builder's <b>Show (add Bass & Chords Only)</b> setting automatically adds this option at the end of the generated selector:</p>
+          <p>The builder's <b>Show (add Bass & Chords Only)</b> setting automatically adds this option after <b>Note Names</b> at the end of the generated selector:</p>
           <pre><code>&lt;option value=&quot;backupOnly&quot;&gt;Bass & Chords Only&lt;/option&gt;</code></pre>
           <p>It also adds this matching selector entry. The previous entry in <code>instrumentChoices</code> must end with a trailing comma before adding <code>backupOnly</code>:</p>
           <pre><code>backupOnly: { displayMode: &quot;notation&quot;, program: &quot;mute&quot;, format: &quot;noten&quot; }</code></pre>
@@ -6593,6 +6593,7 @@ fiddle: {
             <li><code>guitarNotation</code> or <code>guitarOnly</code> — standard guitar tablature with or without notation.</li>
             <li><code>dadgadGuitarNotation</code> or <code>dadgadGuitarOnly</code> — DADGAD guitar tablature with or without notation.</li>
             <li><code>whistleNotation</code> — tin whistle style tablature with notation.</li>
+            <li><code>noteNamesNotation</code> — note-name tablature with notation.</li>
           </ul>
           <p>
             For example, to keep the Mandolin sound but show notation only, change the Mandolin entry to:
@@ -6603,6 +6604,7 @@ fiddle: {
             <li>If the entry shows notation only, use <code>format: &quot;noten&quot;</code>.</li>
             <li>Guitar formats use <code>guitare</code> for standard guitar and <code>guitard</code> for DADGAD.</li>
             <li>Tin whistle style entries use <code>whistle</code>.</li>
+            <li>Note Names uses <code>notenames</code>.</li>
             <li>GDAD bouzouki entries use <code>gdad</code>.</li>
           </ul>
 
@@ -9609,6 +9611,7 @@ fiddle: {
             <option value="fiddle">Fiddle</option>
             <option value="harp">Harp</option>
             <option value="hammeredDulcimer">Hammered Dulcimer</option>
+            <option value="noteNames">Note Names</option>
             ${includeBackupOnlyInstrument ? `<option value="backupOnly">Bass & Chords Only</option>` : ""}
           </select>
         </div>`
@@ -11483,7 +11486,8 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     concertina: { displayMode: "notation", program: "133", format: "noten" },
     fiddle: { displayMode: "notation", program: "110", format: "noten" },
     harp: { displayMode: "notation", program: "46", format: "noten" },
-    hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" }${includeBackupOnlyInstrument ? `,
+    hammeredDulcimer: { displayMode: "notation", program: "15", format: "noten" },
+    noteNames: { displayMode: "noteNamesNotation", program: "0", format: "notenames" }${includeBackupOnlyInstrument ? `,
     backupOnly: { displayMode: "notation", program: "mute", format: "noten" }` : ""}
   };
 
@@ -11509,6 +11513,17 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
         tuning: ["G,"],
         highestNote: "^a'",
         hideTabSymbol: true
+      }];
+    } else if (activeDisplayMode === "noteNamesNotation") {
+      params.paddingbottom = 16;
+      params.disallowTablatureOnly = true;
+      params.tablature = [{
+        instrument: "violin",
+        label: " ",
+        tuning: ["G,,,", "G,,", "G,"],
+        highestNote: "b'",
+        hideTabSymbol: true,
+        linePitch: 2
       }];
     } else if (activeDisplayMode === "mandolinNotation" || activeDisplayMode === "mandolinOnly") {
       params.tablatureOnly = activeDisplayMode === "mandolinOnly";
@@ -12462,6 +12477,71 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
     });
   }
 
+  function postProcessNoteNamesTab(visualObj, renderDivID) {
+    // Match ABC Transcription Tools postProcessTab(..., "notenames", true).
+    if (!visualObj || !visualObj.length) return;
+
+    const allTopLines = document.querySelectorAll(
+      'div[id="' + renderDivID + '"] svg > g > g > [class="abcjs-top-line"]'
+    );
+
+    const visual = visualObj[0];
+    if (!visual || !visual.lines || !visual.lines.length) return;
+
+    const linesToCheck = [];
+    visual.lines.forEach(line => {
+      if (line && line.staff) linesToCheck.push(line);
+    });
+    if (!linesToCheck.length) return;
+
+    const tabTopLines = [];
+    linesToCheck.forEach(line => {
+      const staffCount = line.staff.length;
+      const tabStaffIndex = staffCount / 2;
+      for (let index = 0; index < staffCount; index++) {
+        tabTopLines.push(index >= tabStaffIndex);
+      }
+    });
+
+    allTopLines.forEach((line, index) => {
+      if (!tabTopLines[index]) return;
+      line.setAttribute("class", "hiddentabline");
+      getNextSiblings(line).forEach(sibling => {
+        if (sibling && sibling.setAttribute) sibling.setAttribute("class", "hiddentabline");
+      });
+    });
+
+    let useSharps = true;
+    const svgs = document.querySelectorAll('div[id="' + renderDivID + '"] svg');
+    if (!svgs || !svgs.length) return;
+
+    const mappings = {
+      sharps: [
+        "G,", "G♯,", "A,", "A♯,", "B,", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B",
+        "c", "c♯", "d", "d♯", "e", "f", "f♯", "g", "g♯", "a", "a♯", "b", "c'", "c♯'", "d'", "d♯'", "e'",
+        "f'", "f♯'", "g'", "g♯'", "a'", "a♯'", "b'"
+      ],
+      flats: [
+        "G,", "A♭,", "A,", "B♭,", "B,", "C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B",
+        "c", "d♭", "d", "e♭", "e", "f", "g♭", "g", "a♭", "a", "b♭", "b", "c'", "d♭'", "d'", "e♭'", "e'",
+        "f'", "g♭'", "g'", "a♭'", "a'", "b♭'", "b'"
+      ]
+    };
+
+    for (let i = 0; i < svgs.length; i++) {
+      const svg = svgs[i];
+      const keySig = svg.querySelector('g[data-name="staff-extra key-signature"]');
+      if (keySig && keySig.innerHTML.includes("accidentals.flat")) useSharps = false;
+
+      const tspans = svg.querySelectorAll('g[data-name="tabNumber"] > text > tspan');
+      const useMap = mappings[useSharps ? "sharps" : "flats"];
+      tspans.forEach(tspan => {
+        const index = parseInt(tspan.innerHTML, 10);
+        tspan.innerHTML = useMap[index] || "?";
+      });
+    }
+  }
+
   function getEmbeddedAbc(id) {
     const element = document.getElementById(id);
     if (!element) throw new Error("Embedded ABC not found: " + id);
@@ -12568,6 +12648,8 @@ ${abcToolsLinkMode !== "disabled" ? '<script src="https://michaeleskin.com/abcjs
 
       if (activeDisplayMode === "whistleNotation") {
         postProcessWhistleTab(rendered, paperId);
+      } else if (activeDisplayMode === "noteNamesNotation") {
+        postProcessNoteNamesTab(rendered, paperId);
       }
 
       if (work.noPlayController) {
