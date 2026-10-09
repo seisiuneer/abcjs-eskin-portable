@@ -523,6 +523,17 @@ function ScanTuneForSwing(theTune){
 
 }
 
+// ABC Transcription Tools-compatible per-voice cents tuning.
+// Like app.js ScanTuneForVoiceTuning, values are assigned by voice index;
+// the first value also tunes generated bass/chord accompaniment.
+function ScanTuneForVoiceTuning(theTune) {
+  var match = String(theTune || "").match(/^%voice_tuning_cents.*$/m);
+  if (!match) return null;
+  var values = match[0].replace("%voice_tuning_cents", "").match(/(?:^|\s)(-?\d+(?:\.\d+)?)(?=\s|$)/g);
+  if (!values || !values.length) return null;
+  return values.map(function (value) { return parseFloat(value); });
+}
+
 // Detect whether the tune's trimmed rhythm field is exactly "Hornpipe".
 // Matching is case-insensitive, so R:Hornpipe and R:hornpipe are equivalent.
 // Other rhythm text, such as "Hornpipe Set", does not enable the default.
@@ -2957,6 +2968,9 @@ var tunebook = {};
             value: tuneSwingOffset
           };
 
+          // Per-tune tuning is isolated from global host callbacks and settings.
+          tune.eskinPlayback.voiceTuningCents = ScanTuneForVoiceTuning(theCurrentTuneABC);
+
           // Capture an optional per-tune reverb directive. A valid directive
           // enables reverb for this tune and overrides host reverb defaults.
           var tuneReverb = ScanTuneForReverb(theCurrentTuneABC);
@@ -4262,7 +4276,14 @@ var Tune = function Tune() {
   this.setUpAudio = function (options) {
     if (!options) options = {};
     var seq = sequence(this, options);
-    return flatten(seq, options, this.formatting.percmap, this.formatting.midi);
+    // Pass tuning into flatten without mutating the shared MIDI formatting object.
+    var midiOptions = this.formatting.midi || {};
+    if (this.eskinPlayback && this.eskinPlayback.voiceTuningCents) {
+      midiOptions = Object.assign({}, midiOptions, {
+        eskinVoiceTuningCents: this.eskinPlayback.voiceTuningCents
+      });
+    }
+    return flatten(seq, options, this.formatting.percmap, midiOptions);
   };
   this.deline = function (options) {
     return delineTune(this.lines, options);
@@ -15056,9 +15077,15 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
     }
   }
 
+  var voiceTuningForFlatten = null;
   flatten = function flatten(voices, options, percmap_, midiOptions) {    
     if (!options) options = {};
     if (!midiOptions) midiOptions = {};
+    // Keep the original ABC Transcription Tools accompaniment methodology:
+    // generated boom/chick notes use the first melody voice's cents value.
+    // The global setting remains the fallback for hosts that explicitly set it.
+    voiceTuningForFlatten = midiOptions.eskinVoiceTuningCents || gVoiceTuning;
+
     barAccidentals = [];
     accidentals = [0, 0, 0, 0, 0, 0, 0];
     bagpipes = false;
@@ -15491,6 +15518,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
     // See if any notes are octaves played at the same time. If so, raise the pitch of the higher one.
     if (options.detuneOctave) findOctaves(tracks, parseInt(options.detuneOctave, 10));
 
+    var melodyTrackCount = tracks.length;
     if (gUseGChord){
       chordTrack.addTrack(tracks);
     }
@@ -15505,6 +15533,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
       tempo: startingTempo,
       instrument: instrument,
       tracks: tracks,
+      eskinMelodyTrackCount: melodyTrackCount,
       totalDuration: lastEventTime
     };
   };
@@ -16830,7 +16859,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
   function writeBoom(boom, beatLength, volume, beat, noteLength) {
 
     // If the melody voice has tuning adjustment, apply it to the boom
-    if (gVoiceTuning && (gVoiceTuning.length > 0)){
+    if (voiceTuningForFlatten && (voiceTuningForFlatten.length > 0)){
       if (boom !== undefined) chordTrack.push({
         cmd: 'note',
         pitch: boom,
@@ -16839,7 +16868,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
         duration: durationRounded(noteLength),
         gap: 0,
         instrument: bassInstrument,
-        cents: gVoiceTuning[0]
+        cents: voiceTuningForFlatten[0]
       });
     }
     else{
@@ -16864,7 +16893,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
     }
 
     // If the melody voice has tuning adjustment, apply it to the chick
-    if (gVoiceTuning && (gVoiceTuning.length > 0)){
+    if (voiceTuningForFlatten && (voiceTuningForFlatten.length > 0)){
       for (var c = 0; c < chick.length; c++) {
         chordTrack.push({
           cmd: 'note',
@@ -16874,7 +16903,7 @@ var pitchesToPerc = __webpack_require__(/*! ./pitches-to-perc */ "./src/synth/pi
           duration: durationRounded(noteLength),
           gap: 0,
           instrument: chordInstrument,
-          cents: gVoiceTuning[0]
+          cents: voiceTuningForFlatten[0]
         });
       }
     }
@@ -19099,7 +19128,7 @@ ChordTrack.prototype.writeNote = function (note, beatLength, volume, beat, noteL
   //console.log("note: "+note+" beatLength: "+beatLength+" beat: "+beat+" noteLength: "+noteLength);
 
   // MAE 22 Jun 2024 - If the melody voice has tuning adjustment, apply it to the note 
-  if (gVoiceTuning && (gVoiceTuning.length > 0)){
+  if (voiceTuningForFlatten && (voiceTuningForFlatten.length > 0)){
     if (note !== undefined) this.chordTrack.push({
       cmd: 'note',
       pitch: note,
@@ -19108,7 +19137,7 @@ ChordTrack.prototype.writeNote = function (note, beatLength, volume, beat, noteL
       duration: durationRounded(noteLength, this.tempoChangeFactor),
       gap: 0,
       instrument: instrument,
-      cents: gVoiceTuning[0]
+      cents: voiceTuningForFlatten[0]
     });
   }
   else{ // Do no harm, original code!
@@ -20683,6 +20712,10 @@ function CreateSynth(theABC) {
     } else if (options.sequence) self.flattened = options.sequence;else return Promise.reject(new Error("Must pass in either a visualObj or a sequence"));
     self.millisecondsPerMeasure = options.millisecondsPerMeasure ? options.millisecondsPerMeasure : options.visualObj ? options.visualObj.millisecondsPerMeasure(self.flattened.tempo) : 1000;
     self.beatsPerMeasure = options.visualObj ? options.visualObj.getBeatsPerMeasure() : 4;
+    self.visualObjVoiceTuning = options.visualObj && options.visualObj.eskinPlayback ?
+      options.visualObj.eskinPlayback.voiceTuningCents : null;
+    self.melodyTrackCount = self.flattened.eskinMelodyTrackCount == null ?
+      self.flattened.tracks.length : self.flattened.eskinMelodyTrackCount;
     self.sequenceCallback = params.sequenceCallback;
     self.callbackContext = params.callbackContext;
     self.onEnded = params.onEnded;
@@ -21069,6 +21102,20 @@ function CreateSynth(theABC) {
       }
 
       // MAE 25 Oct 2023 -  End for swing injection
+
+      // Match app.js VoiceTuningCallback: assign cents to the first N
+      // melody tracks. Generated accompaniment already received voice 1
+      // tuning in flatten; never apply a second adjustment to those notes.
+      var perTuneVoiceTuning = self.visualObjVoiceTuning;
+      if (perTuneVoiceTuning && perTuneVoiceTuning.length) {
+        for (var tuningVoice = 0; tuningVoice < perTuneVoiceTuning.length &&
+             tuningVoice < self.melodyTrackCount && tuningVoice < noteMapTracks.length; tuningVoice++) {
+          var voiceNotes = noteMapTracks[tuningVoice];
+          for (var tuningNote = 0; tuningNote < voiceNotes.length; tuningNote++) {
+            voiceNotes[tuningNote].cents = perTuneVoiceTuning[tuningVoice];
+          }
+        }
+      }
 
       if (self.sequenceCallback) self.sequenceCallback(noteMapTracks, self.callbackContext);
 
